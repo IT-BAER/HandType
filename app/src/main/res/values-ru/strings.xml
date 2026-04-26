@@ -27,6 +27,8 @@
     <string name="result_regenerate_button">Создать заново</string>
     <string name="result_new_note_button">Новая заметка</string>
     <string name="result_saved">Сохранено в Изображения/HandType</string>
+    <string name="result_saved_transparent">Прозрачный PNG сохранён в Изображения/HandType</string>
+    <string name="result_save_transparent_button">Сохранить без фона (прозрачный PNG)</string>
     <string name="result_save_failed">Ошибка сохранения: %1$s</string>
     <string name="result_share_failed">Ошибка при отправке: %1$s</string>
     <string name="result_pdf_saved">PDF сохранён в Загрузки/HandType</string>

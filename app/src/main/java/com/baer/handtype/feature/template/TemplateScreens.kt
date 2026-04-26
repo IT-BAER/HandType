@@ -82,8 +82,10 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.baer.handtype.R
 import kotlin.math.absoluteValue
 import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
@@ -151,12 +153,12 @@ fun TemplateChooserScreen(
                 }
             }
             Text(
-                text = "Choose a handwriting style",
+                text = stringResource(R.string.template_chooser_title),
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
             Text(
-                text = "Built-in templates are the default path. Personal handwriting capture stays available as an optional premium feature.",
+                text = stringResource(R.string.template_chooser_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -202,7 +204,7 @@ fun TemplateChooserScreen(
                     TemplateOptionCard(
                         descriptor = templates[page],
                         accentColor = Color(0xFF23443A),
-                        buttonText = "Use template",
+                        buttonText = stringResource(R.string.template_chooser_use_template),
                     )
                     if (overlayAlpha > 0.01f) {
                         Box(
@@ -277,7 +279,7 @@ fun TemplateChooserScreen(
                             shape = RoundedCornerShape(999.dp),
                         ) {
                             Text(
-                                text = "Premium",
+                                text = stringResource(R.string.template_chooser_premium_badge),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 color = Color(0xFF7C4D11),
                                 style = MaterialTheme.typography.labelLarge,
@@ -310,7 +312,7 @@ fun TemplateChooserScreen(
                         shape = RoundedCornerShape(18.dp),
                     ) {
                         Text(
-                            text = "Premium capture",
+                            text = stringResource(R.string.template_chooser_premium_button),
                             modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
                             color = Color.White,
                             style = MaterialTheme.typography.labelLarge,
@@ -456,12 +458,12 @@ private fun ComposePhaseContent(
                 style = MaterialTheme.typography.headlineSmall,
             )
             TextButton(onClick = onBackToTemplates) {
-                Text(text = "Templates")
+                Text(text = stringResource(R.string.render_templates_button))
             }
         }
 
         Text(
-            text = "Type your message below, then tap Generate to create a unique handwritten note.",
+            text = stringResource(R.string.render_instruction),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -469,8 +471,8 @@ private fun ComposePhaseContent(
         OutlinedTextField(
             value = text,
             onValueChange = onTextChange,
-            label = { Text("Your message") },
-            placeholder = { Text("Hello, world!") },
+            label = { Text(stringResource(R.string.render_text_label)) },
+            placeholder = { Text(stringResource(R.string.render_text_placeholder)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(240.dp),
@@ -494,7 +496,7 @@ private fun ComposePhaseContent(
             ),
         ) {
             Text(
-                text = "Generate",
+                text = stringResource(R.string.render_generate_button),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -505,7 +507,7 @@ private fun ComposePhaseContent(
             shape = RoundedCornerShape(18.dp),
             contentPadding = PaddingValues(vertical = 14.dp),
         ) {
-            Text(text = "Premium: Use My Handwriting")
+            Text(text = stringResource(R.string.render_premium_button))
         }
     }
 }
@@ -540,11 +542,11 @@ private fun GeneratingOverlay() {
                         color = Color(0xFF23443A),
                     )
                     Text(
-                        text = "Generating your note...",
+                        text = stringResource(R.string.render_generating_title),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = "Each generation is unique",
+                        text = stringResource(R.string.render_generating_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -582,17 +584,17 @@ private fun ResultPhaseContent(
         result
             .onSuccess {
                 toast(
-                    if (transparent) "Saved transparent PNG to Pictures/HandType"
-                    else "Saved to Pictures/HandType",
+                    if (transparent) context.getString(R.string.result_saved_transparent)
+                    else context.getString(R.string.result_saved),
                 )
             }
-            .onFailure { toast("Save failed: ${it.message ?: "unknown"}") }
+            .onFailure { toast(context.getString(R.string.result_save_failed, it.message ?: "unknown")) }
     }
 
     val storagePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (granted) doSave(pendingTransparent) else toast("Storage permission denied")
+        if (granted) doSave(pendingTransparent) else toast(context.getString(R.string.result_permission_denied))
     }
 
     fun saveWithPermission(transparent: Boolean = false) {
@@ -617,15 +619,15 @@ private fun ResultPhaseContent(
         runCatching {
             val uri = OutputExporter.stageBitmapForShare(context, bmp, templateName)
             context.startActivity(OutputExporter.buildShareIntent(uri))
-        }.onFailure { toast("Share failed: ${it.message ?: "unknown"}") }
+        }.onFailure { toast(context.getString(R.string.result_share_failed, it.message ?: "unknown")) }
     }
 
     fun exportPdf() {
         val bmp = bitmap ?: return
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         OutputExporter.exportPdf(context, bmp, templateName)
-            .onSuccess { toast("PDF saved to Download/HandType") }
-            .onFailure { toast("PDF failed: ${it.message ?: "unknown"}") }
+            .onSuccess { toast(context.getString(R.string.result_pdf_saved)) }
+            .onFailure { toast(context.getString(R.string.result_pdf_failed, it.message ?: "unknown")) }
     }
 
     Column(
@@ -641,11 +643,11 @@ private fun ResultPhaseContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Your Note",
+                text = stringResource(R.string.render_result_title),
                 style = MaterialTheme.typography.headlineSmall,
             )
             TextButton(onClick = onBackToTemplates) {
-                Text(text = "Templates")
+                Text(text = stringResource(R.string.render_templates_button))
             }
         }
 
@@ -657,7 +659,7 @@ private fun ResultPhaseContent(
             ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Generated handwriting",
+                    contentDescription = stringResource(R.string.render_result_image_desc),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
@@ -668,7 +670,7 @@ private fun ResultPhaseContent(
 
         if (missingCharacters.isNotEmpty()) {
             Text(
-                text = "Missing glyphs: ${missingCharacters.joinToString(" ")}",
+                text = stringResource(R.string.render_missing_glyphs, missingCharacters.joinToString(" ")),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -691,7 +693,7 @@ private fun ResultPhaseContent(
                     containerColor = Color(0xFF23443A),
                 ),
             ) {
-                Text(text = "Save")
+                Text(text = stringResource(R.string.result_save_button))
             }
             Button(
                 onClick = ::shareImage,
@@ -705,7 +707,7 @@ private fun ResultPhaseContent(
                     containerColor = Color(0xFF7C4D11),
                 ),
             ) {
-                Text(text = "Share")
+                Text(text = stringResource(R.string.result_share_button))
             }
         }
 
@@ -718,7 +720,7 @@ private fun ResultPhaseContent(
             shape = RoundedCornerShape(18.dp),
             contentPadding = PaddingValues(vertical = 14.dp),
         ) {
-            Text(text = "Export as PDF")
+            Text(text = stringResource(R.string.result_export_pdf_button))
         }
 
         TextButton(
@@ -726,7 +728,7 @@ private fun ResultPhaseContent(
             enabled = bitmap != null,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Save without background (transparent PNG)")
+            Text(text = stringResource(R.string.result_save_transparent_button))
         }
 
         // Secondary navigation actions
@@ -745,7 +747,7 @@ private fun ResultPhaseContent(
                 shape = RoundedCornerShape(18.dp),
                 contentPadding = PaddingValues(vertical = 14.dp),
             ) {
-                Text(text = "Regenerate")
+                Text(text = stringResource(R.string.result_regenerate_button))
             }
 
             OutlinedButton(
@@ -759,7 +761,7 @@ private fun ResultPhaseContent(
                 shape = RoundedCornerShape(18.dp),
                 contentPadding = PaddingValues(vertical = 14.dp),
             ) {
-                Text(text = "New Note")
+                Text(text = stringResource(R.string.result_new_note_button))
             }
         }
     }

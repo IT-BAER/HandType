@@ -27,6 +27,8 @@
     <string name="result_regenerate_button">Neu erstellen</string>
     <string name="result_new_note_button">Neue Notiz</string>
     <string name="result_saved">In Bilder/HandType gespeichert</string>
+    <string name="result_saved_transparent">Transparentes PNG in Bilder/HandType gespeichert</string>
+    <string name="result_save_transparent_button">Ohne Hintergrund speichern (transparentes PNG)</string>
     <string name="result_save_failed">Speichern fehlgeschlagen: %1$s</string>
     <string name="result_share_failed">Teilen fehlgeschlagen: %1$s</string>
     <string name="result_pdf_saved">PDF in Download/HandType gespeichert</string>

@@ -26,8 +26,8 @@
     <string name="result_export_pdf_button">导出为 PDF</string>
     <string name="result_regenerate_button">重新生成</string>
     <string name="result_new_note_button">新建便条</string>
-    <string name="result_saved">已保存至图片/HandType</string>
-    <string name="result_save_failed">保存失败：%1$s</string>
+    <string name="result_saved">已保存至图片/HandType</string>    <string name="result_saved_transparent">透明 PNG 已保存至图片/HandType</string>
+    <string name="result_save_transparent_button">无背景保存（透明 PNG）</string>    <string name="result_save_failed">保存失败：%1$s</string>
     <string name="result_share_failed">分享失败：%1$s</string>
     <string name="result_pdf_saved">PDF 已保存至下载/HandType</string>
     <string name="result_pdf_failed">PDF 失败：%1$s</string>

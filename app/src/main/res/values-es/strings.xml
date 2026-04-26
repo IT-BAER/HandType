@@ -27,6 +27,8 @@
     <string name="result_regenerate_button">Regenerar</string>
     <string name="result_new_note_button">Nueva nota</string>
     <string name="result_saved">Guardado en Imágenes/HandType</string>
+    <string name="result_saved_transparent">PNG transparente guardado en Imágenes/HandType</string>
+    <string name="result_save_transparent_button">Guardar sin fondo (PNG transparente)</string>
     <string name="result_save_failed">Error al guardar: %1$s</string>
     <string name="result_share_failed">Error al compartir: %1$s</string>
     <string name="result_pdf_saved">PDF guardado en Descargas/HandType</string>

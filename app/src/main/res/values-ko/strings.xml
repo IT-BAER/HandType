@@ -27,6 +27,8 @@
     <string name="result_regenerate_button">다시 생성</string>
     <string name="result_new_note_button">새 노트</string>
     <string name="result_saved">Pictures/HandType에 저장됨</string>
+    <string name="result_saved_transparent">투명 PNG가 Pictures/HandType에 저장됨</string>
+    <string name="result_save_transparent_button">배경 없이 저장 (투명 PNG)</string>
     <string name="result_save_failed">저장 실패: %1$s</string>
     <string name="result_share_failed">공유 실패: %1$s</string>
     <string name="result_pdf_saved">Download/HandType에 PDF 저장됨</string>

@@ -27,6 +27,8 @@
     <string name="result_regenerate_button">पुनः जेनरेट करें</string>
     <string name="result_new_note_button">नई नोट</string>
     <string name="result_saved">Pictures/HandType में सहेजा गया</string>
+    <string name="result_saved_transparent">पारदर्शी PNG Pictures/HandType में सहेजा गया</string>
+    <string name="result_save_transparent_button">बिना पृष्ठभूमि के सहेजें (पारदर्शी PNG)</string>
     <string name="result_save_failed">सहेजने में विफल: %1$s</string>
     <string name="result_share_failed">शेयर करने में विफल: %1$s</string>
     <string name="result_pdf_saved">Download/HandType में PDF सहेजा गया</string>
