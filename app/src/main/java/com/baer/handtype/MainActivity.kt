@@ -1,17 +1,20 @@
 package com.baer.handtype
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -20,6 +23,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.baer.handtype.feature.capture.CameraCaptureScreen
+import com.baer.handtype.feature.info.AboutScreen
+import com.baer.handtype.feature.info.FaqScreen
+import com.baer.handtype.feature.info.GITHUB_PRIVACY_URL
+import com.baer.handtype.feature.info.HelpScreen
+import com.baer.handtype.feature.shell.AppDrawerContent
+import com.baer.handtype.feature.shell.DrawerDestination
 import com.baer.handtype.feature.template.HandwritingRenderScreen
 import com.baer.handtype.feature.template.HistoryScreen
 import com.baer.handtype.feature.template.LoadingTemplateScreen
@@ -52,45 +61,93 @@ private fun HandTypeRoot() {
     var route by rememberSaveable { mutableStateOf(RootRoute.TemplateChooser.name) }
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    BackHandler(enabled = route != RootRoute.TemplateChooser.name) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    val isImmersive = route == RootRoute.RenderTemplate.name || route == RootRoute.PremiumCapture.name
+
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
+    BackHandler(enabled = !drawerState.isOpen && route != RootRoute.TemplateChooser.name) {
         route = RootRoute.TemplateChooser.name
     }
 
-    when (route) {
-        RootRoute.TemplateChooser.name -> TemplateChooserScreen(
-            templates = builtInTemplates,
-            premiumTemplate = premiumTemplate,
-            onTemplateSelected = { descriptor ->
-                selectedTemplateId = descriptor.id
-                route = RootRoute.RenderTemplate.name
-            },
-            onPremiumSelected = {
-                route = RootRoute.PremiumCapture.name
-            },
-            onHistorySelected = {
-                route = RootRoute.History.name
-            },
-        )
+    val currentDest = when (route) {
+        RootRoute.TemplateChooser.name -> DrawerDestination.Templates
+        RootRoute.History.name -> DrawerDestination.History
+        RootRoute.Help.name -> DrawerDestination.Help
+        RootRoute.Faq.name -> DrawerDestination.Faq
+        RootRoute.About.name -> DrawerDestination.About
+        else -> DrawerDestination.Templates
+    }
 
-        RootRoute.History.name -> HistoryScreen(
-            onBack = { route = RootRoute.TemplateChooser.name },
-        )
-
-        RootRoute.RenderTemplate.name -> {
-            val templateId = selectedTemplateId
-            if (templateId == null) {
-                route = RootRoute.TemplateChooser.name
-            } else {
-                TemplateRenderRoute(
-                    templateId = templateId,
-                    repository = repository,
-                    onBackToTemplates = { route = RootRoute.TemplateChooser.name },
-                    onPremiumSelected = { route = RootRoute.PremiumCapture.name },
-                )
-            }
+    fun navigate(dest: DrawerDestination) {
+        if (dest == DrawerDestination.Privacy) {
+            scope.launch { drawerState.close() }
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PRIVACY_URL)))
+            return
         }
+        route = when (dest) {
+            DrawerDestination.Templates -> RootRoute.TemplateChooser.name
+            DrawerDestination.History -> RootRoute.History.name
+            DrawerDestination.Help -> RootRoute.Help.name
+            DrawerDestination.Faq -> RootRoute.Faq.name
+            DrawerDestination.About -> RootRoute.About.name
+            DrawerDestination.Privacy -> RootRoute.TemplateChooser.name
+        }
+        scope.launch { drawerState.close() }
+    }
 
-        RootRoute.PremiumCapture.name -> PremiumCaptureRoute()
+    val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
+
+    val content: @Composable () -> Unit = {
+        when (route) {
+            RootRoute.TemplateChooser.name -> TemplateChooserScreen(
+                templates = builtInTemplates,
+                premiumTemplate = premiumTemplate,
+                onTemplateSelected = { descriptor ->
+                    selectedTemplateId = descriptor.id
+                    route = RootRoute.RenderTemplate.name
+                },
+                onPremiumSelected = { route = RootRoute.PremiumCapture.name },
+                onOpenDrawer = openDrawer,
+            )
+
+            RootRoute.History.name -> HistoryScreen(onOpenDrawer = openDrawer)
+            RootRoute.Help.name -> HelpScreen(onOpenDrawer = openDrawer)
+            RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
+            RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
+
+            RootRoute.RenderTemplate.name -> {
+                val templateId = selectedTemplateId
+                if (templateId == null) {
+                    route = RootRoute.TemplateChooser.name
+                } else {
+                    TemplateRenderRoute(
+                        templateId = templateId,
+                        repository = repository,
+                        onBackToTemplates = { route = RootRoute.TemplateChooser.name },
+                        onPremiumSelected = { route = RootRoute.PremiumCapture.name },
+                    )
+                }
+            }
+
+            RootRoute.PremiumCapture.name -> PremiumCaptureRoute()
+        }
+    }
+
+    if (isImmersive) {
+        content()
+    } else {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                AppDrawerContent(current = currentDest, onSelect = ::navigate)
+            },
+        ) {
+            content()
+        }
     }
 }
 
@@ -176,4 +233,7 @@ private enum class RootRoute {
     RenderTemplate,
     PremiumCapture,
     History,
+    Help,
+    Faq,
+    About,
 }

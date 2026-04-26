@@ -121,7 +121,7 @@ fun TemplateChooserScreen(
     premiumTemplate: TemplateDescriptor,
     onTemplateSelected: (TemplateDescriptor) -> Unit,
     onPremiumSelected: () -> Unit,
-    onHistorySelected: () -> Unit = {},
+    onOpenDrawer: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -133,9 +133,23 @@ fun TemplateChooserScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(vertical = 16.dp),
+                .padding(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, end = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                androidx.compose.material3.IconButton(onClick = onOpenDrawer) {
+                    Text(
+                        text = "\u2630",
+                        color = Color(0xFF1A1410),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+            }
             Text(
                 text = "Choose a handwriting style",
                 style = MaterialTheme.typography.headlineMedium,
@@ -147,13 +161,6 @@ fun TemplateChooserScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
-
-            TextButton(
-                onClick = onHistorySelected,
-                modifier = Modifier.padding(horizontal = 12.dp),
-            ) {
-                Text(text = "View history")
-            }
 
             val pagerState = rememberPagerState(pageCount = { templates.size })
             val pagerScope = rememberCoroutineScope()

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -111,7 +112,7 @@ object HistoryStore {
 
 @Composable
 fun HistoryScreen(
-    onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -139,15 +140,21 @@ fun HistoryScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .padding(start = 4.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                androidx.compose.material3.IconButton(onClick = onOpenDrawer) {
+                    Text(
+                        text = "\u2630",
+                        color = Color(0xFF1A1410),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+                androidx.compose.foundation.layout.Spacer(Modifier.width(4.dp))
                 Text(
                     text = "History",
                     style = MaterialTheme.typography.headlineMedium,
                 )
-                TextButton(onClick = onBack) { Text("Templates") }
             }
 
             if (entries.isEmpty()) {
