@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">Выберите стиль почерка</string>
+    <string name="template_chooser_subtitle">Встроенные шаблоны — основной путь. Захват личного почерка доступен как необязательная премиум-функция.</string>
+    <string name="template_chooser_use_template">Использовать шаблон</string>
+    <string name="template_chooser_premium_badge">Премиум</string>
+    <string name="template_chooser_premium_button">Премиум-захват</string>
+
+    <string name="render_instruction">Введите сообщение ниже и нажмите «Создать», чтобы сгенерировать уникальную рукописную заметку.</string>
+    <string name="render_text_label">Ваше сообщение</string>
+    <string name="render_text_placeholder">Привет, мир!</string>
+    <string name="render_generate_button">Создать</string>
+    <string name="render_premium_button">Премиум: мой почерк</string>
+    <string name="render_templates_button">Шаблоны</string>
+
+    <string name="render_generating_title">Генерация заметки…</string>
+    <string name="render_generating_subtitle">Каждая генерация уникальна</string>
+
+    <string name="render_result_title">Ваша заметка</string>
+    <string name="render_result_image_desc">Сгенерированный почерк</string>
+    <string name="render_missing_glyphs">Отсутствующие символы: %1$s</string>
+    <string name="result_save_button">Сохранить</string>
+    <string name="result_share_button">Поделиться</string>
+    <string name="result_export_pdf_button">Экспортировать как PDF</string>
+    <string name="result_regenerate_button">Создать заново</string>
+    <string name="result_new_note_button">Новая заметка</string>
+    <string name="result_saved">Сохранено в Изображения/HandType</string>
+    <string name="result_save_failed">Ошибка сохранения: %1$s</string>
+    <string name="result_share_failed">Ошибка при отправке: %1$s</string>
+    <string name="result_pdf_saved">PDF сохранён в Загрузки/HandType</string>
+    <string name="result_pdf_failed">Ошибка PDF: %1$s</string>
+    <string name="result_permission_denied">Доступ к хранилищу запрещён</string>
+
+    <string name="camera_section_title">Сфотографируйте лист почерка</string>
+    <string name="camera_tip">Совет: используйте равномерное освещение и держите все строки букв в кадре.</string>
+    <string name="camera_guide_label">Совместите края страницы с направляющей</string>
+    <string name="camera_capture_button">Сделать снимок</string>
+    <string name="camera_capturing_button">Съёмка…</string>
+    <string name="camera_default_instruction">Напишите A–Z, a–z и 0–9 на чистом листе, затем поместите страницу в рамку.</string>
+    <string name="camera_permission_title">Требуется доступ к камере</string>
+    <string name="camera_permission_rationale">HandType требуется доступ к камере для фотографирования листа калибровки почерка.</string>
+    <string name="camera_permission_blocked">Доступ к камере по-прежнему заблокирован. Разрешите его в настройках системы, если Android больше не показывает диалог разрешений.</string>
+    <string name="camera_permission_default">Разрешите доступ к камере для захвата алфавитного листа, используемого для извлечения почерка.</string>
+    <string name="camera_grant_button">Разрешить доступ к камере</string>
+    <string name="camera_open_settings_button">Открыть настройки приложения</string>
+
+    <string name="loading_template_title">Загрузка шаблона</string>
+    <string name="loading_template_body">Подготовка встроенных растровых глифов для стандартного потока рукописного ввода.</string>
+
+    <string name="premium_instruction">Премиум-функция: напишите A–Z, a–z и 0–9 на чистом листе, затем поместите страницу в рамку для создания личного шаблона.</string>
+    <string name="premium_processing">Обработка образца почерка в ML Kit…</string>
+    <string name="premium_no_glyphs">Буквенно-цифровые глифы не обнаружены. Попробуйте улучшить освещение и заполнить кадр страницей. Нажмите «Назад» для возврата к шаблонам.</string>
+    <string name="premium_capture_complete">Захват завершён. Извлечено %1$d глифов для %2$d уникальных символов. Нажмите «Назад» для возврата к шаблонам.</string>
+    <string name="premium_capture_failed_focus">Распознавание текста не удалось. Попробуйте ещё раз с более чётким фокусом.</string>
+    <string name="premium_camera_failed">Ошибка камеры. Попробуйте ещё раз.</string>
+</resources>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">Escolha um estilo de caligrafia</string>
+    <string name="template_chooser_subtitle">Os modelos integrados são o caminho padrão. A captura de caligrafia pessoal está disponível como recurso premium opcional.</string>
+    <string name="template_chooser_use_template">Usar modelo</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">Captura premium</string>
+
+    <string name="render_instruction">Digite sua mensagem abaixo e toque em Gerar para criar uma nota manuscrita única.</string>
+    <string name="render_text_label">Sua mensagem</string>
+    <string name="render_text_placeholder">Olá, mundo!</string>
+    <string name="render_generate_button">Gerar</string>
+    <string name="render_premium_button">Premium: Usar minha letra</string>
+    <string name="render_templates_button">Modelos</string>
+
+    <string name="render_generating_title">Gerando sua nota…</string>
+    <string name="render_generating_subtitle">Cada geração é única</string>
+
+    <string name="render_result_title">Sua nota</string>
+    <string name="render_result_image_desc">Caligrafia gerada</string>
+    <string name="render_missing_glyphs">Caracteres ausentes: %1$s</string>
+    <string name="result_save_button">Salvar</string>
+    <string name="result_share_button">Compartilhar</string>
+    <string name="result_export_pdf_button">Exportar como PDF</string>
+    <string name="result_regenerate_button">Regenerar</string>
+    <string name="result_new_note_button">Nova nota</string>
+    <string name="result_saved">Salvo em Imagens/HandType</string>
+    <string name="result_save_failed">Falha ao salvar: %1$s</string>
+    <string name="result_share_failed">Falha ao compartilhar: %1$s</string>
+    <string name="result_pdf_saved">PDF salvo em Downloads/HandType</string>
+    <string name="result_pdf_failed">Falha no PDF: %1$s</string>
+    <string name="result_permission_denied">Permissão de armazenamento negada</string>
+
+    <string name="camera_section_title">Capture sua folha de caligrafia</string>
+    <string name="camera_tip">Dica: use iluminação uniforme e mantenha todas as linhas de letras visíveis.</string>
+    <string name="camera_guide_label">Alinhe as bordas da página com o guia</string>
+    <string name="camera_capture_button">Capturar amostra</string>
+    <string name="camera_capturing_button">Capturando…</string>
+    <string name="camera_default_instruction">Escreva A-Z, a-z e 0-9 em papel em branco e centralize a página dentro do quadro.</string>
+    <string name="camera_permission_title">Permissão de câmera necessária</string>
+    <string name="camera_permission_rationale">HandType precisa de acesso à câmera para fotografar sua folha de calibração de caligrafia.</string>
+    <string name="camera_permission_blocked">O acesso à câmera ainda está bloqueado. Você pode concedê-lo nas configurações do sistema se o Android não estiver mais exibindo o diálogo de permissão.</string>
+    <string name="camera_permission_default">Permita o acesso à câmera para capturar a folha de alfabeto usada na extração de caligrafia.</string>
+    <string name="camera_grant_button">Conceder acesso à câmera</string>
+    <string name="camera_open_settings_button">Abrir configurações do app</string>
+
+    <string name="loading_template_title">Carregando modelo</string>
+    <string name="loading_template_body">Preparando glifos de bitmap integrados para o fluxo de caligrafia padrão.</string>
+
+    <string name="premium_instruction">Recurso premium: escreva A-Z, a-z e 0-9 em papel em branco e centralize a página no quadro para criar seu modelo pessoal.</string>
+    <string name="premium_processing">Processando amostra de caligrafia com ML Kit…</string>
+    <string name="premium_no_glyphs">Nenhum glifo alfanumérico foi detectado. Tente com iluminação mais forte e preencha mais o quadro com a página. Use voltar para retornar aos modelos.</string>
+    <string name="premium_capture_complete">Captura premium concluída. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Use voltar para retornar aos modelos.</string>
+    <string name="premium_capture_failed_focus">O reconhecimento de texto falhou. Tente outra captura com foco mais nítido.</string>
+    <string name="premium_camera_failed">Falha na captura da câmera. Tente novamente.</string>
+</resources>

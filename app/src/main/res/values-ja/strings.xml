@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">手書きスタイルを選択</string>
+    <string name="template_chooser_subtitle">組み込みテンプレートが標準の方法です。個人の手書きキャプチャはオプションのプレミアム機能として利用できます。</string>
+    <string name="template_chooser_use_template">テンプレートを使用</string>
+    <string name="template_chooser_premium_badge">プレミアム</string>
+    <string name="template_chooser_premium_button">プレミアムキャプチャ</string>
+
+    <string name="render_instruction">以下にメッセージを入力し、「生成」をタップして独自の手書きノートを作成してください。</string>
+    <string name="render_text_label">メッセージ</string>
+    <string name="render_text_placeholder">こんにちは、世界！</string>
+    <string name="render_generate_button">生成</string>
+    <string name="render_premium_button">プレミアム：自分の手書き</string>
+    <string name="render_templates_button">テンプレート</string>
+
+    <string name="render_generating_title">ノートを生成中…</string>
+    <string name="render_generating_subtitle">毎回異なる生成結果</string>
+
+    <string name="render_result_title">ノート</string>
+    <string name="render_result_image_desc">生成された手書き</string>
+    <string name="render_missing_glyphs">不足グリフ：%1$s</string>
+    <string name="result_save_button">保存</string>
+    <string name="result_share_button">共有</string>
+    <string name="result_export_pdf_button">PDFとしてエクスポート</string>
+    <string name="result_regenerate_button">再生成</string>
+    <string name="result_new_note_button">新規ノート</string>
+    <string name="result_saved">Pictures/HandTypeに保存しました</string>
+    <string name="result_save_failed">保存失敗：%1$s</string>
+    <string name="result_share_failed">共有失敗：%1$s</string>
+    <string name="result_pdf_saved">Download/HandTypeにPDFを保存しました</string>
+    <string name="result_pdf_failed">PDF失敗：%1$s</string>
+    <string name="result_permission_denied">ストレージ権限が拒否されました</string>
+
+    <string name="camera_section_title">手書きシートをキャプチャ</string>
+    <string name="camera_tip">ヒント：均一な照明を使用し、すべての文字行が見えるようにしてください。</string>
+    <string name="camera_guide_label">ページの端をガイドに合わせてください</string>
+    <string name="camera_capture_button">サンプルをキャプチャ</string>
+    <string name="camera_capturing_button">キャプチャ中…</string>
+    <string name="camera_default_instruction">A〜Z、a〜z、0〜9を白紙に書き、ページ全体をフレーム内に収めてください。</string>
+    <string name="camera_permission_title">カメラの権限が必要です</string>
+    <string name="camera_permission_rationale">HandTypeは手書きキャリブレーションシートを撮影するためにカメラへのアクセスが必要です。</string>
+    <string name="camera_permission_blocked">カメラへのアクセスはまだブロックされています。Androidが権限ダイアログを表示しなくなった場合は、システム設定から許可できます。</string>
+    <string name="camera_permission_default">手書き抽出に使用するアルファベットシートをキャプチャするためにカメラへのアクセスを許可してください。</string>
+    <string name="camera_grant_button">カメラへのアクセスを許可</string>
+    <string name="camera_open_settings_button">アプリ設定を開く</string>
+
+    <string name="loading_template_title">テンプレートを読み込み中</string>
+    <string name="loading_template_body">デフォルト手書きフローのビットマップグリフを準備中です。</string>
+
+    <string name="premium_instruction">プレミアム機能：A〜Z、a〜z、0〜9を白紙に書き、ページをフレーム内に収めると個人テンプレートが作成されます。</string>
+    <string name="premium_processing">ML Kitで手書きサンプルを処理中…</string>
+    <string name="premium_no_glyphs">英数字グリフが検出されませんでした。より明るい照明を試し、ページでフレームをより多く埋めてください。テンプレートに戻るにはシステムの戻るボタンを使用してください。</string>
+    <string name="premium_capture_complete">プレミアムキャプチャ完了。%2$d個のユニーク文字から%1$dグリフが抽出されました。テンプレートに戻るには戻るボタンを使用してください。</string>
+    <string name="premium_capture_failed_focus">テキスト認識に失敗しました。フォーカスを合わせて再キャプチャしてください。</string>
+    <string name="premium_camera_failed">カメラキャプチャに失敗しました。再試行してください。</string>
+</resources>

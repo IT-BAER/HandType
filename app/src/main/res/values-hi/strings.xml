@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">हस्तलेखन शैली चुनें</string>
+    <string name="template_chooser_subtitle">अंतर्निहित टेम्पलेट डिफ़ॉल्ट पथ हैं। व्यक्तिगत हस्तलेखन कैप्चर वैकल्पिक प्रीमियम सुविधा के रूप में उपलब्ध है।</string>
+    <string name="template_chooser_use_template">टेम्पलेट उपयोग करें</string>
+    <string name="template_chooser_premium_badge">प्रीमियम</string>
+    <string name="template_chooser_premium_button">प्रीमियम कैप्चर</string>
+
+    <string name="render_instruction">नीचे अपना संदेश टाइप करें, फिर एक अनूठी हस्तलिखित नोट बनाने के लिए जेनरेट पर टैप करें।</string>
+    <string name="render_text_label">आपका संदेश</string>
+    <string name="render_text_placeholder">नमस्ते, दुनिया!</string>
+    <string name="render_generate_button">जेनरेट करें</string>
+    <string name="render_premium_button">प्रीमियम: मेरी हस्तलेखन उपयोग करें</string>
+    <string name="render_templates_button">टेम्पलेट</string>
+
+    <string name="render_generating_title">आपकी नोट जेनरेट हो रही है…</string>
+    <string name="render_generating_subtitle">हर जेनरेशन अनोखी होती है</string>
+
+    <string name="render_result_title">आपकी नोट</string>
+    <string name="render_result_image_desc">जेनरेट की गई हस्तलेखन</string>
+    <string name="render_missing_glyphs">अनुपस्थित ग्लिफ़: %1$s</string>
+    <string name="result_save_button">सहेजें</string>
+    <string name="result_share_button">शेयर करें</string>
+    <string name="result_export_pdf_button">PDF के रूप में निर्यात करें</string>
+    <string name="result_regenerate_button">पुनः जेनरेट करें</string>
+    <string name="result_new_note_button">नई नोट</string>
+    <string name="result_saved">Pictures/HandType में सहेजा गया</string>
+    <string name="result_save_failed">सहेजने में विफल: %1$s</string>
+    <string name="result_share_failed">शेयर करने में विफल: %1$s</string>
+    <string name="result_pdf_saved">Download/HandType में PDF सहेजा गया</string>
+    <string name="result_pdf_failed">PDF में विफल: %1$s</string>
+    <string name="result_permission_denied">स्टोरेज अनुमति अस्वीकृत</string>
+
+    <string name="camera_section_title">अपनी हस्तलेखन शीट कैप्चर करें</string>
+    <string name="camera_tip">टिप: समान प्रकाश व्यवस्था का उपयोग करें और सभी अक्षर पंक्तियाँ दृश्यमान रखें।</string>
+    <string name="camera_guide_label">पृष्ठ के किनारों को गाइड से संरेखित करें</string>
+    <string name="camera_capture_button">नमूना कैप्चर करें</string>
+    <string name="camera_capturing_button">कैप्चर हो रहा है…</string>
+    <string name="camera_default_instruction">खाली कागज पर A-Z, a-z और 0-9 लिखें, फिर पूरे पृष्ठ को फ्रेम के अंदर केंद्रित करें।</string>
+    <string name="camera_permission_title">कैमरा अनुमति आवश्यक है</string>
+    <string name="camera_permission_rationale">HandType को हस्तलेखन कैलिब्रेशन शीट की फोटो लेने के लिए कैमरा एक्सेस की आवश्यकता है।</string>
+    <string name="camera_permission_blocked">कैमरा एक्सेस अभी भी अवरुद्ध है। यदि Android अब अनुमति डायलॉग नहीं दिखा रहा तो आप सिस्टम सेटिंग्स से इसे दे सकते हैं।</string>
+    <string name="camera_permission_default">हस्तलेखन निष्कर्षण के लिए उपयोग की जाने वाली वर्णमाला शीट कैप्चर करने हेतु कैमरा एक्सेस की अनुमति दें।</string>
+    <string name="camera_grant_button">कैमरा एक्सेस दें</string>
+    <string name="camera_open_settings_button">ऐप सेटिंग खोलें</string>
+
+    <string name="loading_template_title">टेम्पलेट लोड हो रहा है</string>
+    <string name="loading_template_body">डिफ़ॉल्ट हस्तलेखन प्रवाह के लिए बंडल बिटमैप ग्लिफ़ तैयार किए जा रहे हैं।</string>
+
+    <string name="premium_instruction">प्रीमियम सुविधा: खाली कागज पर A-Z, a-z और 0-9 लिखें, फिर अपना व्यक्तिगत टेम्पलेट बनाने के लिए पृष्ठ को फ्रेम के अंदर केंद्रित करें।</string>
+    <string name="premium_processing">ML Kit के साथ हस्तलेखन नमूना प्रसंस्करण हो रहा है…</string>
+    <string name="premium_no_glyphs">कोई अल्फ़ान्यूमेरिक ग्लिफ़ नहीं मिला। बेहतर प्रकाश व्यवस्था आज़माएं और पृष्ठ से अधिक फ्रेम भरें। टेम्पलेट पर वापस जाने के लिए सिस्टम बैक उपयोग करें।</string>
+    <string name="premium_capture_complete">प्रीमियम कैप्चर पूर्ण। %2$d अनूठे अक्षरों में से %1$d ग्लिफ़ निकाले गए। टेम्पलेट पर वापस जाने के लिए बैक उपयोग करें।</string>
+    <string name="premium_capture_failed_focus">टेक्स्ट पहचान विफल। अधिक तेज़ फ़ोकस के साथ दूसरा कैप्चर आज़माएं।</string>
+    <string name="premium_camera_failed">कैमरा कैप्चर विफल। फिर से प्रयास करें।</string>
+</resources>

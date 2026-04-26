@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">Elige un estilo de escritura</string>
+    <string name="template_chooser_subtitle">Las plantillas integradas son el camino predeterminado. La captura de escritura personal está disponible como función premium opcional.</string>
+    <string name="template_chooser_use_template">Usar plantilla</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">Captura premium</string>
+
+    <string name="render_instruction">Escribe tu mensaje abajo y toca Generar para crear una nota manuscrita única.</string>
+    <string name="render_text_label">Tu mensaje</string>
+    <string name="render_text_placeholder">¡Hola, mundo!</string>
+    <string name="render_generate_button">Generar</string>
+    <string name="render_premium_button">Premium: Usar mi letra</string>
+    <string name="render_templates_button">Plantillas</string>
+
+    <string name="render_generating_title">Generando tu nota…</string>
+    <string name="render_generating_subtitle">Cada generación es única</string>
+
+    <string name="render_result_title">Tu nota</string>
+    <string name="render_result_image_desc">Escritura generada</string>
+    <string name="render_missing_glyphs">Caracteres faltantes: %1$s</string>
+    <string name="result_save_button">Guardar</string>
+    <string name="result_share_button">Compartir</string>
+    <string name="result_export_pdf_button">Exportar como PDF</string>
+    <string name="result_regenerate_button">Regenerar</string>
+    <string name="result_new_note_button">Nueva nota</string>
+    <string name="result_saved">Guardado en Imágenes/HandType</string>
+    <string name="result_save_failed">Error al guardar: %1$s</string>
+    <string name="result_share_failed">Error al compartir: %1$s</string>
+    <string name="result_pdf_saved">PDF guardado en Descargas/HandType</string>
+    <string name="result_pdf_failed">Error al exportar PDF: %1$s</string>
+    <string name="result_permission_denied">Permiso de almacenamiento denegado</string>
+
+    <string name="camera_section_title">Captura tu hoja de escritura</string>
+    <string name="camera_tip">Consejo: usa iluminación uniforme y mantén visibles todas las filas de letras.</string>
+    <string name="camera_guide_label">Alinea los bordes de la página con la guía</string>
+    <string name="camera_capture_button">Capturar muestra</string>
+    <string name="camera_capturing_button">Capturando…</string>
+    <string name="camera_default_instruction">Escribe A-Z, a-z y 0-9 en papel en blanco, luego centra la página completa dentro del marco.</string>
+    <string name="camera_permission_title">Permiso de cámara requerido</string>
+    <string name="camera_permission_rationale">HandType necesita acceso a la cámara para fotografiar tu hoja de calibración de escritura.</string>
+    <string name="camera_permission_blocked">El acceso a la cámara sigue bloqueado. Puedes concederlo desde la configuración del sistema si Android ya no muestra el diálogo de permisos.</string>
+    <string name="camera_permission_default">Permite el acceso a la cámara para capturar la hoja de alfabeto usada para la extracción de escritura.</string>
+    <string name="camera_grant_button">Conceder acceso a la cámara</string>
+    <string name="camera_open_settings_button">Abrir ajustes de la app</string>
+
+    <string name="loading_template_title">Cargando plantilla</string>
+    <string name="loading_template_body">Preparando glifos de mapa de bits integrados para el flujo de escritura predeterminado.</string>
+
+    <string name="premium_instruction">Función premium: escribe A-Z, a-z y 0-9 en papel en blanco, luego centra la página dentro del marco para crear tu plantilla personal.</string>
+    <string name="premium_processing">Procesando muestra de escritura con ML Kit…</string>
+    <string name="premium_no_glyphs">No se detectaron glifos alfanuméricos. Intenta con mejor iluminación y llena más el marco con la página. Usa atrás para volver a las plantillas.</string>
+    <string name="premium_capture_complete">Captura premium completa. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Usa atrás para volver a las plantillas.</string>
+    <string name="premium_capture_failed_focus">El reconocimiento de texto falló. Intenta otra captura con más nitidez.</string>
+    <string name="premium_camera_failed">Error al capturar con la cámara. Inténtalo de nuevo.</string>
+</resources>
