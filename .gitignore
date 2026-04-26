@@ -20,3 +20,7 @@ captures/
 # Memory / cache
 /.gradle/
 ASSETS/android-base.psd
+
+# Release signing — never commit
+/app/release.keystore
+/app/release.keystore.passwords.txt
