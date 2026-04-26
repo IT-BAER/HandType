@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <!-- Template chooser screen -->
+    <string name="template_chooser_title">Choose a handwriting style</string>
+    <string name="template_chooser_subtitle">Built-in templates are the default path. Personal handwriting capture stays available as an optional premium feature.</string>
+    <string name="template_chooser_use_template">Use template</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">Premium capture</string>
+
+    <!-- Render screen: compose phase -->
+    <string name="render_instruction">Type your message below, then tap Generate to create a unique handwritten note.</string>
+    <string name="render_text_label">Your message</string>
+    <string name="render_text_placeholder">Hello, world!</string>
+    <string name="render_generate_button">Generate</string>
+    <string name="render_premium_button">Premium: Use My Handwriting</string>
+    <string name="render_templates_button">Templates</string>
+
+    <!-- Render screen: generating phase -->
+    <string name="render_generating_title">Generating your note…</string>
+    <string name="render_generating_subtitle">Each generation is unique</string>
+
+    <!-- Render screen: result phase -->
+    <string name="render_result_title">Your Note</string>
+    <string name="render_result_image_desc">Generated handwriting</string>
+    <string name="render_missing_glyphs">Missing glyphs: %1$s</string>
+    <string name="result_save_button">Save</string>
+    <string name="result_share_button">Share</string>
+    <string name="result_export_pdf_button">Export as PDF</string>
+    <string name="result_regenerate_button">Regenerate</string>
+    <string name="result_new_note_button">New Note</string>
+    <string name="result_saved">Saved to Pictures/HandType</string>
+    <string name="result_save_failed">Save failed: %1$s</string>
+    <string name="result_share_failed">Share failed: %1$s</string>
+    <string name="result_pdf_saved">PDF saved to Download/HandType</string>
+    <string name="result_pdf_failed">PDF failed: %1$s</string>
+    <string name="result_permission_denied">Storage permission denied</string>
+
+    <!-- Camera capture screen -->
+    <string name="camera_section_title">Capture your handwriting sheet</string>
+    <string name="camera_tip">Tip: use even lighting and keep all rows of letters visible.</string>
+    <string name="camera_guide_label">Align the page edges with the guide</string>
+    <string name="camera_capture_button">Capture sample</string>
+    <string name="camera_capturing_button">Capturing…</string>
+    <string name="camera_default_instruction">Write A-Z, a-z, and 0-9 on blank paper, then center the full page inside the frame.</string>
+    <string name="camera_permission_title">Camera permission required</string>
+    <string name="camera_permission_rationale">HandType needs camera access to photograph your handwritten calibration sheet.</string>
+    <string name="camera_permission_blocked">Camera access is still blocked. You can grant it from system settings if Android is no longer showing the permission dialog.</string>
+    <string name="camera_permission_default">Allow camera access to capture the alphabet sheet used for handwriting extraction.</string>
+    <string name="camera_grant_button">Grant camera access</string>
+    <string name="camera_open_settings_button">Open app settings</string>
+
+    <!-- Loading screen -->
+    <string name="loading_template_title">Loading template</string>
+    <string name="loading_template_body">Preparing bundled bitmap glyphs for the default handwriting flow.</string>
+
+    <!-- Premium capture flow -->
+    <string name="premium_instruction">Premium feature: write A-Z, a-z, and 0-9 on blank paper, then center the page inside the frame to create your personal template.</string>
+    <string name="premium_processing">Processing handwriting sample with ML Kit…</string>
+    <string name="premium_no_glyphs">No alphanumeric glyphs were detected. Try brighter lighting and fill more of the frame with the page. Use system back to return to templates.</string>
+    <string name="premium_capture_complete">Premium capture complete. %1$d glyph crops extracted across %2$d unique characters. Use back to return to templates.</string>
+    <string name="premium_capture_failed_focus">Text recognition failed. Try another capture with sharper focus.</string>
+    <string name="premium_camera_failed">Camera capture failed. Try again.</string>
+</resources>
