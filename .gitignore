@@ -8,3 +8,15 @@ app/build/
 captures/
 .externalNativeBuild/
 .cxx/
+
+# IDE / tooling
+/.vscode/
+/.claude/
+
+# Local dev artifacts and generated screenshots
+/artifacts/
+/screenshot_*.png
+
+# Memory / cache
+/.gradle/
+ASSETS/android-base.psd
