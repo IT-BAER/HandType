@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">필기 스타일 선택</string>
+    <string name="template_chooser_subtitle">기본 제공 템플릿이 기본 방법입니다. 개인 필기 캡처는 선택적 프리미엄 기능으로 제공됩니다.</string>
+    <string name="template_chooser_use_template">템플릿 사용</string>
+    <string name="template_chooser_premium_badge">프리미엄</string>
+    <string name="template_chooser_premium_button">프리미엄 캡처</string>
+
+    <string name="render_instruction">아래에 메시지를 입력한 후 생성을 탭하여 고유한 손글씨 노트를 만드세요.</string>
+    <string name="render_text_label">메시지</string>
+    <string name="render_text_placeholder">안녕, 세계!</string>
+    <string name="render_generate_button">생성</string>
+    <string name="render_premium_button">프리미엄: 내 필기 사용</string>
+    <string name="render_templates_button">템플릿</string>
+
+    <string name="render_generating_title">노트 생성 중…</string>
+    <string name="render_generating_subtitle">매번 다른 결과</string>
+
+    <string name="render_result_title">내 노트</string>
+    <string name="render_result_image_desc">생성된 필기</string>
+    <string name="render_missing_glyphs">누락된 글리프: %1$s</string>
+    <string name="result_save_button">저장</string>
+    <string name="result_share_button">공유</string>
+    <string name="result_export_pdf_button">PDF로 내보내기</string>
+    <string name="result_regenerate_button">다시 생성</string>
+    <string name="result_new_note_button">새 노트</string>
+    <string name="result_saved">Pictures/HandType에 저장됨</string>
+    <string name="result_save_failed">저장 실패: %1$s</string>
+    <string name="result_share_failed">공유 실패: %1$s</string>
+    <string name="result_pdf_saved">Download/HandType에 PDF 저장됨</string>
+    <string name="result_pdf_failed">PDF 실패: %1$s</string>
+    <string name="result_permission_denied">저장 공간 권한 거부됨</string>
+
+    <string name="camera_section_title">필기 시트 캡처</string>
+    <string name="camera_tip">팁: 균일한 조명을 사용하고 모든 글자 행이 보이도록 하세요.</string>
+    <string name="camera_guide_label">가이드에 페이지 가장자리를 맞추세요</string>
+    <string name="camera_capture_button">샘플 캡처</string>
+    <string name="camera_capturing_button">캡처 중…</string>
+    <string name="camera_default_instruction">빈 종이에 A-Z, a-z, 0-9를 쓴 다음 전체 페이지를 프레임 안에 중앙 배치하세요.</string>
+    <string name="camera_permission_title">카메라 권한 필요</string>
+    <string name="camera_permission_rationale">HandType은 필기 캘리브레이션 시트를 촬영하기 위해 카메라 접근 권한이 필요합니다.</string>
+    <string name="camera_permission_blocked">카메라 접근이 여전히 차단되어 있습니다. Android가 더 이상 권한 대화 상자를 표시하지 않는 경우 시스템 설정에서 허용할 수 있습니다.</string>
+    <string name="camera_permission_default">필기 추출에 사용되는 알파벳 시트를 캡처하려면 카메라 접근을 허용하세요.</string>
+    <string name="camera_grant_button">카메라 접근 허용</string>
+    <string name="camera_open_settings_button">앱 설정 열기</string>
+
+    <string name="loading_template_title">템플릿 로드 중</string>
+    <string name="loading_template_body">기본 필기 흐름을 위한 번들 비트맵 글리프를 준비 중입니다.</string>
+
+    <string name="premium_instruction">프리미엄 기능: 빈 종이에 A-Z, a-z, 0-9를 쓴 다음 개인 템플릿을 만들기 위해 페이지를 프레임 안에 중앙 배치하세요.</string>
+    <string name="premium_processing">ML Kit로 필기 샘플 처리 중…</string>
+    <string name="premium_no_glyphs">영숫자 글리프가 감지되지 않았습니다. 더 밝은 조명을 시도하고 페이지로 더 많은 프레임을 채우세요. 템플릿으로 돌아가려면 시스템 뒤로 가기를 사용하세요.</string>
+    <string name="premium_capture_complete">프리미엄 캡처 완료. %2$d개의 고유 문자에서 %1$d개의 글리프가 추출되었습니다. 템플릿으로 돌아가려면 뒤로 가기를 사용하세요.</string>
+    <string name="premium_capture_failed_focus">텍스트 인식에 실패했습니다. 더 선명한 초점으로 다시 캡처해 보세요.</string>
+    <string name="premium_camera_failed">카메라 캡처에 실패했습니다. 다시 시도하세요.</string>
+</resources>

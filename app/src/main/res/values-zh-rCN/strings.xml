@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">选择手写风格</string>
+    <string name="template_chooser_subtitle">内置模板是默认方式。个人手写捕捉作为可选高级功能提供。</string>
+    <string name="template_chooser_use_template">使用模板</string>
+    <string name="template_chooser_premium_badge">高级版</string>
+    <string name="template_chooser_premium_button">高级捕捉</string>
+
+    <string name="render_instruction">在下方输入您的消息，然后点击"生成"以创建独特的手写便条。</string>
+    <string name="render_text_label">您的消息</string>
+    <string name="render_text_placeholder">你好，世界！</string>
+    <string name="render_generate_button">生成</string>
+    <string name="render_premium_button">高级版：使用我的笔迹</string>
+    <string name="render_templates_button">模板</string>
+
+    <string name="render_generating_title">正在生成便条…</string>
+    <string name="render_generating_subtitle">每次生成都独一无二</string>
+
+    <string name="render_result_title">您的便条</string>
+    <string name="render_result_image_desc">生成的手写</string>
+    <string name="render_missing_glyphs">缺少字形：%1$s</string>
+    <string name="result_save_button">保存</string>
+    <string name="result_share_button">分享</string>
+    <string name="result_export_pdf_button">导出为 PDF</string>
+    <string name="result_regenerate_button">重新生成</string>
+    <string name="result_new_note_button">新建便条</string>
+    <string name="result_saved">已保存至图片/HandType</string>
+    <string name="result_save_failed">保存失败：%1$s</string>
+    <string name="result_share_failed">分享失败：%1$s</string>
+    <string name="result_pdf_saved">PDF 已保存至下载/HandType</string>
+    <string name="result_pdf_failed">PDF 失败：%1$s</string>
+    <string name="result_permission_denied">存储权限被拒绝</string>
+
+    <string name="camera_section_title">捕捉您的手写纸张</string>
+    <string name="camera_tip">提示：使用均匀的光线，并保持所有字母行可见。</string>
+    <string name="camera_guide_label">将页面边缘与引导线对齐</string>
+    <string name="camera_capture_button">捕捉样本</string>
+    <string name="camera_capturing_button">正在捕捉…</string>
+    <string name="camera_default_instruction">在空白纸上写 A-Z、a-z 和 0-9，然后将整页居中放入框内。</string>
+    <string name="camera_permission_title">需要相机权限</string>
+    <string name="camera_permission_rationale">HandType 需要相机访问权限以拍摄您的手写校准纸张。</string>
+    <string name="camera_permission_blocked">相机访问仍被阻止。如果 Android 不再显示权限对话框，您可以在系统设置中授予权限。</string>
+    <string name="camera_permission_default">允许相机访问以捕捉用于手写提取的字母表纸张。</string>
+    <string name="camera_grant_button">授予相机访问权限</string>
+    <string name="camera_open_settings_button">打开应用设置</string>
+
+    <string name="loading_template_title">正在加载模板</string>
+    <string name="loading_template_body">正在为默认手写流程准备内置位图字形。</string>
+
+    <string name="premium_instruction">高级功能：在空白纸上写 A-Z、a-z 和 0-9，然后将页面居中放入框内以创建您的个人模板。</string>
+    <string name="premium_processing">正在使用 ML Kit 处理手写样本…</string>
+    <string name="premium_no_glyphs">未检测到字母数字字形。请尝试改善光线并让页面占据更多画面。使用系统返回键回到模板。</string>
+    <string name="premium_capture_complete">高级捕捉完成。已从 %2$d 个唯一字符中提取 %1$d 个字形。使用返回键回到模板。</string>
+    <string name="premium_capture_failed_focus">文本识别失败。请尝试对焦更清晰地重新拍摄。</string>
+    <string name="premium_camera_failed">相机捕捉失败。请重试。</string>
+</resources>

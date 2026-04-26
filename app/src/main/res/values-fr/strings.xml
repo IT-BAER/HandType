@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">Choisir un style d\'écriture</string>
+    <string name="template_chooser_subtitle">Les modèles intégrés sont le chemin par défaut. La capture d\'écriture personnelle est disponible en tant que fonctionnalité premium optionnelle.</string>
+    <string name="template_chooser_use_template">Utiliser le modèle</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">Capture premium</string>
+
+    <string name="render_instruction">Tapez votre message ci-dessous, puis appuyez sur Générer pour créer une note manuscrite unique.</string>
+    <string name="render_text_label">Votre message</string>
+    <string name="render_text_placeholder">Bonjour, monde !</string>
+    <string name="render_generate_button">Générer</string>
+    <string name="render_premium_button">Premium : utiliser mon écriture</string>
+    <string name="render_templates_button">Modèles</string>
+
+    <string name="render_generating_title">Génération de votre note…</string>
+    <string name="render_generating_subtitle">Chaque génération est unique</string>
+
+    <string name="render_result_title">Votre note</string>
+    <string name="render_result_image_desc">Écriture générée</string>
+    <string name="render_missing_glyphs">Glyphes manquants : %1$s</string>
+    <string name="result_save_button">Enregistrer</string>
+    <string name="result_share_button">Partager</string>
+    <string name="result_export_pdf_button">Exporter en PDF</string>
+    <string name="result_regenerate_button">Regénérer</string>
+    <string name="result_new_note_button">Nouvelle note</string>
+    <string name="result_saved">Enregistré dans Images/HandType</string>
+    <string name="result_save_failed">Échec de l\'enregistrement : %1$s</string>
+    <string name="result_share_failed">Échec du partage : %1$s</string>
+    <string name="result_pdf_saved">PDF enregistré dans Téléchargements/HandType</string>
+    <string name="result_pdf_failed">Échec du PDF : %1$s</string>
+    <string name="result_permission_denied">Permission de stockage refusée</string>
+
+    <string name="camera_section_title">Photographiez votre feuille d\'écriture</string>
+    <string name="camera_tip">Astuce : utilisez un éclairage uniforme et gardez toutes les rangées de lettres visibles.</string>
+    <string name="camera_guide_label">Alignez les bords de la page avec le guide</string>
+    <string name="camera_capture_button">Capturer l\'échantillon</string>
+    <string name="camera_capturing_button">Capture en cours…</string>
+    <string name="camera_default_instruction">Écrivez A–Z, a–z et 0–9 sur une feuille blanche, puis centrez la page dans le cadre.</string>
+    <string name="camera_permission_title">Permission d\'accès à la caméra requise</string>
+    <string name="camera_permission_rationale">HandType a besoin d\'accéder à la caméra pour photographier votre feuille de calibration d\'écriture.</string>
+    <string name="camera_permission_blocked">L\'accès à la caméra est toujours bloqué. Vous pouvez l\'accorder depuis les paramètres système si Android n\'affiche plus la boîte de dialogue des permissions.</string>
+    <string name="camera_permission_default">Autorisez l\'accès à la caméra pour capturer la feuille d\'alphabet utilisée pour l\'extraction d\'écriture.</string>
+    <string name="camera_grant_button">Autoriser l\'accès à la caméra</string>
+    <string name="camera_open_settings_button">Ouvrir les paramètres de l\'application</string>
+
+    <string name="loading_template_title">Chargement du modèle</string>
+    <string name="loading_template_body">Préparation des glyphes bitmap intégrés pour le flux d\'écriture par défaut.</string>
+
+    <string name="premium_instruction">Fonctionnalité premium : écrivez A–Z, a–z et 0–9 sur une feuille blanche, puis centrez la page dans le cadre pour créer votre modèle personnel.</string>
+    <string name="premium_processing">Traitement de l\'échantillon d\'écriture avec ML Kit…</string>
+    <string name="premium_no_glyphs">Aucun glyphe alphanumérique détecté. Essayez avec un meilleur éclairage et remplissez davantage le cadre avec la page. Utilisez le bouton retour pour revenir aux modèles.</string>
+    <string name="premium_capture_complete">Capture premium terminée. %1$d découpes de glyphes extraites pour %2$d caractères uniques. Utilisez retour pour revenir aux modèles.</string>
+    <string name="premium_capture_failed_focus">La reconnaissance de texte a échoué. Essayez une autre capture avec une mise au point plus nette.</string>
+    <string name="premium_camera_failed">La capture de la caméra a échoué. Réessayez.</string>
+</resources>

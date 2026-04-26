@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <string name="template_chooser_title">Handschriftstil wählen</string>
+    <string name="template_chooser_subtitle">Integrierte Vorlagen sind der Standardweg. Die Aufnahme persönlicher Handschrift ist als optionale Premium-Funktion verfügbar.</string>
+    <string name="template_chooser_use_template">Vorlage verwenden</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">Premium-Aufnahme</string>
+
+    <string name="render_instruction">Gib unten deine Nachricht ein und tippe auf „Erstellen", um eine einzigartige handgeschriebene Notiz zu erzeugen.</string>
+    <string name="render_text_label">Deine Nachricht</string>
+    <string name="render_text_placeholder">Hallo, Welt!</string>
+    <string name="render_generate_button">Erstellen</string>
+    <string name="render_premium_button">Premium: Meine Handschrift verwenden</string>
+    <string name="render_templates_button">Vorlagen</string>
+
+    <string name="render_generating_title">Notiz wird erstellt…</string>
+    <string name="render_generating_subtitle">Jede Erzeugung ist einzigartig</string>
+
+    <string name="render_result_title">Deine Notiz</string>
+    <string name="render_result_image_desc">Generierte Handschrift</string>
+    <string name="render_missing_glyphs">Fehlende Zeichen: %1$s</string>
+    <string name="result_save_button">Speichern</string>
+    <string name="result_share_button">Teilen</string>
+    <string name="result_export_pdf_button">Als PDF exportieren</string>
+    <string name="result_regenerate_button">Neu erstellen</string>
+    <string name="result_new_note_button">Neue Notiz</string>
+    <string name="result_saved">In Bilder/HandType gespeichert</string>
+    <string name="result_save_failed">Speichern fehlgeschlagen: %1$s</string>
+    <string name="result_share_failed">Teilen fehlgeschlagen: %1$s</string>
+    <string name="result_pdf_saved">PDF in Download/HandType gespeichert</string>
+    <string name="result_pdf_failed">PDF fehlgeschlagen: %1$s</string>
+    <string name="result_permission_denied">Speicherzugriff verweigert</string>
+
+    <string name="camera_section_title">Handschriftblatt aufnehmen</string>
+    <string name="camera_tip">Tipp: Verwende gleichmäßige Beleuchtung und halte alle Buchstabenreihen sichtbar.</string>
+    <string name="camera_guide_label">Seitenränder an der Führungslinie ausrichten</string>
+    <string name="camera_capture_button">Probe aufnehmen</string>
+    <string name="camera_capturing_button">Wird aufgenommen…</string>
+    <string name="camera_default_instruction">Schreibe A–Z, a–z und 0–9 auf weißes Papier und zentriere die gesamte Seite im Rahmen.</string>
+    <string name="camera_permission_title">Kameraberechtigung erforderlich</string>
+    <string name="camera_permission_rationale">HandType benötigt Kamerazugriff, um dein Handschrift-Kalibrierungsblatt zu fotografieren.</string>
+    <string name="camera_permission_blocked">Der Kamerazugriff ist weiterhin gesperrt. Du kannst ihn in den Systemeinstellungen gewähren, wenn Android den Berechtigungsdialog nicht mehr anzeigt.</string>
+    <string name="camera_permission_default">Erlaube den Kamerazugriff, um das Alphabetblatt zur Handschrifterkennung aufzunehmen.</string>
+    <string name="camera_grant_button">Kamerazugriff gewähren</string>
+    <string name="camera_open_settings_button">App-Einstellungen öffnen</string>
+
+    <string name="loading_template_title">Vorlage wird geladen</string>
+    <string name="loading_template_body">Bitmap-Glyphen für den Standard-Handschriftablauf werden vorbereitet.</string>
+
+    <string name="premium_instruction">Premium-Funktion: Schreibe A–Z, a–z und 0–9 auf weißes Papier und zentriere die Seite im Rahmen, um deine persönliche Vorlage zu erstellen.</string>
+    <string name="premium_processing">Handschriftprobe wird mit ML Kit verarbeitet…</string>
+    <string name="premium_no_glyphs">Keine alphanumerischen Glyphen erkannt. Versuche es mit besserer Beleuchtung und fülle mehr des Rahmens mit der Seite. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
+    <string name="premium_capture_complete">Premium-Aufnahme abgeschlossen. %1$d Glyphen aus %2$d einzigartigen Zeichen extrahiert. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
+    <string name="premium_capture_failed_focus">Texterkennung fehlgeschlagen. Versuche eine weitere Aufnahme mit schärferem Fokus.</string>
+    <string name="premium_camera_failed">Kameraaufnahme fehlgeschlagen. Erneut versuchen.</string>
+</resources>
