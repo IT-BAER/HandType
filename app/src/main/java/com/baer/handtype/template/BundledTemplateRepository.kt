@@ -28,11 +28,26 @@ data class HandwritingTemplate(
 
 class BundledTemplateRepository(private val context: Context) {
 
+    private val userRepository = UserTemplateRepository(context)
+
     fun listBuiltInTemplates(): List<TemplateDescriptor> = builtInTemplates
+
+    fun listUserTemplates(): List<TemplateDescriptor> = userRepository.listUserTemplates()
 
     fun premiumTemplate(): TemplateDescriptor = premiumTemplateDescriptor
 
+    /** Exposes the user-template store for save operations during the premium capture flow. */
+    fun userRepository(): UserTemplateRepository = userRepository
+
+    /** Deletes a user-captured template. No-op for built-in templates. */
+    fun deleteUserTemplate(templateId: String): Boolean =
+        if (userRepository.isUserTemplateId(templateId)) userRepository.deleteTemplate(templateId)
+        else false
+
     suspend fun loadTemplate(templateId: String): HandwritingTemplate = withContext(Dispatchers.IO) {
+        if (userRepository.isUserTemplateId(templateId)) {
+            return@withContext userRepository.loadTemplate(templateId)
+        }
         val descriptor = builtInTemplates.firstOrNull { it.id == templateId }
             ?: error("Unknown bundled template id: $templateId")
 

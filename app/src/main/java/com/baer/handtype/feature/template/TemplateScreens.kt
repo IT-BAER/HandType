@@ -124,8 +124,11 @@ fun TemplateChooserScreen(
     onTemplateSelected: (TemplateDescriptor) -> Unit,
     onPremiumSelected: () -> Unit,
     onOpenDrawer: () -> Unit = {},
+    onDeleteTemplate: ((TemplateDescriptor) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    var pendingDeleteTemplate by remember { mutableStateOf<TemplateDescriptor?>(null) }
+
     Scaffold(
         modifier = modifier,
         containerColor = Color(0xFFF5EFE4),
@@ -213,6 +216,22 @@ fun TemplateChooserScreen(
                                 .clip(RoundedCornerShape(28.dp))
                                 .background(Color(0xFFF5EFE4).copy(alpha = overlayAlpha)),
                         )
+                    }
+                    // Delete button: only for user-captured templates
+                    val descriptor = templates[page]
+                    if (onDeleteTemplate != null && descriptor.id.startsWith("user_")) {
+                        androidx.compose.material3.IconButton(
+                            onClick = { pendingDeleteTemplate = descriptor },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp),
+                        ) {
+                            Text(
+                                text = "\u2715",
+                                color = Color(0xFFAA3333),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
                     }
                 }
             }
@@ -322,6 +341,24 @@ fun TemplateChooserScreen(
                 }
             }
         }
+    }
+
+    // Delete confirmation dialog for user templates
+    pendingDeleteTemplate?.let { descriptor ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { pendingDeleteTemplate = null },
+            title = { Text("Delete template?") },
+            text = { Text("\"${descriptor.displayName}\" will be permanently removed from your device.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDeleteTemplate?.invoke(descriptor)
+                    pendingDeleteTemplate = null
+                }) { Text("Delete", color = Color(0xFFAA3333)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteTemplate = null }) { Text("Cancel") }
+            },
+        )
     }
 }
 

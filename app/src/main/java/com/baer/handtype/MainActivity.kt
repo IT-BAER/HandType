@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.baer.handtype.feature.capture.CameraCaptureScreen
+import com.baer.handtype.feature.capture.SheetSampleProcessor
 import com.baer.handtype.feature.info.AboutScreen
 import com.baer.handtype.feature.info.FaqScreen
 import com.baer.handtype.feature.info.GITHUB_PRIVACY_URL
@@ -33,7 +33,6 @@ import com.baer.handtype.feature.template.HandwritingRenderScreen
 import com.baer.handtype.feature.template.HistoryScreen
 import com.baer.handtype.feature.template.LoadingTemplateScreen
 import com.baer.handtype.feature.template.TemplateChooserScreen
-import com.baer.handtype.ml.HandwritingExtractor
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.template.HandwritingTemplate
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +59,15 @@ private fun HandTypeRoot() {
     val premiumTemplate = remember { repository.premiumTemplate() }
     var route by rememberSaveable { mutableStateOf(RootRoute.TemplateChooser.name) }
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
+    var userTemplates by remember { mutableStateOf(repository.listUserTemplates()) }
+
+    // Refresh user templates whenever the chooser is shown so newly captured ones appear.
+    LaunchedEffect(route) {
+        if (route == RootRoute.TemplateChooser.name) {
+            userTemplates = repository.listUserTemplates()
+        }
+    }
+    val chooserTemplates = remember(builtInTemplates, userTemplates) { builtInTemplates + userTemplates }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -104,7 +112,7 @@ private fun HandTypeRoot() {
     val content: @Composable () -> Unit = {
         when (route) {
             RootRoute.TemplateChooser.name -> TemplateChooserScreen(
-                templates = builtInTemplates,
+                templates = chooserTemplates,
                 premiumTemplate = premiumTemplate,
                 onTemplateSelected = { descriptor ->
                     selectedTemplateId = descriptor.id
@@ -112,6 +120,10 @@ private fun HandTypeRoot() {
                 },
                 onPremiumSelected = { route = RootRoute.PremiumCapture.name },
                 onOpenDrawer = openDrawer,
+                onDeleteTemplate = { descriptor ->
+                    repository.deleteUserTemplate(descriptor.id)
+                    userTemplates = repository.listUserTemplates()
+                },
             )
 
             RootRoute.History.name -> HistoryScreen(onOpenDrawer = openDrawer)
@@ -133,7 +145,13 @@ private fun HandTypeRoot() {
                 }
             }
 
-            RootRoute.PremiumCapture.name -> PremiumCaptureRoute()
+            RootRoute.PremiumCapture.name -> PremiumCaptureRoute(
+                repository = repository,
+                onTemplateSaved = { newId ->
+                    selectedTemplateId = newId
+                    route = RootRoute.RenderTemplate.name
+                },
+            )
         }
     }
 
@@ -186,44 +204,71 @@ private fun TemplateRenderRoute(
 }
 
 @Composable
-private fun PremiumCaptureRoute() {
+private fun PremiumCaptureRoute(
+    repository: BundledTemplateRepository,
+    onTemplateSaved: (String) -> Unit,
+) {
     val scope = rememberCoroutineScope()
-    val extractor = remember { HandwritingExtractor() }
+    val context = androidx.compose.ui.platform.LocalContext.current
     var instructionText by rememberSaveable {
         mutableStateOf(
-            "Premium feature: write A-Z, a-z, and 0-9 on blank paper, then center the page inside the frame to create your personal template.",
+            "Print the practice sheet, fill every cell with your handwriting, then snap a clear photo with all four black corner squares visible.",
         )
     }
-
-    DisposableEffect(extractor) {
-        onDispose {
-            extractor.close()
-        }
-    }
+    var isProcessing by remember { mutableStateOf(false) }
 
     CameraCaptureScreen(
         instructionText = instructionText,
+        isProcessing = isProcessing,
         onImageCaptured = { bitmap ->
-            instructionText = "Processing handwriting sample with ML Kit..."
+            if (isProcessing) return@CameraCaptureScreen
+            isProcessing = true
+            instructionText = "Detecting corner markers and extracting glyphs..."
             scope.launch {
                 runCatching {
                     withContext(Dispatchers.Default) {
-                        extractor.extract(bitmap)
+                        SheetSampleProcessor.process(
+                            bitmap,
+                            debugContext = context.applicationContext,
+                            skipPageDetection = true,
+                        )
                     }
                 }.onSuccess { result ->
-                    instructionText = if (result.glyphs.isEmpty()) {
-                        "No alphanumeric glyphs were detected. Try brighter lighting and fill more of the frame with the page. Use system back to return to templates."
-                    } else {
-                        "Premium capture complete. ${result.glyphs.size} glyph crops were extracted across ${result.glyphMap.size} unique characters. Use system back to return to templates."
+                    if (result.glyphs.isEmpty()) {
+                        instructionText =
+                            "No filled cells were detected. Make sure you wrote in the cells and the four black squares are visible."
+                        isProcessing = false
+                        return@onSuccess
                     }
+                    val savedId = runCatching {
+                        repository.userRepository().saveTemplate(
+                            displayName = "My Handwriting",
+                            glyphMap = result.glyphs,
+                        )
+                    }.getOrElse { throwable ->
+                        android.util.Log.e("PremiumCapture", "Failed to persist user template", throwable)
+                        instructionText = throwable.message
+                            ?: "Could not save handwriting template. Try again."
+                        isProcessing = false
+                        return@onSuccess
+                    }
+                    android.util.Log.i(
+                        "PremiumCapture",
+                        "Sheet capture saved as $savedId. Glyphs=${result.glyphs.size} missing=${result.missing.size}",
+                    )
+                    onTemplateSaved(savedId)
                 }.onFailure { throwable ->
+                    android.util.Log.e("PremiumCapture", "Sheet processing failed", throwable)
                     instructionText = throwable.message
-                        ?: "Text recognition failed. Try another capture with sharper focus."
+                        ?: "Could not process the sheet. Re-capture with all four corner markers visible."
+                    isProcessing = false
                 }
             }
         },
         onCaptureError = { throwable ->
+            android.util.Log.e("PremiumCapture", "Camera capture failed", throwable)
             instructionText = throwable.message ?: "Camera capture failed. Try again."
+            isProcessing = false
         },
     )
 }

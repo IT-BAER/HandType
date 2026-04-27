@@ -71,13 +71,14 @@ class HandwritingExtractor(
                     return@forEach
                 }
 
-                val crop = Bitmap.createBitmap(
+                val rawCrop = Bitmap.createBitmap(
                     capturedBitmap,
                     cropRect.left,
                     cropRect.top,
                     cropRect.width(),
                     cropRect.height(),
                 )
+                val crop = GlyphPostProcessor.cleanGlyph(rawCrop)
                 add(
                     ExtractedGlyph(
                         character = candidate.character,
