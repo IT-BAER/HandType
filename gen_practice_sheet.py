@@ -18,6 +18,9 @@ GRID_COLS = 8
 GRID_ROWS = 8
 LABEL_COLOR = (0xB7, 0xB0, 0xA3)
 GRID_COLOR = (0xCC, 0xC4, 0xB4)
+GUIDE_COLOR = (0xD8, 0xD1, 0xC3)
+GUIDE_SEGMENT_LENGTH = 26
+GUIDE_BASELINE_RATIO = 0.78
 INK_COLOR = (0x1A, 0x14, 0x10)
 
 
@@ -110,10 +113,21 @@ def render() -> Image.Image:
             grid_top_px + bottom * grid_h,
         )
         draw.rectangle(rect, outline=GRID_COLOR, width=2)
+        draw_baseline_guide_ticks(draw, rect)
         if char != " ":
             draw.text((rect[0] + 8, rect[1] + 4), char, fill=LABEL_COLOR, font=label_font)
 
     return img
+
+
+def draw_baseline_guide_ticks(draw: ImageDraw.ImageDraw, rect):
+    left, top, right, bottom = rect
+    height = bottom - top
+    baseline_y = top + height * GUIDE_BASELINE_RATIO
+    center_x = (left + right) / 2
+    half_segment = GUIDE_SEGMENT_LENGTH / 2
+
+    draw.line((center_x - half_segment, baseline_y, center_x + half_segment, baseline_y), fill=GUIDE_COLOR, width=2)
 
 
 def main():

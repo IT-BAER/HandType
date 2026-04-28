@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import com.baer.handtype.feature.capture.SheetSampleProcessor
 import com.baer.handtype.feature.info.AboutScreen
@@ -210,10 +211,15 @@ private fun PremiumCaptureRoute(
 ) {
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val initialInstruction = stringResource(R.string.premium_instruction)
+    val processingInstruction = stringResource(R.string.premium_processing)
+    val noGlyphsInstruction = stringResource(R.string.premium_no_glyphs)
+    val markerDetectionFailedInstruction = stringResource(R.string.premium_marker_detection_failed)
+    val saveFailedInstruction = stringResource(R.string.premium_save_failed)
+    val processFailedInstruction = stringResource(R.string.premium_process_failed)
+    val cameraFailedInstruction = stringResource(R.string.premium_camera_failed)
     var instructionText by rememberSaveable {
-        mutableStateOf(
-            "Print the practice sheet, fill every cell with your handwriting, then snap a clear photo with all four black corner squares visible.",
-        )
+        mutableStateOf(initialInstruction)
     }
     var isProcessing by remember { mutableStateOf(false) }
 
@@ -223,7 +229,7 @@ private fun PremiumCaptureRoute(
         onImageCaptured = { bitmap ->
             if (isProcessing) return@CameraCaptureScreen
             isProcessing = true
-            instructionText = "Detecting corner markers and extracting glyphs..."
+            instructionText = processingInstruction
             scope.launch {
                 runCatching {
                     withContext(Dispatchers.Default) {
@@ -235,8 +241,11 @@ private fun PremiumCaptureRoute(
                     }
                 }.onSuccess { result ->
                     if (result.glyphs.isEmpty()) {
-                        instructionText =
-                            "No filled cells were detected. Make sure you wrote in the cells and the four black squares are visible."
+                        instructionText = if (result.detectionFailed) {
+                            markerDetectionFailedInstruction
+                        } else {
+                            noGlyphsInstruction
+                        }
                         isProcessing = false
                         return@onSuccess
                     }
@@ -248,7 +257,7 @@ private fun PremiumCaptureRoute(
                     }.getOrElse { throwable ->
                         android.util.Log.e("PremiumCapture", "Failed to persist user template", throwable)
                         instructionText = throwable.message
-                            ?: "Could not save handwriting template. Try again."
+                            ?: saveFailedInstruction
                         isProcessing = false
                         return@onSuccess
                     }
@@ -260,14 +269,14 @@ private fun PremiumCaptureRoute(
                 }.onFailure { throwable ->
                     android.util.Log.e("PremiumCapture", "Sheet processing failed", throwable)
                     instructionText = throwable.message
-                        ?: "Could not process the sheet. Re-capture with all four corner markers visible."
+                        ?: processFailedInstruction
                     isProcessing = false
                 }
             }
         },
         onCaptureError = { throwable ->
             android.util.Log.e("PremiumCapture", "Camera capture failed", throwable)
-            instructionText = throwable.message ?: "Camera capture failed. Try again."
+            instructionText = throwable.message ?: cameraFailedInstruction
             isProcessing = false
         },
     )

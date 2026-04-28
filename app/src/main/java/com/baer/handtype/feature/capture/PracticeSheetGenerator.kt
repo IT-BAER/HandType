@@ -35,6 +35,9 @@ object PracticeSheetGenerator {
     private const val GRID_ROWS = 8
     private const val LABEL_COLOR = 0xFFB7B0A3.toInt()
     private const val GRID_COLOR = 0xFFCCC4B4.toInt()
+    private const val GUIDE_COLOR = 0xFFD8D1C3.toInt()
+    private const val GUIDE_SEGMENT_LENGTH = 26f
+    private const val GUIDE_BASELINE_RATIO = 0.78f
 
     /** Characters laid out left-to-right, top-to-bottom into the 8×8 grid. */
     val cellCharacters: List<Char> = buildList {
@@ -184,6 +187,11 @@ object PracticeSheetGenerator {
             style = Paint.Style.STROKE
             strokeWidth = 2f
         }
+        val guidePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = GUIDE_COLOR
+            style = Paint.Style.STROKE
+            strokeWidth = 1.5f
+        }
 
         normalizedCells.forEach { cell ->
             val rect = RectF(
@@ -193,6 +201,7 @@ object PracticeSheetGenerator {
                 gridTopPx + cell.bottom * gridHeightPx,
             )
             canvas.drawRect(rect, gridLinePaint)
+            drawBaselineGuideTicks(canvas, rect, guidePaint)
             if (cell.character != ' ') {
                 canvas.drawText(
                     cell.character.toString(),
@@ -204,5 +213,13 @@ object PracticeSheetGenerator {
         }
 
         return bitmap
+    }
+
+    private fun drawBaselineGuideTicks(canvas: Canvas, rect: RectF, paint: Paint) {
+        val baselineY = rect.top + rect.height() * GUIDE_BASELINE_RATIO
+        val centerX = rect.centerX()
+        val halfSegment = GUIDE_SEGMENT_LENGTH / 2f
+
+        canvas.drawLine(centerX - halfSegment, baselineY, centerX + halfSegment, baselineY, paint)
     }
 }

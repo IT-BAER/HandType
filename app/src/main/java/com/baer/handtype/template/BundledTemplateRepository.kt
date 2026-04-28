@@ -51,15 +51,12 @@ class BundledTemplateRepository(private val context: Context) {
         val descriptor = builtInTemplates.firstOrNull { it.id == templateId }
             ?: error("Unknown bundled template id: $templateId")
 
-        // Stroke-based template (uses pre-computed pen strokes from font skeletons)
+        // Stroke-based template (cursive system-font renderer; strokeData unused at runtime)
         if (descriptor.fontFamily != null) {
-            val json = context.assets.open("strokes/stroke_data.json")
-                .bufferedReader().use { it.readText() }
-            val strokeData = HandwritingBitmapRenderer.parseStrokeData(json)
             return@withContext HandwritingTemplate(
                 descriptor = descriptor,
                 glyphs = emptyMap(),
-                strokeData = strokeData,
+                strokeData = emptyMap(),
             )
         }
 
@@ -119,7 +116,7 @@ class BundledTemplateRepository(private val context: Context) {
             id = "custom_capture",
             displayName = "My Handwriting",
             sampleText = "Capture your own style",
-            description = "Premium feature: extract your personal handwriting from a photographed sample sheet.",
+            description = "Extract your personal handwriting from a photographed practice sheet.",
             premium = true,
         )
 

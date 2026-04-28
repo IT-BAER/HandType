@@ -11,12 +11,14 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,9 +34,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.baer.handtype.R
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
@@ -57,6 +62,19 @@ fun CameraCaptureScreen(
     isProcessing: Boolean = false,
 ) {
     val context = LocalContext.current
+    val sectionTitle = stringResource(R.string.camera_section_title)
+    val guideTitle = stringResource(R.string.camera_pre_scan_title)
+    val guideSteps = listOf(
+        stringResource(R.string.camera_pre_scan_step_1),
+        stringResource(R.string.camera_pre_scan_step_2),
+        stringResource(R.string.camera_pre_scan_step_3),
+        stringResource(R.string.camera_pre_scan_step_4),
+    )
+    val tipText = stringResource(R.string.camera_tip)
+    val sheetButtonText = stringResource(R.string.camera_sheet_button)
+    val scanButtonText = stringResource(R.string.camera_scan_button)
+    val openingText = stringResource(R.string.camera_opening_scanner)
+    val processingText = stringResource(R.string.camera_processing_button)
     val currentOnImageCaptured by rememberUpdatedState(onImageCaptured)
     val currentOnCaptureError by rememberUpdatedState(onCaptureError)
     var isLaunching by remember { mutableStateOf(false) }
@@ -97,7 +115,7 @@ fun CameraCaptureScreen(
         val options = GmsDocumentScannerOptions.Builder()
             .setScannerMode(SCANNER_MODE_BASE)
             .setPageLimit(1)
-            .setGalleryImportAllowed(true)
+            .setGalleryImportAllowed(false)
             .setResultFormats(RESULT_FORMAT_JPEG)
             .build()
         GmsDocumentScanning.getClient(options)
@@ -126,7 +144,7 @@ fun CameraCaptureScreen(
             Card(shape = RoundedCornerShape(24.dp)) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Capture your handwriting sheet",
+                        text = sectionTitle,
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -136,8 +154,33 @@ fun CameraCaptureScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                        ),
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = guideTitle,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            guideSteps.forEachIndexed { index, step ->
+                                GuideStepRow(
+                                    number = index + 1,
+                                    text = step,
+                                )
+                                if (index != guideSteps.lastIndex) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Tip: use even lighting and keep all rows of letters visible.",
+                        text = tipText,
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -146,7 +189,7 @@ fun CameraCaptureScreen(
                         onClick = { context.shareTemplateSheet() },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(text = "Get the practice sheet (PNG)")
+                        Text(text = sheetButtonText)
                     }
                 }
             }
@@ -172,8 +215,10 @@ fun CameraCaptureScreen(
             Button(
                 onClick = { launchScanner() },
                 enabled = !isLaunching && !isProcessing,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp),
+                shape = RoundedCornerShape(22.dp),
             ) {
                 if (isLaunching || isProcessing) {
                     CircularProgressIndicator(
@@ -181,12 +226,38 @@ fun CameraCaptureScreen(
                         strokeWidth = 2.dp,
                     )
                     Spacer(modifier = Modifier.size(10.dp))
-                    Text(text = if (isProcessing) "Processing..." else "Opening scanner...")
+                    Text(
+                        text = if (isProcessing) processingText else openingText,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 } else {
-                    Text(text = "Scan handwriting sheet")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = scanButtonText,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun GuideStepRow(number: Int, text: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            text = "$number.",
+            modifier = Modifier.width(20.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        Text(
+            text = text,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
     }
 }
 

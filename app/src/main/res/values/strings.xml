@@ -4,17 +4,17 @@
 
     <!-- Template chooser screen -->
     <string name="template_chooser_title">Choose a handwriting style</string>
-    <string name="template_chooser_subtitle">Built-in templates are the default path. Personal handwriting capture stays available as an optional premium feature.</string>
+    <string name="template_chooser_subtitle">Built-in templates are the default path. You can also capture your own handwriting.</string>
     <string name="template_chooser_use_template">Use template</string>
     <string name="template_chooser_premium_badge">Premium</string>
-    <string name="template_chooser_premium_button">Premium capture</string>
+    <string name="template_chooser_premium_button">Capture handwriting</string>
 
     <!-- Render screen: compose phase -->
     <string name="render_instruction">Type your message below, then tap Generate to create a unique handwritten note.</string>
     <string name="render_text_label">Your message</string>
     <string name="render_text_placeholder">Hello, world!</string>
     <string name="render_generate_button">Generate</string>
-    <string name="render_premium_button">Premium: Use My Handwriting</string>
+    <string name="render_premium_button">Use My Handwriting</string>
     <string name="render_templates_button">Templates</string>
 
     <!-- Render screen: generating phase -->
@@ -42,6 +42,15 @@
     <!-- Camera capture screen -->
     <string name="camera_section_title">Capture your handwriting sheet</string>
     <string name="camera_tip">Tip: use even lighting and keep all rows of letters visible.</string>
+    <string name="camera_pre_scan_title">Before you scan</string>
+    <string name="camera_pre_scan_step_1">Print the practice sheet.</string>
+    <string name="camera_pre_scan_step_2">Write the matching character in each box and keep it sitting on the guide line.</string>
+    <string name="camera_pre_scan_step_3">Capture the whole page and keep all four black squares fully visible.</string>
+    <string name="camera_pre_scan_step_4">Use even light and avoid blur, glare, and hard shadows.</string>
+    <string name="camera_sheet_button">Get the practice sheet (PNG)</string>
+    <string name="camera_scan_button">Scan practice sheet</string>
+    <string name="camera_opening_scanner">Opening scanner...</string>
+    <string name="camera_processing_button">Processing...</string>
     <string name="camera_guide_label">Align the page edges with the guide</string>
     <string name="camera_capture_button">Capture sample</string>
     <string name="camera_capturing_button">Capturing…</string>
@@ -58,10 +67,75 @@
     <string name="loading_template_body">Preparing bundled bitmap glyphs for the default handwriting flow.</string>
 
     <!-- Premium capture flow -->
-    <string name="premium_instruction">Premium feature: write A-Z, a-z, and 0-9 on blank paper, then center the page inside the frame to create your personal template.</string>
+    <string name="premium_instruction">Write A-Z, a-z, and 0-9 on the practice sheet, then center the page inside the frame to create your personal template.</string>
     <string name="premium_processing">Processing handwriting sample with ML Kit…</string>
     <string name="premium_no_glyphs">No alphanumeric glyphs were detected. Try brighter lighting and fill more of the frame with the page. Use system back to return to templates.</string>
-    <string name="premium_capture_complete">Premium capture complete. %1$d glyph crops extracted across %2$d unique characters. Use back to return to templates.</string>
+    <string name="premium_capture_complete">Handwriting capture complete. %1$d glyph crops extracted across %2$d unique characters. Use back to return to templates.</string>
+    <string name="premium_marker_detection_failed">That scan did not look like the HandType practice sheet. Make sure the printed sheet fills most of the scan and all four black squares are visible.</string>
+    <string name="premium_save_failed">Could not save the handwriting template. Try again.</string>
+    <string name="premium_process_failed">Could not process the sheet. Re-scan with all four corner markers visible.</string>
     <string name="premium_capture_failed_focus">Text recognition failed. Try another capture with sharper focus.</string>
     <string name="premium_camera_failed">Camera capture failed. Try again.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Templates</string>
+    <string name="drawer_nav_history">History</string>
+    <string name="drawer_nav_help">Help</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">About</string>
+    <string name="drawer_nav_privacy">Privacy</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Save</string>
+    <string name="action_share">Share</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+
+    <!-- History screen -->
+    <string name="history_title">History</string>
+    <string name="history_empty">No notes yet. Generate one and it will appear here.</string>
+    <string name="history_delete_title">Delete this note?</string>
+    <string name="history_delete_body">This removes the saved copy from your device. Files you\'ve already exported to Pictures or Downloads stay where they are.</string>
+    <string name="history_deleted_toast">Deleted</string>
+    <string name="history_delete_selected_title">Delete %1$d notes?</string>
+    <string name="history_delete_selected_body">This removes %1$d saved copies from your device. Files you\'ve already exported to Pictures or Downloads stay where they are.</string>
+    <string name="history_deleted_selected_toast">Deleted %1$d notes</string>
+    <string name="history_note_desc">Saved note</string>
+    <string name="history_preview_desc">Note preview</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Help</string>
+    <string name="help_s1_title">1. Pick a template</string>
+    <string name="help_s1_body">Open Templates from the side menu and swipe through the styles. Tap a card to start composing in that handwriting.</string>
+    <string name="help_s2_title">2. Type your text</string>
+    <string name="help_s2_body">Type or paste any text into the field. Line breaks and punctuation are preserved as you wrote them.</string>
+    <string name="help_s3_title">3. Generate</string>
+    <string name="help_s3_body">Tap Generate. HandType lays out your text glyph-by-glyph, varying spacing, rotation and pressure so each note looks naturally hand-written.</string>
+    <string name="help_s4_title">4. Save, share or export</string>
+    <string name="help_s4_body">From the result screen you can save the note as a PNG to your gallery, save without the paper background as a transparent PNG, share to any app, or export as a multi-page PDF.</string>
+    <string name="help_s5_title">5. History</string>
+    <string name="help_s5_body">Every generated note is automatically archived. Open History from the side menu to revisit, re-export, share or delete past notes.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">Where are saved files stored?</string>
+    <string name="faq_a1">PNGs and PDFs go to Pictures/HandType in your gallery. On Android 9 and older the app needs storage permission the first time.</string>
+    <string name="faq_q2">What is the transparent PNG for?</string>
+    <string name="faq_a2">It\'s the same handwriting without the paper background, useful when you want to drop the note onto another image, document or slide.</string>
+    <string name="faq_q3">Can a long note span multiple PDF pages?</string>
+    <string name="faq_a3">Yes. The PDF export paginates automatically and snaps page breaks to whitespace between text rows so no character gets clipped.</string>
+    <string name="faq_q4">Why does a glyph look slightly off?</string>
+    <string name="faq_a4">Each character is composed from one of several stored variants and is then rotated, jittered and re-weighted to mimic real handwriting variation.</string>
+    <string name="faq_q5">What does the History screen actually keep?</string>
+    <string name="faq_a5">A private copy of every generated note plus the source text. Nothing is uploaded; deleting an entry removes the on-device copy only.</string>
+    <string name="faq_q6">How does personal handwriting capture work?</string>
+    <string name="faq_a6">You fill out the practice sheet, scan it, and HandType builds a personal template from your handwriting. The capture runs on-device with ML Kit; nothing leaves the phone.</string>
+
+    <!-- About screen -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_description">Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device.</string>
+    <string name="about_github_button">View source on GitHub</string>
+    <string name="about_copyright">© 2025 IT-BAER. Made with care.</string>
 </resources>

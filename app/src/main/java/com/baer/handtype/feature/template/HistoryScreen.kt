@@ -8,9 +8,10 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,12 +26,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -50,9 +53,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.baer.handtype.R
 import com.baer.handtype.template.OutputExporter
 import java.io.File
 import java.text.SimpleDateFormat
@@ -108,6 +113,10 @@ object HistoryStore {
         entry.pngFile.delete()
         File(entry.pngFile.parentFile, "${entry.id}.txt").takeIf { it.exists() }?.delete()
     }
+
+    fun delete(entries: Collection<HistoryEntry>) {
+        entries.forEach(::delete)
+    }
 }
 
 @Composable
@@ -126,7 +135,24 @@ fun HistoryScreen(
     LaunchedEffect(Unit) { reload() }
 
     var selected by remember { mutableStateOf<HistoryEntry?>(null) }
-    var pendingDelete by remember { mutableStateOf<HistoryEntry?>(null) }
+    val selectedIds: SnapshotStateList<String> = remember { mutableStateListOf() }
+    var pendingDelete by remember { mutableStateOf<List<HistoryEntry>?>(null) }
+
+    fun toggleSelection(entry: HistoryEntry) {
+        if (selectedIds.contains(entry.id)) {
+            selectedIds.remove(entry.id)
+        } else {
+            selectedIds.add(entry.id)
+        }
+    }
+
+    fun selectedEntries(): List<HistoryEntry> = entries.filter { selectedIds.contains(it.id) }
+
+    fun clearSelection() {
+        selectedIds.clear()
+    }
+
+    val selectionMode = selectedIds.isNotEmpty()
 
     Scaffold(
         modifier = modifier,
@@ -152,9 +178,26 @@ fun HistoryScreen(
                 }
                 androidx.compose.foundation.layout.Spacer(Modifier.width(4.dp))
                 Text(
-                    text = "History",
+                    text = if (!selectionMode) {
+                        stringResource(R.string.history_title)
+                    } else {
+                        "${stringResource(R.string.history_title)} (${selectedIds.size})"
+                    },
                     style = MaterialTheme.typography.headlineMedium,
                 )
+                androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                if (selectionMode) {
+                    TextButton(onClick = ::clearSelection) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                    TextButton(
+                        onClick = {
+                            pendingDelete = selectedEntries().takeIf { it.isNotEmpty() }
+                        },
+                    ) {
+                        Text(stringResource(R.string.action_delete))
+                    }
+                }
             }
 
             if (entries.isEmpty()) {
@@ -165,7 +208,7 @@ fun HistoryScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "No notes yet. Generate one and it will appear here.",
+                        text = stringResource(R.string.history_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -179,7 +222,21 @@ fun HistoryScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(entries, key = { it.id }) { entry ->
-                        HistoryThumbnail(entry = entry, onClick = { selected = entry })
+                        val isSelected = selectedIds.contains(entry.id)
+                        HistoryThumbnail(
+                            entry = entry,
+                            selectionMode = selectionMode,
+                            isSelected = isSelected,
+                            onClick = {
+                                if (selectionMode) {
+                                    toggleSelection(entry)
+                                } else {
+                                    selected = entry
+                                }
+                            },
+                            onLongClick = { toggleSelection(entry) },
+                            onSelectionToggle = { toggleSelection(entry) },
+                        )
                     }
                 }
             }
@@ -191,75 +248,125 @@ fun HistoryScreen(
             entry = entry,
             onDismiss = { selected = null },
             onDeleteRequested = {
-                pendingDelete = entry
+                pendingDelete = listOf(entry)
                 selected = null
             },
         )
     }
 
-    pendingDelete?.let { entry ->
+    pendingDelete?.let { pendingEntries ->
+        val deleteCount = pendingEntries.size
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Delete this note?") },
-            text = { Text("This removes the saved copy from your device. Files you've already exported to Pictures or Downloads stay where they are.") },
+            title = {
+                Text(
+                    if (deleteCount == 1) {
+                        stringResource(R.string.history_delete_title)
+                    } else {
+                        stringResource(R.string.history_delete_selected_title, deleteCount)
+                    },
+                )
+            },
+            text = {
+                Text(
+                    if (deleteCount == 1) {
+                        stringResource(R.string.history_delete_body)
+                    } else {
+                        stringResource(R.string.history_delete_selected_body, deleteCount)
+                    },
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
-                    HistoryStore.delete(entry)
+                    HistoryStore.delete(pendingEntries)
                     pendingDelete = null
+                    clearSelection()
                     reload()
-                    Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show()
-                }) { Text("Delete") }
+                    val toastText = if (deleteCount == 1) {
+                        context.getString(R.string.history_deleted_toast)
+                    } else {
+                        context.getString(R.string.history_deleted_selected_toast, deleteCount)
+                    }
+                    Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                }) { Text(stringResource(R.string.action_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text("Cancel") }
+                TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }
 }
 
 @Composable
-private fun HistoryThumbnail(entry: HistoryEntry, onClick: () -> Unit) {
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+private fun HistoryThumbnail(
+    entry: HistoryEntry,
+    selectionMode: Boolean,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onSelectionToggle: () -> Unit,
+) {
     val bitmap = remember(entry.id) {
         runCatching { BitmapFactory.decodeFile(entry.pngFile.absolutePath) }.getOrNull()
     }
-    Card(
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    ) {
-        Column {
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Saved note ${entry.id}",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .background(Color(0xFFFFF9F2)),
-                    contentScale = ContentScale.Crop,
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .background(Color(0xFFEEE)),
-                )
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            shape = RoundedCornerShape(18.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = if (isSelected) BorderStroke(2.dp, Color(0xFF23443A)) else null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                ),
+        ) {
+            Column {
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = stringResource(R.string.history_note_desc) + " ${entry.id}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .background(Color(0xFFFFF9F2)),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .background(Color(0xFFEEE)),
+                    )
+                }
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Text(
+                        text = entry.templateTag.replace('_', ' '),
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = entry.displayDate(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-            Column(modifier = Modifier.padding(10.dp)) {
-                Text(
-                    text = entry.templateTag.replace('_', ' '),
-                    style = MaterialTheme.typography.labelLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = entry.displayDate(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+        }
+        if (selectionMode) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .background(Color.White.copy(alpha = 0.92f), CircleShape),
+            ) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onSelectionToggle() },
                 )
             }
         }
@@ -320,7 +427,7 @@ private fun HistoryDetailDialog(
                 if (bitmap != null) {
                     Image(
                         bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Note preview",
+                        contentDescription = stringResource(R.string.history_preview_desc),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFFFFF9F2), RoundedCornerShape(12.dp))
@@ -349,21 +456,21 @@ private fun HistoryDetailDialog(
                         onClick = ::saveImage,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF23443A)),
-                    ) { Text("Save") }
+                    ) { Text(stringResource(R.string.action_save)) }
                     Button(
                         onClick = ::share,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C4D11)),
-                    ) { Text("Share") }
+                    ) { Text(stringResource(R.string.action_share)) }
                 }
                 OutlinedButton(
                     onClick = onDeleteRequested,
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.action_delete)) }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
         },
     )
 }

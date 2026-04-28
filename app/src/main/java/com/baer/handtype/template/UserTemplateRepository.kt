@@ -41,7 +41,7 @@ class UserTemplateRepository(private val context: Context) {
                     id = USER_ID_PREFIX + folder.name,
                     displayName = displayName,
                     sampleText = "Your handwriting.",
-                    description = "Captured with the premium handwriting flow.",
+                    description = "Captured from your handwriting sheet.",
                     premium = true,
                 )
             }
@@ -115,7 +115,7 @@ class UserTemplateRepository(private val context: Context) {
                 id = templateId,
                 displayName = displayName,
                 sampleText = "Your handwriting.",
-                description = "Captured with the premium handwriting flow.",
+                description = "Captured from your handwriting sheet.",
                 premium = true,
             ),
             glyphs = glyphs,

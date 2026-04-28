@@ -3,16 +3,16 @@
     <string name="app_name">HandType</string>
 
     <string name="template_chooser_title">Handschriftstil wählen</string>
-    <string name="template_chooser_subtitle">Integrierte Vorlagen sind der Standardweg. Die Aufnahme persönlicher Handschrift ist als optionale Premium-Funktion verfügbar.</string>
+    <string name="template_chooser_subtitle">Integrierte Vorlagen sind der Standardweg. Du kannst auch deine eigene Handschrift aufnehmen.</string>
     <string name="template_chooser_use_template">Vorlage verwenden</string>
     <string name="template_chooser_premium_badge">Premium</string>
-    <string name="template_chooser_premium_button">Premium-Aufnahme</string>
+    <string name="template_chooser_premium_button">Handschrift aufnehmen</string>
 
     <string name="render_instruction">Gib unten deine Nachricht ein und tippe auf „Erstellen", um eine einzigartige handgeschriebene Notiz zu erzeugen.</string>
     <string name="render_text_label">Deine Nachricht</string>
     <string name="render_text_placeholder">Hallo, Welt!</string>
     <string name="render_generate_button">Erstellen</string>
-    <string name="render_premium_button">Premium: Meine Handschrift verwenden</string>
+    <string name="render_premium_button">Meine Handschrift verwenden</string>
     <string name="render_templates_button">Vorlagen</string>
 
     <string name="render_generating_title">Notiz wird erstellt…</string>
@@ -37,6 +37,15 @@
 
     <string name="camera_section_title">Handschriftblatt aufnehmen</string>
     <string name="camera_tip">Tipp: Verwende gleichmäßige Beleuchtung und halte alle Buchstabenreihen sichtbar.</string>
+    <string name="camera_pre_scan_title">Vor dem Scan</string>
+    <string name="camera_pre_scan_step_1">Drucke das Übungsblatt.</string>
+    <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld und setze es auf die Führungslinie.</string>
+    <string name="camera_pre_scan_step_3">Erfasse die ganze Seite und halte alle vier schwarzen Quadrate vollständig sichtbar.</string>
+    <string name="camera_pre_scan_step_4">Nutze gleichmäßiges Licht und vermeide Unschärfe, Spiegelungen und harte Schatten.</string>
+    <string name="camera_sheet_button">Übungsblatt holen (PNG)</string>
+    <string name="camera_scan_button">Übungsblatt scannen</string>
+    <string name="camera_opening_scanner">Scanner wird geöffnet…</string>
+    <string name="camera_processing_button">Wird verarbeitet…</string>
     <string name="camera_guide_label">Seitenränder an der Führungslinie ausrichten</string>
     <string name="camera_capture_button">Probe aufnehmen</string>
     <string name="camera_capturing_button">Wird aufgenommen…</string>
@@ -51,10 +60,75 @@
     <string name="loading_template_title">Vorlage wird geladen</string>
     <string name="loading_template_body">Bitmap-Glyphen für den Standard-Handschriftablauf werden vorbereitet.</string>
 
-    <string name="premium_instruction">Premium-Funktion: Schreibe A–Z, a–z und 0–9 auf weißes Papier und zentriere die Seite im Rahmen, um deine persönliche Vorlage zu erstellen.</string>
+    <string name="premium_instruction">Schreibe A–Z, a–z und 0–9 auf das Übungsblatt und zentriere die Seite im Rahmen, um deine persönliche Vorlage zu erstellen.</string>
     <string name="premium_processing">Handschriftprobe wird mit ML Kit verarbeitet…</string>
     <string name="premium_no_glyphs">Keine alphanumerischen Glyphen erkannt. Versuche es mit besserer Beleuchtung und fülle mehr des Rahmens mit der Seite. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
-    <string name="premium_capture_complete">Premium-Aufnahme abgeschlossen. %1$d Glyphen aus %2$d einzigartigen Zeichen extrahiert. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
+    <string name="premium_capture_complete">Handschrift-Aufnahme abgeschlossen. %1$d Glyphen aus %2$d einzigartigen Zeichen extrahiert. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
+    <string name="premium_marker_detection_failed">Dieser Scan sah nicht wie das HandType-Übungsblatt aus. Stelle sicher, dass das gedruckte Blatt den Großteil des Scans füllt und alle vier schwarzen Quadrate sichtbar sind.</string>
+    <string name="premium_save_failed">Die Handschriftvorlage konnte nicht gespeichert werden. Versuche es erneut.</string>
+    <string name="premium_process_failed">Das Blatt konnte nicht verarbeitet werden. Scanne erneut mit allen vier sichtbaren Eckmarkierungen.</string>
     <string name="premium_capture_failed_focus">Texterkennung fehlgeschlagen. Versuche eine weitere Aufnahme mit schärferem Fokus.</string>
     <string name="premium_camera_failed">Kameraaufnahme fehlgeschlagen. Erneut versuchen.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Vorlagen</string>
+    <string name="drawer_nav_history">Verlauf</string>
+    <string name="drawer_nav_help">Hilfe</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">Über</string>
+    <string name="drawer_nav_privacy">Datenschutz</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Speichern</string>
+    <string name="action_share">Teilen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_close">Schließen</string>
+
+    <!-- History screen -->
+    <string name="history_title">Verlauf</string>
+    <string name="history_empty">Noch keine Notizen. Erstelle eine und sie erscheint hier.</string>
+    <string name="history_delete_title">Diese Notiz löschen?</string>
+    <string name="history_delete_body">Dies entfernt die gespeicherte Kopie von deinem Gerät. Dateien, die du bereits in Bilder oder Downloads exportiert hast, bleiben erhalten.</string>
+    <string name="history_deleted_toast">Gelöscht</string>
+    <string name="history_delete_selected_title">%1$d Notizen löschen?</string>
+    <string name="history_delete_selected_body">Dies entfernt %1$d gespeicherte Kopien von deinem Gerät. Dateien, die du bereits in Bilder oder Downloads exportiert hast, bleiben erhalten.</string>
+    <string name="history_deleted_selected_toast">%1$d Notizen gelöscht</string>
+    <string name="history_note_desc">Gespeicherte Notiz</string>
+    <string name="history_preview_desc">Notizvorschau</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Hilfe</string>
+    <string name="help_s1_title">1. Vorlage wählen</string>
+    <string name="help_s1_body">Öffne Vorlagen aus dem Seitenmenü und wische durch die Stile. Tippe auf eine Karte, um mit dieser Handschrift zu beginnen.</string>
+    <string name="help_s2_title">2. Text eingeben</string>
+    <string name="help_s2_body">Tippe oder füge beliebigen Text ein. Zeilenumbrüche und Satzzeichen bleiben erhalten.</string>
+    <string name="help_s3_title">3. Erstellen</string>
+    <string name="help_s3_body">Tippe auf Erstellen. HandType setzt deinen Text Zeichen für Zeichen, wobei Abstände, Rotation und Druck variiert werden, damit jede Notiz natürlich handgeschrieben wirkt.</string>
+    <string name="help_s4_title">4. Speichern, teilen oder exportieren</string>
+    <string name="help_s4_body">Im Ergebnisbildschirm kannst du die Notiz als PNG in deine Galerie speichern, ohne Papierhintergrund als transparentes PNG speichern, an jede App teilen oder als mehrseitiges PDF exportieren.</string>
+    <string name="help_s5_title">5. Verlauf</string>
+    <string name="help_s5_body">Jede generierte Notiz wird automatisch archiviert. Öffne Verlauf aus dem Seitenmenü, um frühere Notizen erneut anzusehen, zu exportieren, zu teilen oder zu löschen.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">Wo werden gespeicherte Dateien abgelegt?</string>
+    <string name="faq_a1">PNGs und PDFs gehen in Bilder/HandType in deiner Galerie. Auf Android 9 und älter benötigt die App beim ersten Mal eine Speicherberechtigung.</string>
+    <string name="faq_q2">Wofür ist das transparente PNG?</string>
+    <string name="faq_a2">Es ist dieselbe Handschrift ohne Papierhintergrund, nützlich wenn du die Notiz auf ein anderes Bild, Dokument oder eine Folie legen möchtest.</string>
+    <string name="faq_q3">Kann eine lange Notiz mehrere PDF-Seiten umfassen?</string>
+    <string name="faq_a3">Ja. Der PDF-Export paginiert automatisch und bricht Seiten am Leerzeichen zwischen Textzeilen um, damit kein Zeichen abgeschnitten wird.</string>
+    <string name="faq_q4">Warum sieht ein Zeichen leicht falsch aus?</string>
+    <string name="faq_a4">Jedes Zeichen wird aus einer von mehreren gespeicherten Varianten zusammengesetzt und dann gedreht, leicht versetzt und neu gewichtet, um echte Handschriftvariation nachzuahmen.</string>
+    <string name="faq_q5">Was hält der Verlaufsbildschirm eigentlich?</string>
+    <string name="faq_a5">Eine private Kopie jeder generierten Notiz plus den Quelltext. Nichts wird hochgeladen; das Löschen eines Eintrags entfernt nur die lokale Kopie.</string>
+    <string name="faq_q6">Wie funktioniert die Aufnahme deiner Handschrift?</string>
+    <string name="faq_a6">Du füllst das Übungsblatt aus, scannst es und HandType erstellt daraus eine persönliche Vorlage. Die Erkennung läuft lokal mit ML Kit; nichts verlässt das Telefon.</string>
+
+    <!-- About screen -->
+    <string name="about_title">Über</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_description">Verwandelt getippten Text in Handschrift, die sich wirklich handgeschrieben anfühlt. Integrierte Vorlagen funktionieren vollständig offline; nichts über deinen Text verlässt dein Gerät.</string>
+    <string name="about_github_button">Quellcode auf GitHub ansehen</string>
+    <string name="about_copyright">© 2025 IT-BAER. Mit Sorgfalt gemacht.</string>
 </resources>
