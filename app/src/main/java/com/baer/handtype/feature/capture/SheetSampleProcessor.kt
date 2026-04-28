@@ -38,6 +38,7 @@ object SheetSampleProcessor {
         val glyphs: Map<Char, Bitmap>,
         val missing: Set<Char>,
         val rectifiedDebugBitmap: Bitmap?,
+        val detectionFailed: Boolean = false,
     )
 
     /**
@@ -54,6 +55,30 @@ object SheetSampleProcessor {
         skipPageDetection: Boolean = false,
     ): SheetExtractionResult {
         debugContext?.let { clearDebugDir(it); dumpDebugCaptured(it, captured) }
+        val initial = processAttempt(
+            captured = captured,
+            debugContext = debugContext,
+            skipPageDetection = skipPageDetection,
+        )
+        if (skipPageDetection && initial.glyphs.isEmpty()) {
+            Log.w(
+                TAG,
+                "Skip-page-detection path produced no glyphs; retrying with page detection enabled",
+            )
+            return processAttempt(
+                captured = captured,
+                debugContext = debugContext,
+                skipPageDetection = false,
+            )
+        }
+        return initial
+    }
+
+    private fun processAttempt(
+        captured: Bitmap,
+        debugContext: Context? = null,
+        skipPageDetection: Boolean,
+    ): SheetExtractionResult {
         val (working, scaleToOriginal) = downscale(captured, MAX_WORKING_DIM)
         val luma = computeLuma(working)
 
@@ -80,7 +105,12 @@ object SheetSampleProcessor {
         val fiducials = findFiducials(mask, working.width, working.height, pageRect)
         if (fiducials == null) {
             Log.e(TAG, "Failed to locate 4 fiducials.")
-            return SheetExtractionResult(emptyMap(), emptySet(), null)
+            return SheetExtractionResult(
+                glyphs = emptyMap(),
+                missing = emptySet(),
+                rectifiedDebugBitmap = null,
+                detectionFailed = true,
+            )
         }
         val rectified = rectify(captured, fiducials, scaleToOriginal)
         debugContext?.let { dumpDebugRectified(it, rectified) }
@@ -141,7 +171,12 @@ object SheetSampleProcessor {
         }
 
         Log.i(TAG, "Sheet processing complete: ${glyphs.size} glyphs extracted, ${missing.size} cells empty")
-        return SheetExtractionResult(glyphs = glyphs, missing = missing, rectifiedDebugBitmap = rectified)
+        return SheetExtractionResult(
+            glyphs = glyphs,
+            missing = missing,
+            rectifiedDebugBitmap = rectified,
+            detectionFailed = false,
+        )
     }
 
     // ---------------------------------------------------------------------------------------------

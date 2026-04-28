@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.BuildConfig
@@ -33,13 +34,13 @@ private val PaperBg = Color(0xFFF5EFE4)
 private val Ink = Color(0xFF1A1410)
 private val Teal = Color(0xFF23443A)
 
-enum class DrawerDestination(val title: String) {
-    Templates("Templates"),
-    History("History"),
-    Help("Help"),
-    Faq("FAQ"),
-    About("About"),
-    Privacy("Privacy"),
+enum class DrawerDestination(val titleResId: Int) {
+    Templates(R.string.drawer_nav_templates),
+    History(R.string.drawer_nav_history),
+    Help(R.string.drawer_nav_help),
+    Faq(R.string.drawer_nav_faq),
+    About(R.string.drawer_nav_about),
+    Privacy(R.string.drawer_nav_privacy),
 }
 
 @Composable
@@ -78,7 +79,7 @@ fun AppDrawerContent(
         Spacer(Modifier.height(8.dp))
         DrawerDestination.entries.forEach { dest ->
             NavigationDrawerItem(
-                label = { Text(dest.title) },
+                label = { Text(stringResource(dest.titleResId)) },
                 selected = dest == current,
                 onClick = { onSelect(dest) },
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),

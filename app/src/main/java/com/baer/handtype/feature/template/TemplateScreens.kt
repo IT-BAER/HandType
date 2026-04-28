@@ -391,6 +391,9 @@ fun HandwritingRenderScreen(
             val renderWidthPx = remember(maxWidth, density) {
                 with(density) { (maxWidth - 32.dp).roundToPx() }
             }
+            val targetLineHeightPx = remember(density) {
+                with(density) { 34.dp.roundToPx() }
+            }
 
             fun generate() {
                 phase = RenderPhase.Generating.name
@@ -402,7 +405,10 @@ fun HandwritingRenderScreen(
                         "kind of beauty, the sort that only patience could reveal."
                     }
                     val result = withContext(Dispatchers.Default) {
-                        val config = HandwritingRenderConfig(maxWidthPx = renderWidthPx)
+                        val config = HandwritingRenderConfig(
+                            maxWidthPx = renderWidthPx,
+                            targetLineHeightPx = targetLineHeightPx,
+                        )
                         if (template.isStrokeBased) {
                             HandwritingBitmapRenderer.renderCursive(
                                 text = inputText,

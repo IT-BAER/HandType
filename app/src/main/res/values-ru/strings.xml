@@ -57,4 +57,63 @@
     <string name="premium_capture_complete">Захват завершён. Извлечено %1$d глифов для %2$d уникальных символов. Нажмите «Назад» для возврата к шаблонам.</string>
     <string name="premium_capture_failed_focus">Распознавание текста не удалось. Попробуйте ещё раз с более чётким фокусом.</string>
     <string name="premium_camera_failed">Ошибка камеры. Попробуйте ещё раз.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Шаблоны</string>
+    <string name="drawer_nav_history">История</string>
+    <string name="drawer_nav_help">Помощь</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">О приложении</string>
+    <string name="drawer_nav_privacy">Конфиденциальность</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Сохранить</string>
+    <string name="action_share">Поделиться</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_close">Закрыть</string>
+
+    <!-- History screen -->
+    <string name="history_title">История</string>
+    <string name="history_empty">Пока нет заметок. Создайте одну, и она появится здесь.</string>
+    <string name="history_delete_title">Удалить эту заметку?</string>
+    <string name="history_delete_body">Это удалит сохранённую копию с вашего устройства. Файлы, уже экспортированные в Изображения или Загрузки, останутся на месте.</string>
+    <string name="history_deleted_toast">Удалено</string>
+    <string name="history_note_desc">Сохранённая заметка</string>
+    <string name="history_preview_desc">Предпросмотр заметки</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Помощь</string>
+    <string name="help_s1_title">1. Выберите шаблон</string>
+    <string name="help_s1_body">Откройте Шаблоны из бокового меню и пролистайте стили. Нажмите на карточку, чтобы начать текст в этом почерке.</string>
+    <string name="help_s2_title">2. Введите текст</string>
+    <string name="help_s2_body">Введите или вставьте любой текст в поле. Переносы строк и пунктуация сохраняются как вы написали.</string>
+    <string name="help_s3_title">3. Создать</string>
+    <string name="help_s3_body">Нажмите Создать. HandType расставляет текст глиф за глифом, варьируя интервалы, вращение и нажим, чтобы каждая заметка выглядела естественно написанной от руки.</string>
+    <string name="help_s4_title">4. Сохранить, поделиться или экспортировать</string>
+    <string name="help_s4_body">С экрана результата вы можете сохранить заметку как PNG в галерею, сохранить без фона как прозрачный PNG, поделиться с любым приложением или экспортировать как многостраничный PDF.</string>
+    <string name="help_s5_title">5. История</string>
+    <string name="help_s5_body">Каждая созданная заметка автоматически архивируется. Откройте Историю из бокового меню, чтобы просмотреть, повторно экспортировать, поделиться или удалить прошлые заметки.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">Где хранятся сохранённые файлы?</string>
+    <string name="faq_a1">PNG и PDF сохраняются в Изображения/HandType в вашей галерее. На Android 9 и старше приложению нужно разрешение на хранение в первый раз.</string>
+    <string name="faq_q2">Для чего прозрачный PNG?</string>
+    <string name="faq_a2">Это тот же почерк без фона бумаги — полезно, если вы хотите наложить заметку на другое изображение, документ или слайд.</string>
+    <string name="faq_q3">Может ли длинная заметка занимать несколько страниц PDF?</string>
+    <string name="faq_a3">Да. PDF-экспорт автоматически разбивает на страницы и переносит по пробелам между строками, чтобы ни один символ не обрезался.</string>
+    <string name="faq_q4">Почему глиф выглядит немного неровно?</string>
+    <string name="faq_a4">Каждый символ составляется из одного из нескольких сохранённых вариантов, затем поворачивается, смещается и перевзвешивается для имитации реальной вариации почерка.</string>
+    <string name="faq_q5">Что на самом деле хранит экран Истории?</string>
+    <string name="faq_a5">Приватную копию каждой созданной заметки и исходный текст. Ничего не загружается; удаление записи удаляет только локальную копию.</string>
+    <string name="faq_q6">Что такое Premium-функция?</string>
+    <string name="faq_a6">Захват вашего собственного почерка с фотографии для создания персонального шаблона. Распознавание работает на устройстве через ML Kit; ничего не покидает телефон.</string>
+
+    <!-- About screen -->
+    <string name="about_title">О приложении</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_description">Превращает набранный текст в почерк, который действительно выглядит написанным от руки. Встроенные шаблоны работают полностью офлайн; ничто о вашем тексте не покидает устройство.</string>
+    <string name="about_github_button">Просмотреть исходный код на GitHub</string>
+    <string name="about_copyright">© 2025 IT-BAER. Сделано с заботой.</string>
 </resources>

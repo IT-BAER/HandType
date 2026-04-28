@@ -55,4 +55,63 @@
     <string name="premium_capture_complete">高级捕捉完成。已从 %2$d 个唯一字符中提取 %1$d 个字形。使用返回键回到模板。</string>
     <string name="premium_capture_failed_focus">文本识别失败。请尝试对焦更清晰地重新拍摄。</string>
     <string name="premium_camera_failed">相机捕捉失败。请重试。</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">模板</string>
+    <string name="drawer_nav_history">历史</string>
+    <string name="drawer_nav_help">帮助</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">关于</string>
+    <string name="drawer_nav_privacy">隐私</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">保存</string>
+    <string name="action_share">分享</string>
+    <string name="action_delete">删除</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_close">关闭</string>
+
+    <!-- History screen -->
+    <string name="history_title">历史</string>
+    <string name="history_empty">还没有笔记。生成一条，它将显示在这里。</string>
+    <string name="history_delete_title">删除此笔记？</string>
+    <string name="history_delete_body">这将从您的设备中删除已保存的副本。已导出到图片或下载的文件将保留原位。</string>
+    <string name="history_deleted_toast">已删除</string>
+    <string name="history_note_desc">已保存的笔记</string>
+    <string name="history_preview_desc">笔记预览</string>
+
+    <!-- Help screen -->
+    <string name="help_title">帮助</string>
+    <string name="help_s1_title">1. 选择模板</string>
+    <string name="help_s1_body">从侧边菜单打开模板并滑动浏览样式。点击卡片即可开始以该笔迹创作。</string>
+    <string name="help_s2_title">2. 输入文字</string>
+    <string name="help_s2_body">在字段中输入或粘贴任意文本。换行和标点符号将按您输入的方式保留。</string>
+    <string name="help_s3_title">3. 生成</string>
+    <string name="help_s3_body">点击生成。HandType 逐字形地排布您的文字，变化间距、旋转和笔压，使每条笔记看起来自然地手写。</string>
+    <string name="help_s4_title">4. 保存、分享或导出</string>
+    <string name="help_s4_body">在结果页面，您可以将笔记保存为 PNG 到相册、保存为无背景的透明 PNG、分享到任意应用，或导出为多页 PDF。</string>
+    <string name="help_s5_title">5. 历史</string>
+    <string name="help_s5_body">每条生成的笔记都会自动归档。从侧边菜单打开历史，可以重温、重新导出、分享或删除过去的笔记。</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">保存的文件在哪里？</string>
+    <string name="faq_a1">PNG 和 PDF 保存到相册中的 Pictures/HandType。在 Android 9 及更低版本上，首次使用需要存储权限。</string>
+    <string name="faq_q2">透明 PNG 有什么用？</string>
+    <string name="faq_a2">与普通版本相同的笔迹但无纸张背景，适合叠加到其他图片、文档或幻灯片上。</string>
+    <string name="faq_q3">长笔记可以跨多个 PDF 页面吗？</string>
+    <string name="faq_a3">可以。PDF 导出会自动分页，并在文字行之间的空白处对齐分页点，确保无字符被截断。</string>
+    <string name="faq_q4">为什么字形看起来略有偏差？</string>
+    <string name="faq_a4">每个字符由多个存储变体之一构成，然后进行旋转、抖动和重新加权，以模拟真实手写的变化。</string>
+    <string name="faq_q5">历史页面实际保存了什么？</string>
+    <string name="faq_a5">每条生成笔记及来源文本的私有副本。不会上传任何内容；删除条目仅删除设备上的副本。</string>
+    <string name="faq_q6">高级功能是什么？</string>
+    <string name="faq_a6">通过照片捕捉您自己的笔迹以创建个人模板。识别通过 ML Kit 在设备上运行，没有任何信息离开手机。</string>
+
+    <!-- About screen -->
+    <string name="about_title">关于</string>
+    <string name="about_version">版本 %1$s</string>
+    <string name="about_description">将输入的文字转化为真正看起来手写的笔迹。内置模板完全离线运行；您的文字信息不会离开设备。</string>
+    <string name="about_github_button">在 GitHub 上查看源代码</string>
+    <string name="about_copyright">© 2025 IT-BAER. 用心制作。</string>
 </resources>

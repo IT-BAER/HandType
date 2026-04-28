@@ -57,4 +57,63 @@
     <string name="premium_capture_complete">Capture premium terminée. %1$d découpes de glyphes extraites pour %2$d caractères uniques. Utilisez retour pour revenir aux modèles.</string>
     <string name="premium_capture_failed_focus">La reconnaissance de texte a échoué. Essayez une autre capture avec une mise au point plus nette.</string>
     <string name="premium_camera_failed">La capture de la caméra a échoué. Réessayez.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Modèles</string>
+    <string name="drawer_nav_history">Historique</string>
+    <string name="drawer_nav_help">Aide</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">À propos</string>
+    <string name="drawer_nav_privacy">Confidentialité</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Enregistrer</string>
+    <string name="action_share">Partager</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_close">Fermer</string>
+
+    <!-- History screen -->
+    <string name="history_title">Historique</string>
+    <string name="history_empty">Pas encore de notes. Générez-en une et elle apparaîtra ici.</string>
+    <string name="history_delete_title">Supprimer cette note ?</string>
+    <string name="history_delete_body">Cela supprime la copie enregistrée de votre appareil. Les fichiers déjà exportés vers Images ou Téléchargements restent en place.</string>
+    <string name="history_deleted_toast">Supprimé</string>
+    <string name="history_note_desc">Note enregistrée</string>
+    <string name="history_preview_desc">Aperçu de la note</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Aide</string>
+    <string name="help_s1_title">1. Choisir un modèle</string>
+    <string name="help_s1_body">Ouvrez Modèles depuis le menu latéral et faites défiler les styles. Appuyez sur une carte pour commencer à composer dans cette écriture.</string>
+    <string name="help_s2_title">2. Saisir votre texte</string>
+    <string name="help_s2_body">Tapez ou collez n\'importe quel texte dans le champ. Les sauts de ligne et la ponctuation sont conservés tels quels.</string>
+    <string name="help_s3_title">3. Générer</string>
+    <string name="help_s3_body">Appuyez sur Générer. HandType dispose votre texte glyphe par glyphe en variant l\'espacement, la rotation et la pression pour que chaque note semble écrite à la main naturellement.</string>
+    <string name="help_s4_title">4. Enregistrer, partager ou exporter</string>
+    <string name="help_s4_body">Depuis l\'écran de résultat, vous pouvez enregistrer la note en PNG dans votre galerie, enregistrer sans fond papier en PNG transparent, partager vers n\'importe quelle app ou exporter en PDF multi-pages.</string>
+    <string name="help_s5_title">5. Historique</string>
+    <string name="help_s5_body">Chaque note générée est automatiquement archivée. Ouvrez Historique depuis le menu latéral pour consulter, ré-exporter, partager ou supprimer les notes passées.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">Où sont stockés les fichiers enregistrés ?</string>
+    <string name="faq_a1">Les PNG et PDF vont dans Images/HandType dans votre galerie. Sur Android 9 et antérieur, l\'app a besoin d\'une permission de stockage la première fois.</string>
+    <string name="faq_q2">À quoi sert le PNG transparent ?</string>
+    <string name="faq_a2">C\'est la même écriture sans le fond papier, utile pour insérer la note dans une autre image, document ou diapositive.</string>
+    <string name="faq_q3">Une longue note peut-elle s\'étendre sur plusieurs pages PDF ?</string>
+    <string name="faq_a3">Oui. L\'export PDF pagine automatiquement et coupe les pages sur les espaces blancs entre les lignes pour qu\'aucun caractère ne soit coupé.</string>
+    <string name="faq_q4">Pourquoi un glyphe semble-t-il légèrement décalé ?</string>
+    <string name="faq_a4">Chaque caractère est composé à partir d\'une de plusieurs variantes stockées puis est pivoté, légèrement décalé et re-pondéré pour imiter la variation de l\'écriture réelle.</string>
+    <string name="faq_q5">Que conserve réellement l\'écran Historique ?</string>
+    <string name="faq_a5">Une copie privée de chaque note générée ainsi que le texte source. Rien n\'est téléchargé ; supprimer une entrée n\'efface que la copie locale.</string>
+    <string name="faq_q6">Qu\'est-ce que la fonction premium ?</string>
+    <string name="faq_a6">Capturer votre propre écriture depuis une photo pour créer un modèle personnel. La reconnaissance se fait sur l\'appareil avec ML Kit ; rien ne quitte le téléphone.</string>
+
+    <!-- About screen -->
+    <string name="about_title">À propos</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_description">Transformez du texte tapé en écriture qui semble vraiment manuscrite. Les modèles intégrés fonctionnent entièrement hors ligne ; rien sur votre texte ne quitte votre appareil.</string>
+    <string name="about_github_button">Voir le code source sur GitHub</string>
+    <string name="about_copyright">© 2025 IT-BAER. Fait avec soin.</string>
 </resources>

@@ -57,4 +57,63 @@
     <string name="premium_capture_complete">Captura premium concluída. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_failed_focus">O reconhecimento de texto falhou. Tente outra captura com foco mais nítido.</string>
     <string name="premium_camera_failed">Falha na captura da câmera. Tente novamente.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Modelos</string>
+    <string name="drawer_nav_history">Histórico</string>
+    <string name="drawer_nav_help">Ajuda</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">Sobre</string>
+    <string name="drawer_nav_privacy">Privacidade</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Salvar</string>
+    <string name="action_share">Compartilhar</string>
+    <string name="action_delete">Excluir</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_close">Fechar</string>
+
+    <!-- History screen -->
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">Nenhuma nota ainda. Gere uma e ela aparecerá aqui.</string>
+    <string name="history_delete_title">Excluir esta nota?</string>
+    <string name="history_delete_body">Isso remove a cópia salva do seu dispositivo. Arquivos já exportados para Imagens ou Downloads permanecem onde estão.</string>
+    <string name="history_deleted_toast">Excluído</string>
+    <string name="history_note_desc">Nota salva</string>
+    <string name="history_preview_desc">Pré-visualização da nota</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Ajuda</string>
+    <string name="help_s1_title">1. Escolher um modelo</string>
+    <string name="help_s1_body">Abra Modelos no menu lateral e deslize pelos estilos. Toque em um cartão para começar a compor com aquela escrita.</string>
+    <string name="help_s2_title">2. Digite seu texto</string>
+    <string name="help_s2_body">Digite ou cole qualquer texto no campo. Quebras de linha e pontuação são preservadas como você escreveu.</string>
+    <string name="help_s3_title">3. Gerar</string>
+    <string name="help_s3_body">Toque em Gerar. O HandType dispõe seu texto glifo por glifo, variando espaçamento, rotação e pressão para que cada nota pareça escrita à mão naturalmente.</string>
+    <string name="help_s4_title">4. Salvar, compartilhar ou exportar</string>
+    <string name="help_s4_body">Na tela de resultado você pode salvar a nota como PNG na galeria, salvar sem o fundo de papel como PNG transparente, compartilhar com qualquer app ou exportar como PDF de várias páginas.</string>
+    <string name="help_s5_title">5. Histórico</string>
+    <string name="help_s5_body">Cada nota gerada é arquivada automaticamente. Abra o Histórico no menu lateral para rever, reexportar, compartilhar ou excluir notas anteriores.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">Onde ficam os arquivos salvos?</string>
+    <string name="faq_a1">PNGs e PDFs vão para Imagens/HandType na sua galeria. No Android 9 e anteriores, o app precisa de permissão de armazenamento na primeira vez.</string>
+    <string name="faq_q2">Para que serve o PNG transparente?</string>
+    <string name="faq_a2">É a mesma escrita sem o fundo de papel, útil para inserir a nota em outra imagem, documento ou slide.</string>
+    <string name="faq_q3">Uma nota longa pode abranger várias páginas PDF?</string>
+    <string name="faq_a3">Sim. O PDF é paginado automaticamente e quebras de página são ajustadas ao espaço em branco entre linhas para que nenhum caractere seja cortado.</string>
+    <string name="faq_q4">Por que um glifo parece ligeiramente errado?</string>
+    <string name="faq_a4">Cada caractere é composto a partir de uma de várias variantes armazenadas e depois rotacionado, ajustado e reponderado para imitar a variação da escrita real.</string>
+    <string name="faq_q5">O que o Histórico realmente guarda?</string>
+    <string name="faq_a5">Uma cópia privada de cada nota gerada mais o texto-fonte. Nada é enviado; excluir uma entrada remove apenas a cópia local.</string>
+    <string name="faq_q6">O que é o recurso premium?</string>
+    <string name="faq_a6">Capturar sua própria escrita de uma foto para criar um modelo pessoal. O reconhecimento ocorre no dispositivo com ML Kit; nada sai do telefone.</string>
+
+    <!-- About screen -->
+    <string name="about_title">Sobre</string>
+    <string name="about_version">Versão %1$s</string>
+    <string name="about_description">Transforma texto digitado em escrita que realmente parece manuscrita. Os modelos integrados funcionam completamente offline; nada sobre seu texto sai do seu dispositivo.</string>
+    <string name="about_github_button">Ver código-fonte no GitHub</string>
+    <string name="about_copyright">© 2025 IT-BAER. Feito com cuidado.</string>
 </resources>

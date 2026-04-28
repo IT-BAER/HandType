@@ -57,4 +57,63 @@
     <string name="premium_capture_complete">प्रीमियम कैप्चर पूर्ण। %2$d अनूठे अक्षरों में से %1$d ग्लिफ़ निकाले गए। टेम्पलेट पर वापस जाने के लिए बैक उपयोग करें।</string>
     <string name="premium_capture_failed_focus">टेक्स्ट पहचान विफल। अधिक तेज़ फ़ोकस के साथ दूसरा कैप्चर आज़माएं।</string>
     <string name="premium_camera_failed">कैमरा कैप्चर विफल। फिर से प्रयास करें।</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">टेम्पलेट</string>
+    <string name="drawer_nav_history">इतिहास</string>
+    <string name="drawer_nav_help">सहायता</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">परिचय</string>
+    <string name="drawer_nav_privacy">गोपनीयता</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">सहेजें</string>
+    <string name="action_share">शेयर करें</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_close">बंद करें</string>
+
+    <!-- History screen -->
+    <string name="history_title">इतिहास</string>
+    <string name="history_empty">अभी कोई नोट नहीं। एक बनाएं और यह यहां दिखाई देगा।</string>
+    <string name="history_delete_title">यह नोट हटाएं?</string>
+    <string name="history_delete_body">इससे आपके डिवाइस से सहेजी गई प्रति हट जाएगी। जो फ़ाइलें पहले से Pictures या Downloads में निर्यात की गई हैं वे वहीं रहेंगी।</string>
+    <string name="history_deleted_toast">हटाया गया</string>
+    <string name="history_note_desc">सहेजा गया नोट</string>
+    <string name="history_preview_desc">नोट का पूर्वावलोकन</string>
+
+    <!-- Help screen -->
+    <string name="help_title">सहायता</string>
+    <string name="help_s1_title">1. टेम्पलेट चुनें</string>
+    <string name="help_s1_body">साइड मेनू से टेम्पलेट खोलें और स्टाइल स्वाइप करें। उस लेखन में लिखना शुरू करने के लिए एक कार्ड पर टैप करें।</string>
+    <string name="help_s2_title">2. अपना टेक्स्ट टाइप करें</string>
+    <string name="help_s2_body">फ़ील्ड में कोई भी टेक्स्ट टाइप या पेस्ट करें। लाइन ब्रेक और विराम चिह्न जैसे लिखे थे वैसे ही रहते हैं।</string>
+    <string name="help_s3_title">3. बनाएं</string>
+    <string name="help_s3_body">जनरेट पर टैप करें। HandType आपके टेक्स्ट को ग्लिफ़ दर ग्लिफ़ रखता है, जिससे प्रत्येक नोट स्वाभाविक रूप से हाथ से लिखा हुआ लगे।</string>
+    <string name="help_s4_title">4. सहेजें, शेयर करें या निर्यात करें</string>
+    <string name="help_s4_body">परिणाम स्क्रीन से आप नोट को PNG के रूप में गैलरी में सहेज सकते हैं, पेपर बैकग्राउंड के बिना ट्रांसपेरेंट PNG के रूप में सहेज सकते हैं, किसी भी ऐप में शेयर कर सकते हैं, या मल्टी-पेज PDF के रूप में निर्यात कर सकते हैं।</string>
+    <string name="help_s5_title">5. इतिहास</string>
+    <string name="help_s5_body">प्रत्येक जनरेट किया गया नोट स्वचालित रूप से संग्रहीत होता है। पिछले नोट देखने, फिर से निर्यात करने, शेयर करने या हटाने के लिए साइड मेनू से इतिहास खोलें।</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">सहेजी गई फ़ाइलें कहां होती हैं?</string>
+    <string name="faq_a1">PNG और PDF आपकी गैलरी में Pictures/HandType में जाते हैं। Android 9 और पुराने पर ऐप को पहली बार स्टोरेज अनुमति चाहिए।</string>
+    <string name="faq_q2">ट्रांसपेरेंट PNG किसलिए है?</string>
+    <string name="faq_a2">यह पेपर बैकग्राउंड के बिना वही लेखन है, उपयोगी जब आप नोट को किसी अन्य छवि, दस्तावेज़ या स्लाइड पर रखना चाहते हों।</string>
+    <string name="faq_q3">क्या एक लंबा नोट कई PDF पृष्ठों में फैल सकता है?</string>
+    <string name="faq_a3">हां। PDF निर्यात स्वचालित रूप से पृष्ठांकित होता है और टेक्स्ट पंक्तियों के बीच सफेद स्थान पर पृष्ठ विराम को स्नैप करता है।</string>
+    <string name="faq_q4">एक ग्लिफ़ थोड़ा अजीब क्यों दिखता है?</string>
+    <string name="faq_a4">प्रत्येक अक्षर कई संग्रहीत वैरिएंट में से एक से बनाया जाता है और फिर घुमाया, थोड़ा हिलाया और पुनः भारित किया जाता है।</string>
+    <string name="faq_q5">इतिहास स्क्रीन वास्तव में क्या रखती है?</string>
+    <string name="faq_a5">प्रत्येक जनरेट किए गए नोट और स्रोत टेक्स्ट की एक निजी प्रति। कुछ भी अपलोड नहीं होता; किसी प्रविष्टि को हटाने से केवल डिवाइस पर की प्रति हटती है।</string>
+    <string name="faq_q6">प्रीमियम फीचर क्या है?</string>
+    <string name="faq_a6">एक व्यक्तिगत टेम्पलेट बनाने के लिए फोटो से अपनी खुद की लिखावट कैप्चर करना। पहचान ML Kit के साथ डिवाइस पर होती है; कुछ भी फोन नहीं छोड़ता।</string>
+
+    <!-- About screen -->
+    <string name="about_title">परिचय</string>
+    <string name="about_version">संस्करण %1$s</string>
+    <string name="about_description">टाइप किए गए टेक्स्ट को ऐसी लिखावट में बदलता है जो वाकई हाथ से लिखी लगे। अंतर्निहित टेम्पलेट पूरी तरह ऑफलाइन काम करते हैं; आपके टेक्स्ट के बारे में कुछ भी डिवाइस नहीं छोड़ता।</string>
+    <string name="about_github_button">GitHub पर सोर्स देखें</string>
+    <string name="about_copyright">© 2025 IT-BAER. देखभाल से बनाया गया।</string>
 </resources>

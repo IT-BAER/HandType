@@ -57,4 +57,63 @@
     <string name="premium_capture_complete">Captura premium completa. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_failed_focus">El reconocimiento de texto falló. Intenta otra captura con más nitidez.</string>
     <string name="premium_camera_failed">Error al capturar con la cámara. Inténtalo de nuevo.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Plantillas</string>
+    <string name="drawer_nav_history">Historial</string>
+    <string name="drawer_nav_help">Ayuda</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">Acerca de</string>
+    <string name="drawer_nav_privacy">Privacidad</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Guardar</string>
+    <string name="action_share">Compartir</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_close">Cerrar</string>
+
+    <!-- History screen -->
+    <string name="history_title">Historial</string>
+    <string name="history_empty">Sin notas aún. Genera una y aparecerá aquí.</string>
+    <string name="history_delete_title">¿Eliminar esta nota?</string>
+    <string name="history_delete_body">Esto elimina la copia guardada de tu dispositivo. Los archivos que ya exportaste a Imágenes o Descargas permanecerán.</string>
+    <string name="history_deleted_toast">Eliminado</string>
+    <string name="history_note_desc">Nota guardada</string>
+    <string name="history_preview_desc">Vista previa de nota</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Ayuda</string>
+    <string name="help_s1_title">1. Elige una plantilla</string>
+    <string name="help_s1_body">Abre Plantillas desde el menú lateral y desliza para ver los estilos. Toca una tarjeta para comenzar a componer con esa letra.</string>
+    <string name="help_s2_title">2. Escribe tu texto</string>
+    <string name="help_s2_body">Escribe o pega cualquier texto en el campo. Los saltos de línea y la puntuación se conservan tal como los escribiste.</string>
+    <string name="help_s3_title">3. Genera</string>
+    <string name="help_s3_body">Toca Generar. HandType dispone tu texto glifo por glifo, variando el espaciado, la rotación y la presión para que cada nota parezca escrita a mano de forma natural.</string>
+    <string name="help_s4_title">4. Guardar, compartir o exportar</string>
+    <string name="help_s4_body">Desde la pantalla de resultado puedes guardar la nota como PNG en tu galería, guardar sin el fondo de papel como PNG transparente, compartir con cualquier app o exportar como PDF de varias páginas.</string>
+    <string name="help_s5_title">5. Historial</string>
+    <string name="help_s5_body">Cada nota generada se archiva automáticamente. Abre el Historial desde el menú lateral para revisar, volver a exportar, compartir o eliminar notas pasadas.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">¿Dónde se guardan los archivos?</string>
+    <string name="faq_a1">Los PNG y PDF van a Imágenes/HandType en tu galería. En Android 9 y anteriores, la app necesita permiso de almacenamiento la primera vez.</string>
+    <string name="faq_q2">¿Para qué sirve el PNG transparente?</string>
+    <string name="faq_a2">Es la misma letra sin el fondo de papel, útil para insertar la nota en otra imagen, documento o diapositiva.</string>
+    <string name="faq_q3">¿Puede una nota larga abarcar varias páginas PDF?</string>
+    <string name="faq_a3">Sí. El PDF se pagina automáticamente y ajusta los saltos de página al espacio en blanco entre líneas para que ningún carácter quede cortado.</string>
+    <string name="faq_q4">¿Por qué un glifo parece ligeramente incorrecto?</string>
+    <string name="faq_a4">Cada carácter se compone a partir de una de varias variantes almacenadas y luego se rota, ajusta y pondera para imitar la variación de la escritura real.</string>
+    <string name="faq_q5">¿Qué guarda realmente el Historial?</string>
+    <string name="faq_a5">Una copia privada de cada nota generada más el texto fuente. Nada se sube; eliminar una entrada borra solo la copia local.</string>
+    <string name="faq_q6">¿Qué es la función premium?</string>
+    <string name="faq_a6">Capturar tu propia letra desde una foto para crear una plantilla personal. El reconocimiento se ejecuta en el dispositivo con ML Kit; nada sale del teléfono.</string>
+
+    <!-- About screen -->
+    <string name="about_title">Acerca de</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_description">Convierte texto escrito en letra que realmente parece escrita a mano. Las plantillas integradas funcionan completamente sin conexión; nada sobre tu texto sale de tu dispositivo.</string>
+    <string name="about_github_button">Ver código fuente en GitHub</string>
+    <string name="about_copyright">© 2025 IT-BAER. Hecho con cuidado.</string>
 </resources>

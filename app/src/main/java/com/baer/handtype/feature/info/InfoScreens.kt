@@ -34,7 +34,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.BuildConfig
@@ -104,7 +104,7 @@ private fun Body(text: String) {
 
 @Composable
 fun HelpScreen(onOpenDrawer: () -> Unit) {
-    InfoScaffold(title = "Help", onOpenDrawer = onOpenDrawer) { padding ->
+    InfoScaffold(title = stringResource(R.string.help_title), onOpenDrawer = onOpenDrawer) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -112,16 +112,16 @@ fun HelpScreen(onOpenDrawer: () -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 8.dp),
         ) {
-            SectionTitle("1. Pick a template")
-            Body("Open Templates from the side menu and swipe through the styles. Tap a card to start composing in that handwriting.")
-            SectionTitle("2. Type your text")
-            Body("Type or paste any text into the field. Line breaks and punctuation are preserved as you wrote them.")
-            SectionTitle("3. Generate")
-            Body("Tap Generate. HandType lays out your text glyph-by-glyph, varying spacing, rotation and pressure so each note looks naturally hand-written.")
-            SectionTitle("4. Save, share or export")
-            Body("From the result screen you can save the note as a PNG to your gallery, save without the paper background as a transparent PNG, share to any app, or export as a multi-page PDF.")
-            SectionTitle("5. History")
-            Body("Every generated note is automatically archived. Open History from the side menu to revisit, re-export, share or delete past notes.")
+            SectionTitle(stringResource(R.string.help_s1_title))
+            Body(stringResource(R.string.help_s1_body))
+            SectionTitle(stringResource(R.string.help_s2_title))
+            Body(stringResource(R.string.help_s2_body))
+            SectionTitle(stringResource(R.string.help_s3_title))
+            Body(stringResource(R.string.help_s3_body))
+            SectionTitle(stringResource(R.string.help_s4_title))
+            Body(stringResource(R.string.help_s4_body))
+            SectionTitle(stringResource(R.string.help_s5_title))
+            Body(stringResource(R.string.help_s5_body))
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -129,24 +129,16 @@ fun HelpScreen(onOpenDrawer: () -> Unit) {
 
 @Composable
 fun FaqScreen(onOpenDrawer: () -> Unit) {
-    val items = remember {
-        listOf(
-            "Where are saved files stored?" to
-                "PNGs and PDFs go to Pictures/HandType in your gallery. On Android 9 and older the app needs storage permission the first time.",
-            "What is the transparent PNG for?" to
-                "It's the same handwriting without the paper background, useful when you want to drop the note onto another image, document or slide.",
-            "Can a long note span multiple PDF pages?" to
-                "Yes. The PDF export paginates automatically and snaps page breaks to whitespace between text rows so no character gets clipped.",
-            "Why does a glyph look slightly off?" to
-                "Each character is composed from one of several stored variants and is then rotated, jittered and re-weighted to mimic real handwriting variation.",
-            "What does the History screen actually keep?" to
-                "A private copy of every generated note plus the source text. Nothing is uploaded; deleting an entry removes the on-device copy only.",
-            "What is the premium feature?" to
-                "Capturing your own handwriting from a photo to build a personal template. The capture itself runs on-device with ML Kit; nothing leaves the phone.",
-        )
-    }
+    val items = listOf(
+        stringResource(R.string.faq_q1) to stringResource(R.string.faq_a1),
+        stringResource(R.string.faq_q2) to stringResource(R.string.faq_a2),
+        stringResource(R.string.faq_q3) to stringResource(R.string.faq_a3),
+        stringResource(R.string.faq_q4) to stringResource(R.string.faq_a4),
+        stringResource(R.string.faq_q5) to stringResource(R.string.faq_a5),
+        stringResource(R.string.faq_q6) to stringResource(R.string.faq_a6),
+    )
 
-    InfoScaffold(title = "FAQ", onOpenDrawer = onOpenDrawer) { padding ->
+    InfoScaffold(title = stringResource(R.string.faq_title), onOpenDrawer = onOpenDrawer) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -205,7 +197,7 @@ private fun FaqItem(question: String, answer: String, initiallyOpen: Boolean) {
 @Composable
 fun AboutScreen(onOpenDrawer: () -> Unit) {
     val context = LocalContext.current
-    InfoScaffold(title = "About", onOpenDrawer = onOpenDrawer) { padding ->
+    InfoScaffold(title = stringResource(R.string.about_title), onOpenDrawer = onOpenDrawer) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -226,13 +218,13 @@ fun AboutScreen(onOpenDrawer: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Text("HandType", style = MaterialTheme.typography.headlineSmall, color = Ink, fontWeight = FontWeight.Bold)
             Text(
-                text = "Version ${BuildConfig.VERSION_NAME}",
+                text = stringResource(R.string.about_version, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Ink.copy(alpha = 0.7f),
             )
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device.",
+                text = stringResource(R.string.about_description),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Ink,
             )
@@ -242,10 +234,10 @@ fun AboutScreen(onOpenDrawer: () -> Unit) {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_REPO_URL)))
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("View source on GitHub") }
+            ) { Text(stringResource(R.string.about_github_button)) }
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "© 2025 IT-BAER. Made with care.",
+                text = stringResource(R.string.about_copyright),
                 style = MaterialTheme.typography.bodySmall,
                 color = Ink.copy(alpha = 0.6f),
             )

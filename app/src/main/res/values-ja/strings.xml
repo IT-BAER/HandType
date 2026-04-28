@@ -57,4 +57,61 @@
     <string name="premium_capture_complete">プレミアムキャプチャ完了。%2$d個のユニーク文字から%1$dグリフが抽出されました。テンプレートに戻るには戻るボタンを使用してください。</string>
     <string name="premium_capture_failed_focus">テキスト認識に失敗しました。フォーカスを合わせて再キャプチャしてください。</string>
     <string name="premium_camera_failed">カメラキャプチャに失敗しました。再試行してください。</string>
-</resources>
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">テンプレート</string>
+    <string name="drawer_nav_history">履歴</string>
+    <string name="drawer_nav_help">ヘルプ</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">このアプリについて</string>
+    <string name="drawer_nav_privacy">プライバシー</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">保存</string>
+    <string name="action_share">共有</string>
+    <string name="action_delete">削除</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_close">閉じる</string>
+
+    <!-- History screen -->
+    <string name="history_title">履歴</string>
+    <string name="history_empty">まだノートはありません。生成するとここに表示されます。</string>
+    <string name="history_delete_title">このノートを削除しますか？</string>
+    <string name="history_delete_body">これによりデバイスから保存されたコピーが削除されます。すでに画像やダウンロードにエクスポートしたファイルはそのまま残ります。</string>
+    <string name="history_deleted_toast">削除しました</string>
+    <string name="history_note_desc">保存されたノート</string>
+    <string name="history_preview_desc">ノートのプレビュー</string>
+
+    <!-- Help screen -->
+    <string name="help_title">ヘルプ</string>
+    <string name="help_s1_title">1. テンプレートを選ぶ</string>
+    <string name="help_s1_body">サイドメニューからテンプレートを開き、スタイルをスワイプします。カードをタップしてその筆跡で作成を開始します。</string>
+    <string name="help_s2_title">2. テキストを入力</string>
+    <string name="help_s2_body">フィールドにテキストを入力または貼り付けます。改行や句読点はそのまま保持されます。</string>
+    <string name="help_s3_title">3. 生成</string>
+    <string name="help_s3_body">「生成」をタップします。HandTypeはテキストをグリフごとに配置し、間隔・回転・筆圧を変化させて自然な手書きに仕上げます。</string>
+    <string name="help_s4_title">4. 保存、共有、またはエクスポート</string>
+    <string name="help_s4_body">結果画面からPNGとしてギャラリーに保存、背景なしの透明PNGとして保存、任意のアプリに共有、または複数ページのPDFとしてエクスポートできます。</string>
+    <string name="help_s5_title">5. 履歴</string>
+    <string name="help_s5_body">生成したノートはすべて自動的にアーカイブされます。サイドメニューから履歴を開いて過去のノートを再表示・再エクスポート・共有・削除できます。</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">保存されたファイルはどこにありますか？</string>
+    <string name="faq_a1">PNGとPDFはギャラリーの画像/HandTypeに保存されます。Android 9以前では初回にストレージ許可が必要です。</string>
+    <string name="faq_q2">透明PNGは何のためですか？</string>
+    <string name="faq_a2">紙の背景なしの同じ筆跡で、他の画像・文書・スライドに重ねる際に便利です。</string>
+    <string name="faq_q3">長いノートは複数のPDFページにまたがれますか？</string>
+    <string name="faq_a3">はい。PDFエクスポートは自動的にページを分割し、文字が切れないよう行間の空白でページ区切りを調整します。</string>
+    <string name="faq_q4">グリフが少しおかしく見えるのはなぜですか？</string>
+    <string name="faq_a4">各文字は複数の保存バリアントから構成され、回転・ジッタ・重み付けを加えてリアルな筆跡のバリエーションを模倣します。</string>
+    <string name="faq_q5">履歴画面は実際に何を保持しますか？</string>
+    <string name="faq_a5">生成したノートとソーステキストのプライベートコピーです。アップロードは一切なく、エントリを削除するとデバイス上のコピーのみが削除されます。</string>
+    <string name="faq_q6">プレミアム機能とは何ですか？</string>
+    <string name="faq_a6">写真から自分の筆跡を取得して個人テンプレートを作成する機能です。認識はML Kitによりデバイス上で実行され、何もデバイスの外に出ません。</string>
+
+    <!-- About screen -->
+    <string name="about_title">このアプリについて</string>
+    <string name="about_version">バージョン %1$s</string>
+    <string name="about_description">入力したテキストを実際に手書きのような筆跡に変換します。内蔵テンプレートは完全オフラインで動作し、テキストに関する情報はデバイスの外に出ません。</string>
+    <string name="about_github_button">GitHubでソースを見る</string>
+    <string name="about_copyright">© 2025 IT-BAER. 心を込めて作りました。</string></resources>
