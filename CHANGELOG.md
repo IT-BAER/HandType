@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed dead `SheetLiveDetector.kt` (leftover CameraX code that blocked compilation after the ML Kit Document Scanner migration).
 - Personal handwriting glyph canvas width now trimmed to actual ink width (+16 px padding) so the renderer advances by character width rather than the full 350 px square — eliminates the excessive inter-character gap.
 - Reduced glyph canvas height from 350 px to 220 px to match the actual ink region (baseline 175 px, ink top ≤ 21 px headroom), fixing oversized line spacing in generated output.
+- User-template rendering now mildly narrows over-wide lowercase glyphs such as `c`, `n`, and `u`, so broad captured forms do not read oversized in final output.
 
 ## [0.1.0] - 2026-04-26
 
