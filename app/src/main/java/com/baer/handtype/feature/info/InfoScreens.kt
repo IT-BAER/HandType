@@ -3,6 +3,11 @@ package com.baer.handtype.feature.info
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -180,7 +185,11 @@ private fun FaqItem(question: String, answer: String, initiallyOpen: Boolean) {
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
-            AnimatedVisibility(visible = open) {
+            AnimatedVisibility(
+                visible = open,
+                enter = fadeIn(tween(200)) + expandVertically(tween(200)),
+                exit = fadeOut(tween(150)) + shrinkVertically(tween(150)),
+            ) {
                 Column {
                     Spacer(Modifier.height(8.dp))
                     Text(

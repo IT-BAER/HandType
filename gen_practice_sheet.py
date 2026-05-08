@@ -20,7 +20,9 @@ LABEL_COLOR = (0xB7, 0xB0, 0xA3)
 GRID_COLOR = (0xCC, 0xC4, 0xB4)
 GUIDE_COLOR = (0xD8, 0xD1, 0xC3)
 GUIDE_SEGMENT_LENGTH = 26
+GUIDE_UPPER_RATIO = 0.32
 GUIDE_BASELINE_RATIO = 0.78
+GUIDE_MIDDLE_RATIO = (GUIDE_UPPER_RATIO + GUIDE_BASELINE_RATIO) / 2
 INK_COLOR = (0x1A, 0x14, 0x10)
 
 
@@ -113,20 +115,24 @@ def render() -> Image.Image:
             grid_top_px + bottom * grid_h,
         )
         draw.rectangle(rect, outline=GRID_COLOR, width=2)
-        draw_baseline_guide_ticks(draw, rect)
+        draw_guide_ticks(draw, rect)
         if char != " ":
             draw.text((rect[0] + 8, rect[1] + 4), char, fill=LABEL_COLOR, font=label_font)
 
     return img
 
 
-def draw_baseline_guide_ticks(draw: ImageDraw.ImageDraw, rect):
+def draw_guide_ticks(draw: ImageDraw.ImageDraw, rect):
     left, top, right, bottom = rect
     height = bottom - top
+    upper_guide_y = top + height * GUIDE_UPPER_RATIO
+    middle_guide_y = top + height * GUIDE_MIDDLE_RATIO
     baseline_y = top + height * GUIDE_BASELINE_RATIO
     center_x = (left + right) / 2
     half_segment = GUIDE_SEGMENT_LENGTH / 2
 
+    draw.line((center_x - half_segment, upper_guide_y, center_x + half_segment, upper_guide_y), fill=GUIDE_COLOR, width=2)
+    draw.line((center_x - half_segment, middle_guide_y, center_x + half_segment, middle_guide_y), fill=GUIDE_COLOR, width=2)
     draw.line((center_x - half_segment, baseline_y, center_x + half_segment, baseline_y), fill=GUIDE_COLOR, width=2)
 
 
@@ -134,9 +140,12 @@ def main():
     out_dir = Path(__file__).resolve().parent / "artifacts"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "handtype_practice_sheet.png"
+    pdf_path = out_dir / "handtype_practice_sheet.pdf"
     img = render()
-    img.save(out_path, "PNG", optimize=True)
+    img.save(out_path, "PNG", optimize=True, dpi=(300, 300))
+    img.save(pdf_path, "PDF", resolution=300.0)
     print(f"Wrote {out_path} ({img.size[0]}x{img.size[1]})")
+    print(f"Wrote {pdf_path}")
 
 
 if __name__ == "__main__":

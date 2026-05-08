@@ -11,6 +11,22 @@
     <string name="render_instruction">Escribe tu mensaje abajo y toca Generar para crear una nota manuscrita única.</string>
     <string name="render_text_label">Tu mensaje</string>
     <string name="render_text_placeholder">¡Hola, mundo!</string>
+    <string name="render_background_title">Papel</string>
+    <string name="render_background_subtitle">Elige un fondo para esta nota.</string>
+    <string name="render_background_set_default">Predeterminar</string>
+    <string name="render_background_current_default">Predeterminado guardado</string>
+    <string name="render_background_default_badge">Predeterminado</string>
+    <string name="note_background_plain_white">Blanco puro</string>
+    <string name="note_background_warm_cream">Crema cálida</string>
+    <string name="note_background_soft_butter">Amarillo mantequilla suave</string>
+    <string name="note_background_rose_blush">Rosa suave</string>
+    <string name="note_background_cool_mist">Bruma fría</string>
+    <string name="note_background_soft_sage">Salvia suave</string>
+    <string name="note_background_parchment_sheet">Papel pergamino</string>
+    <string name="note_background_recycled_sheet">Papel reciclado</string>
+    <string name="note_background_kraft_sheet">Papel kraft</string>
+    <string name="note_background_ruled_sheet">Papel rayado</string>
+    <string name="note_background_graph_sheet">Papel cuadriculado</string>
     <string name="render_generate_button">Generar</string>
     <string name="render_premium_button">Premium: Usar mi letra</string>
     <string name="render_templates_button">Plantillas</string>
@@ -37,6 +53,24 @@
 
     <string name="camera_section_title">Captura tu hoja de escritura</string>
     <string name="camera_tip">Consejo: usa iluminación uniforme y mantén visibles todas las filas de letras.</string>
+    <string name="camera_pre_scan_title">Antes de escanear</string>
+    <string name="camera_pre_scan_step_1">Imprime la hoja de práctica.</string>
+    <string name="camera_pre_scan_step_2">Escribe el carácter correspondiente en cada casilla y mantenlo sobre la línea guía.</string>
+    <string name="camera_pre_scan_step_3">Captura toda la página y mantén los cuatro cuadrados negros completamente visibles.</string>
+    <string name="camera_pre_scan_step_4">Usa luz uniforme y evita desenfoque, reflejos y sombras duras.</string>
+    <string name="camera_sheet_button">Obtener la hoja de práctica (PNG)</string>
+    <string name="camera_scan_button">Escanear o importar hoja de práctica</string>
+    <string name="camera_gallery_button">Elegir foto de la galería</string>
+    <string name="camera_opening_scanner">Abriendo escáner…</string>
+    <string name="camera_processing_button">Procesando…</string>
+    <string name="camera_preparing_image">Preparando imagen…</string>
+    <string name="camera_adjust_title">Ajustar imagen antes de la extracción</string>
+    <string name="camera_adjust_body">Aumenta el contraste o el brillo antes de que ML Kit lea la hoja.</string>
+    <string name="camera_brightness_label">Brillo</string>
+    <string name="camera_contrast_label">Contraste</string>
+    <string name="camera_use_image_button">Usar esta imagen</string>
+    <string name="camera_discard_image_button">Descartar imagen</string>
+    <string name="camera_open_image_failed">No se pudo abrir esa imagen. Prueba con otro archivo.</string>
     <string name="camera_guide_label">Alinea los bordes de la página con la guía</string>
     <string name="camera_capture_button">Capturar muestra</string>
     <string name="camera_capturing_button">Capturando…</string>
@@ -56,6 +90,9 @@
     <string name="premium_no_glyphs">No se detectaron glifos alfanuméricos. Intenta con mejor iluminación y llena más el marco con la página. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_complete">Captura premium completa. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_failed_focus">El reconocimiento de texto falló. Intenta otra captura con más nitidez.</string>
+    <string name="premium_marker_detection_failed">Ese escaneo no parecía la hoja de práctica de HandType. Asegúrate de que la hoja impresa llene la mayor parte del escaneo y los cuatro cuadrados negros sean visibles.</string>
+    <string name="premium_save_failed">No se pudo guardar la plantilla de escritura. Inténtalo de nuevo.</string>
+    <string name="premium_process_failed">No se pudo procesar la hoja. Vuelve a escanear con los cuatro marcadores de esquina visibles.</string>
     <string name="premium_camera_failed">Error al capturar con la cámara. Inténtalo de nuevo.</string>
 
     <!-- Drawer navigation -->
@@ -79,6 +116,9 @@
     <string name="history_delete_title">¿Eliminar esta nota?</string>
     <string name="history_delete_body">Esto elimina la copia guardada de tu dispositivo. Los archivos que ya exportaste a Imágenes o Descargas permanecerán.</string>
     <string name="history_deleted_toast">Eliminado</string>
+    <string name="history_delete_selected_title">¿Eliminar %1$d notas?</string>
+    <string name="history_delete_selected_body">Esto elimina %1$d copias guardadas de tu dispositivo. Los archivos que ya exportaste a Imágenes o Descargas permanecerán.</string>
+    <string name="history_deleted_selected_toast">%1$d notas eliminadas</string>
     <string name="history_note_desc">Nota guardada</string>
     <string name="history_preview_desc">Vista previa de nota</string>
 

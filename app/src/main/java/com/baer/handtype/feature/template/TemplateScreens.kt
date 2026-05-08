@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -24,8 +25,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -42,6 +45,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
@@ -53,15 +57,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,9 +76,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -87,34 +95,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.R
 import kotlin.math.absoluteValue
+import com.baer.handtype.ui.animation.stripReveal
+import com.baer.handtype.ui.animation.PenWritingAnimation
+import com.baer.handtype.ui.animation.pressScale
+import com.baer.handtype.ui.animation.selectionBounceScale
 import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
 import com.baer.handtype.template.HandwritingTemplate
+import com.baer.handtype.template.NoteBackgroundCatalog
+import com.baer.handtype.template.NoteBackgroundPreferences
+import com.baer.handtype.template.NoteBackgroundPreset
+import com.baer.handtype.template.NoteBackgroundPreviewPattern
 import com.baer.handtype.template.OutputExporter
 import com.baer.handtype.template.TemplateDescriptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-@Composable
-private fun Modifier.pressScale(): Modifier {
-    var pressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.92f else 1f,
-        animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
-        label = "pressScale",
-    )
-    return this
-        .graphicsLayer { scaleX = scale; scaleY = scale }
-        .pointerInput(Unit) {
-            awaitEachGesture {
-                awaitFirstDown(requireUnconsumed = false)
-                pressed = true
-                waitForUpOrCancellation()
-                pressed = false
-            }
-        }
-}
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -148,11 +144,20 @@ fun TemplateChooserScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 androidx.compose.material3.IconButton(onClick = onOpenDrawer) {
-                    Text(
-                        text = "\u2630",
-                        color = Color(0xFF1A1410),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                    Column(
+                        modifier = Modifier.size(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        repeat(3) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(2.dp)
+                                    .background(Color(0xFF1A1410), RoundedCornerShape(1.dp)),
+                            )
+                        }
+                    }
                 }
             }
             Text(
@@ -173,50 +178,42 @@ fun TemplateChooserScreen(
 
             HorizontalPager(
                 state = pagerState,
-                contentPadding = PaddingValues(horizontal = 32.dp),
-                pageSpacing = 12.dp,
+                contentPadding = PaddingValues(horizontal = 52.dp),
+                pageSpacing = 24.dp,
                 modifier = Modifier.fillMaxWidth(),
                 flingBehavior = PagerDefaults.flingBehavior(
                     state = pagerState,
-                    snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium),
+                    snapAnimationSpec = spring(
+                        dampingRatio = 0.78f,
+                        stiffness = 240f,
+                    ),
                 ),
             ) { page ->
-                val pageOffset = (
-                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                ).absoluteValue
-                val overlayAlpha = (pageOffset * 0.5f).coerceIn(0f, 0.5f)
-
                 Box(
-                    modifier = Modifier.pointerInput(page) {
-                        awaitEachGesture {
-                            awaitFirstDown(requireUnconsumed = false)
-                            val up = waitForUpOrCancellation()
-                            if (up != null) {
-                                up.consume()
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                pagerScope.launch {
-                                    if (pagerState.currentPage != page) {
-                                        pagerState.animateScrollToPage(page)
+                    modifier = Modifier
+                        .pointerInput(page) {
+                            awaitEachGesture {
+                                awaitFirstDown(requireUnconsumed = false)
+                                val up = waitForUpOrCancellation()
+                                if (up != null) {
+                                    up.consume()
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    pagerScope.launch {
+                                        if (pagerState.currentPage != page) {
+                                            pagerState.animateScrollToPage(page)
+                                        }
+                                        onTemplateSelected(templates[page])
                                     }
-                                    onTemplateSelected(templates[page])
                                 }
                             }
-                        }
-                    },
+                        },
                 ) {
                     TemplateOptionCard(
                         descriptor = templates[page],
                         accentColor = Color(0xFF23443A),
                         buttonText = stringResource(R.string.template_chooser_use_template),
+                        modifier = Modifier.fillMaxSize(),
                     )
-                    if (overlayAlpha > 0.01f) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clip(RoundedCornerShape(28.dp))
-                                .background(Color(0xFFF5EFE4).copy(alpha = overlayAlpha)),
-                        )
-                    }
                     // Delete button: only for user-captured templates
                     val descriptor = templates[page]
                     if (onDeleteTemplate != null && descriptor.id.startsWith("user_")) {
@@ -377,6 +374,13 @@ fun HandwritingRenderScreen(
     var missingChars by remember { mutableStateOf<Set<Char>>(emptySet()) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val backgroundPreferences = remember(context) { NoteBackgroundPreferences(context) }
+    val initialDefaultBackgroundId = remember(backgroundPreferences) { backgroundPreferences.getDefaultBackgroundId() }
+    val backgroundPresets = remember { NoteBackgroundCatalog.selectablePresets }
+    var defaultBackgroundId by rememberSaveable { mutableStateOf(initialDefaultBackgroundId) }
+    var selectedBackgroundId by rememberSaveable { mutableStateOf(initialDefaultBackgroundId) }
+    var lastRenderedText by rememberSaveable { mutableStateOf("") }
+    var lastRenderSeed by rememberSaveable { mutableStateOf<Long?>(null) }
 
     Scaffold(
         modifier = modifier,
@@ -395,6 +399,29 @@ fun HandwritingRenderScreen(
                 with(density) { 34.dp.roundToPx() }
             }
 
+            suspend fun renderNote(inputText: String, backgroundId: String, seed: Long) = withContext(Dispatchers.Default) {
+                val config = HandwritingRenderConfig(
+                    maxWidthPx = renderWidthPx,
+                    targetLineHeightPx = targetLineHeightPx,
+                    noteBackground = NoteBackgroundCatalog.presetOrDefault(backgroundId),
+                )
+                if (template.isStrokeBased) {
+                    HandwritingBitmapRenderer.renderCursive(
+                        text = inputText,
+                        strokeData = template.strokeData!!,
+                        config = config,
+                        seed = seed,
+                    )
+                } else {
+                    HandwritingBitmapRenderer.render(
+                        text = inputText,
+                        template = template,
+                        config = config,
+                        seed = seed,
+                    )
+                }
+            }
+
             fun generate() {
                 phase = RenderPhase.Generating.name
                 scope.launch {
@@ -404,27 +431,12 @@ fun HandwritingRenderScreen(
                         "the rain trace patterns on the glass. It was a quiet " +
                         "kind of beauty, the sort that only patience could reveal."
                     }
-                    val result = withContext(Dispatchers.Default) {
-                        val config = HandwritingRenderConfig(
-                            maxWidthPx = renderWidthPx,
-                            targetLineHeightPx = targetLineHeightPx,
-                        )
-                        if (template.isStrokeBased) {
-                            HandwritingBitmapRenderer.renderCursive(
-                                text = inputText,
-                                strokeData = template.strokeData!!,
-                                config = config,
-                            )
-                        } else {
-                            HandwritingBitmapRenderer.render(
-                                text = inputText,
-                                template = template,
-                                config = config,
-                            )
-                        }
-                    }
+                    val seed = System.nanoTime()
+                    val result = renderNote(inputText, selectedBackgroundId, seed)
                     resultBitmap = result.bitmap
                     missingChars = result.missingCharacters
+                    lastRenderedText = inputText
+                    lastRenderSeed = seed
                     phase = RenderPhase.Result.name
                     // Auto-archive into history (best effort, non-blocking).
                     withContext(Dispatchers.IO) {
@@ -441,8 +453,8 @@ fun HandwritingRenderScreen(
             AnimatedContent(
                 targetState = phase,
                 transitionSpec = {
-                    (fadeIn(tween(300)) + slideInVertically { it / 8 })
-                        .togetherWith(fadeOut(tween(200)))
+                    (fadeIn(tween(300)) + slideInVertically { it / 12 })
+                        .togetherWith(fadeOut(tween(250)))
                 },
                 label = "phaseTransition",
             ) { currentPhase ->
@@ -451,6 +463,14 @@ fun HandwritingRenderScreen(
                         text = text,
                         onTextChange = { text = it },
                         templateName = template.descriptor.displayName,
+                        backgroundPresets = backgroundPresets,
+                        selectedBackgroundId = selectedBackgroundId,
+                        defaultBackgroundId = defaultBackgroundId,
+                        onBackgroundSelected = { selectedBackgroundId = it },
+                        onSetBackgroundDefault = {
+                            backgroundPreferences.setDefaultBackgroundId(selectedBackgroundId)
+                            defaultBackgroundId = selectedBackgroundId
+                        },
                         onGenerate = ::generate,
                         onBackToTemplates = onBackToTemplates,
                         onPremiumSelected = onPremiumSelected,
@@ -462,8 +482,47 @@ fun HandwritingRenderScreen(
                         bitmap = resultBitmap,
                         templateName = template.descriptor.displayName,
                         missingCharacters = missingChars,
+                        onSaveTransparent = {
+                            val seed = lastRenderSeed ?: return@ResultPhaseContent
+                            val inputText = lastRenderedText.ifBlank { return@ResultPhaseContent }
+                            scope.launch {
+                                val transparentBitmap = renderNote(
+                                    inputText = inputText,
+                                    backgroundId = NoteBackgroundCatalog.transparentPreset.id,
+                                    seed = seed,
+                                ).bitmap
+                                try {
+                                    OutputExporter.saveImageToGallery(
+                                        context = context,
+                                        bitmap = transparentBitmap,
+                                        templateName = "${template.descriptor.displayName}_transparent",
+                                    )
+                                        .onSuccess {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.result_saved_transparent),
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                        .onFailure {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(
+                                                    R.string.result_save_failed,
+                                                    it.message ?: "unknown",
+                                                ),
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                } finally {
+                                    transparentBitmap.recycle()
+                                }
+                            }
+                        },
                         onNewNote = {
                             resultBitmap = null
+                            missingChars = emptySet()
+                            selectedBackgroundId = defaultBackgroundId
                             phase = RenderPhase.Compose.name
                         },
                         onRegenerate = ::generate,
@@ -480,16 +539,24 @@ private fun ComposePhaseContent(
     text: String,
     onTextChange: (String) -> Unit,
     templateName: String,
+    backgroundPresets: List<NoteBackgroundPreset>,
+    selectedBackgroundId: String,
+    defaultBackgroundId: String,
+    onBackgroundSelected: (String) -> Unit,
+    onSetBackgroundDefault: () -> Unit,
     onGenerate: () -> Unit,
     onBackToTemplates: () -> Unit,
     onPremiumSelected: () -> Unit,
 ) {
+    val selectedBackground = backgroundPresets.firstOrNull { it.id == selectedBackgroundId }
+        ?: backgroundPresets.first()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -511,15 +578,38 @@ private fun ComposePhaseContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        OutlinedTextField(
-            value = text,
-            onValueChange = onTextChange,
-            label = { Text(stringResource(R.string.render_text_label)) },
-            placeholder = { Text(stringResource(R.string.render_text_placeholder)) },
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(240.dp),
-            maxLines = 20,
+                .height(220.dp),
+        ) {
+            PaperPreviewSurface(
+                preset = selectedBackground,
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(16.dp),
+            )
+            OutlinedTextField(
+                value = text,
+                onValueChange = onTextChange,
+                label = { Text(stringResource(R.string.render_text_label)) },
+                placeholder = { Text(stringResource(R.string.render_text_placeholder)) },
+                modifier = Modifier.fillMaxSize(),
+                maxLines = 20,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                ),
+            )
+        }
+
+        BackgroundPicker(
+            presets = backgroundPresets,
+            selectedBackgroundId = selectedBackgroundId,
+            defaultBackgroundId = defaultBackgroundId,
+            onBackgroundSelected = onBackgroundSelected,
+            onSetBackgroundDefault = onSetBackgroundDefault,
         )
 
         val haptic = LocalHapticFeedback.current
@@ -546,7 +636,9 @@ private fun ComposePhaseContent(
 
         OutlinedButton(
             onClick = onPremiumSelected,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(),
             shape = RoundedCornerShape(18.dp),
             contentPadding = PaddingValues(vertical = 14.dp),
         ) {
@@ -566,9 +658,9 @@ private fun GeneratingOverlay() {
         AnimatedVisibility(
             visible = true,
             enter = scaleIn(
-                initialScale = 0.85f,
-                animationSpec = spring(dampingRatio = 0.7f),
-            ) + fadeIn(tween(300)),
+                initialScale = 0.92f,
+                animationSpec = tween(220, easing = FastOutSlowInEasing),
+            ) + fadeIn(tween(220, easing = FastOutSlowInEasing)),
         ) {
             Card(
                 shape = RoundedCornerShape(28.dp),
@@ -580,9 +672,10 @@ private fun GeneratingOverlay() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
-                        color = Color(0xFF23443A),
+                    PenWritingAnimation(
+                        modifier = Modifier.size(140.dp),
+                        inkColor = Color(0xFF1A1410),
+                        traceColor = Color(0xFF23443A),
                     )
                     Text(
                         text = stringResource(R.string.render_generating_title),
@@ -604,6 +697,7 @@ private fun ResultPhaseContent(
     bitmap: Bitmap?,
     templateName: String,
     missingCharacters: Set<Char>,
+    onSaveTransparent: () -> Unit,
     onNewNote: () -> Unit,
     onRegenerate: () -> Unit,
     onBackToTemplates: () -> Unit,
@@ -617,19 +711,30 @@ private fun ResultPhaseContent(
 
     var pendingTransparent by remember { mutableStateOf(false) }
 
+    // Ink-reveal animation for the result bitmap
+    val inkRevealProgress = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(bitmap) {
+        if (bitmap != null) {
+            inkRevealProgress.snapTo(0f)
+            inkRevealProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = 750,
+                    easing = androidx.compose.animation.core.LinearEasing,
+                ),
+            )
+        }
+    }
+
     fun doSave(transparent: Boolean) {
         val bmp = bitmap ?: return
-        val result = if (transparent) {
-            OutputExporter.saveTransparentImageToGallery(context, bmp, templateName)
-        } else {
-            OutputExporter.saveImageToGallery(context, bmp, templateName)
+        if (transparent) {
+            onSaveTransparent()
+            return
         }
-        result
+        OutputExporter.saveImageToGallery(context, bmp, templateName)
             .onSuccess {
-                toast(
-                    if (transparent) context.getString(R.string.result_saved_transparent)
-                    else context.getString(R.string.result_saved),
-                )
+                toast(context.getString(R.string.result_saved))
             }
             .onFailure { toast(context.getString(R.string.result_save_failed, it.message ?: "unknown")) }
     }
@@ -705,7 +810,8 @@ private fun ResultPhaseContent(
                     contentDescription = stringResource(R.string.render_result_image_desc),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp),
+                        .padding(4.dp)
+                        .stripReveal(progress = inkRevealProgress.value),
                     contentScale = ContentScale.FillWidth,
                 )
             }
@@ -811,6 +917,249 @@ private fun ResultPhaseContent(
 }
 
 @Composable
+private fun BackgroundPicker(
+    presets: List<NoteBackgroundPreset>,
+    selectedBackgroundId: String,
+    defaultBackgroundId: String,
+    onBackgroundSelected: (String) -> Unit,
+    onSetBackgroundDefault: () -> Unit,
+) {
+    val isCurrentDefault = selectedBackgroundId == defaultBackgroundId
+    val selectedPreset = presets.firstOrNull { it.id == selectedBackgroundId } ?: presets.first()
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(R.string.render_background_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(selectedPreset.labelRes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF1A1410),
+                    )
+                    if (selectedPreset.premium) {
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = Color(0xFF7C4D11).copy(alpha = 0.12f),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.template_chooser_premium_badge),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF7C4D11),
+                            )
+                        }
+                    }
+                    if (isCurrentDefault) {
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = Color(0xFF23443A).copy(alpha = 0.12f),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.render_background_default_badge),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF23443A),
+                            )
+                        }
+                    }
+                }
+            }
+            if (!isCurrentDefault) {
+                TextButton(
+                    onClick = onSetBackgroundDefault,
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.render_background_set_default),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            presets.forEach { preset ->
+                BackgroundPresetCard(
+                    preset = preset,
+                    selected = preset.id == selectedBackgroundId,
+                    isDefault = preset.id == defaultBackgroundId,
+                    onClick = { onBackgroundSelected(preset.id) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BackgroundPresetCard(
+    preset: NoteBackgroundPreset,
+    selected: Boolean,
+    isDefault: Boolean,
+    onClick: () -> Unit,
+) {
+    val borderColor = when {
+        selected -> Color(0xFF23443A)
+        isDefault -> Color(0xFF23443A).copy(alpha = 0.24f)
+        else -> Color(0xFF1A1410).copy(alpha = 0.12f)
+    }
+    val bounceScale = selectionBounceScale(selected)
+
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .width(58.dp)
+            .graphicsLayer {
+                scaleX = bounceScale
+                scaleY = bounceScale
+            },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(if (selected) 2.5.dp else 1.dp, borderColor),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (selected) 4.dp else 0.dp,
+        ),
+    ) {
+        PaperPreviewSurface(
+            preset = preset,
+            modifier = Modifier
+                .padding(4.dp)
+                .size(width = 50.dp, height = 40.dp),
+            shape = RoundedCornerShape(10.dp),
+            showPremiumBadge = true,
+        )
+    }
+}
+
+@Composable
+private fun PaperPreviewSurface(
+    preset: NoteBackgroundPreset,
+    modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(10.dp),
+    showPremiumBadge: Boolean = false,
+) {
+    val previewColors = preset.previewColors.map { Color(it) }
+
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .then(
+                if (previewColors.size == 1) {
+                    Modifier.background(previewColors.first())
+                } else {
+                    Modifier.background(Brush.linearGradient(previewColors))
+                },
+            ),
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            when (preset.previewPattern) {
+                NoteBackgroundPreviewPattern.Texture -> {
+                    val step = (size.minDimension / 5.5f).coerceAtLeast(10f)
+                    var row = 0
+                    var y = step * 0.6f
+                    while (y < size.height) {
+                        var column = 0
+                        var x = if (row % 2 == 0) step * 0.75f else step * 1.15f
+                        while (x < size.width) {
+                            drawCircle(
+                                color = Color(0xFFFFFFFF).copy(alpha = if ((row + column) % 3 == 0) 0.14f else 0.08f),
+                                radius = if ((row + column) % 2 == 0) step * 0.12f else step * 0.08f,
+                                center = Offset(x, y),
+                            )
+                            if ((row + column) % 4 == 0) {
+                                drawLine(
+                                    color = Color(0xFF8A6A3F).copy(alpha = 0.08f),
+                                    start = Offset(x - step * 0.22f, y - step * 0.1f),
+                                    end = Offset(x + step * 0.28f, y + step * 0.06f),
+                                    strokeWidth = 1.1f,
+                                )
+                            }
+                            x += step * 1.3f
+                            column += 1
+                        }
+                        y += step * 0.92f
+                        row += 1
+                    }
+                }
+
+                NoteBackgroundPreviewPattern.Ruled -> {
+                    val step = (size.height / 6f).coerceAtLeast(12f)
+                    var y = step * 1.1f
+                    while (y < size.height) {
+                        drawLine(
+                            color = Color(0xFF9BB7DB).copy(alpha = 0.7f),
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = 1.2f,
+                        )
+                        y += step
+                    }
+                    drawLine(
+                        color = Color(0xFFD58F8F).copy(alpha = 0.85f),
+                        start = Offset(size.width * 0.16f, 0f),
+                        end = Offset(size.width * 0.16f, size.height),
+                        strokeWidth = 1.4f,
+                    )
+                }
+
+                NoteBackgroundPreviewPattern.Graph -> {
+                    val step = (size.minDimension / 7f).coerceAtLeast(10f)
+                    var y = 0f
+                    while (y <= size.height) {
+                        drawLine(
+                            color = Color(0xFF8DB2D2).copy(alpha = 0.55f),
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = 1f,
+                        )
+                        y += step
+                    }
+                    var x = 0f
+                    while (x <= size.width) {
+                        drawLine(
+                            color = Color(0xFF8DB2D2).copy(alpha = 0.55f),
+                            start = Offset(x, 0f),
+                            end = Offset(x, size.height),
+                            strokeWidth = 1f,
+                        )
+                        x += step
+                    }
+                }
+
+                else -> Unit
+            }
+        }
+
+        if (showPremiumBadge && preset.premium) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF7C4D11)),
+            )
+        }
+    }
+}
+
+@Composable
 fun LoadingTemplateScreen(
     title: String,
     body: String,
@@ -828,7 +1177,11 @@ fun LoadingTemplateScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                CircularProgressIndicator()
+                PenWritingAnimation(
+                    modifier = Modifier.size(100.dp),
+                    inkColor = Color(0xFF1A1410),
+                    traceColor = Color(0xFF23443A),
+                )
                 Text(text = title, style = MaterialTheme.typography.headlineSmall)
                 Text(
                     text = body,

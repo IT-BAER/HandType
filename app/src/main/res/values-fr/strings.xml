@@ -11,6 +11,22 @@
     <string name="render_instruction">Tapez votre message ci-dessous, puis appuyez sur Générer pour créer une note manuscrite unique.</string>
     <string name="render_text_label">Votre message</string>
     <string name="render_text_placeholder">Bonjour, monde !</string>
+    <string name="render_background_title">Papier</string>
+    <string name="render_background_subtitle">Choisissez un fond pour cette note.</string>
+    <string name="render_background_set_default">Définir par défaut</string>
+    <string name="render_background_current_default">Défaut enregistré</string>
+    <string name="render_background_default_badge">Défaut</string>
+    <string name="note_background_plain_white">Blanc pur</string>
+    <string name="note_background_warm_cream">Crème douce</string>
+    <string name="note_background_soft_butter">Beurre doux</string>
+    <string name="note_background_rose_blush">Rose poudré</string>
+    <string name="note_background_cool_mist">Brume froide</string>
+    <string name="note_background_soft_sage">Sauge douce</string>
+    <string name="note_background_parchment_sheet">Feuille parchemin</string>
+    <string name="note_background_recycled_sheet">Papier recyclé</string>
+    <string name="note_background_kraft_sheet">Papier kraft</string>
+    <string name="note_background_ruled_sheet">Papier ligné</string>
+    <string name="note_background_graph_sheet">Papier quadrillé</string>
     <string name="render_generate_button">Générer</string>
     <string name="render_premium_button">Premium : utiliser mon écriture</string>
     <string name="render_templates_button">Modèles</string>
@@ -37,6 +53,24 @@
 
     <string name="camera_section_title">Photographiez votre feuille d\'écriture</string>
     <string name="camera_tip">Astuce : utilisez un éclairage uniforme et gardez toutes les rangées de lettres visibles.</string>
+    <string name="camera_pre_scan_title">Avant de scanner</string>
+    <string name="camera_pre_scan_step_1">Imprimez la feuille d\'entraînement.</string>
+    <string name="camera_pre_scan_step_2">Écrivez le caractère correspondant dans chaque case et maintenez-le sur la ligne de guide.</string>
+    <string name="camera_pre_scan_step_3">Capturez la page entière et gardez les quatre carrés noirs entièrement visibles.</string>
+    <string name="camera_pre_scan_step_4">Utilisez une lumière uniforme et évitez le flou, les reflets et les ombres dures.</string>
+    <string name="camera_sheet_button">Obtenir la feuille d\'entraînement (PNG)</string>
+    <string name="camera_scan_button">Scanner ou importer la feuille d\'entraînement</string>
+    <string name="camera_gallery_button">Choisir une photo dans la galerie</string>
+    <string name="camera_opening_scanner">Ouverture du scanner…</string>
+    <string name="camera_processing_button">Traitement…</string>
+    <string name="camera_preparing_image">Préparation de l\'image…</string>
+    <string name="camera_adjust_title">Ajuster l\'image avant l\'extraction</string>
+    <string name="camera_adjust_body">Augmentez le contraste ou la luminosité avant que ML Kit ne lise la feuille.</string>
+    <string name="camera_brightness_label">Luminosité</string>
+    <string name="camera_contrast_label">Contraste</string>
+    <string name="camera_use_image_button">Utiliser cette image</string>
+    <string name="camera_discard_image_button">Ignorer l\'image</string>
+    <string name="camera_open_image_failed">Impossible d\'ouvrir cette image. Essayez un autre fichier.</string>
     <string name="camera_guide_label">Alignez les bords de la page avec le guide</string>
     <string name="camera_capture_button">Capturer l\'échantillon</string>
     <string name="camera_capturing_button">Capture en cours…</string>
@@ -56,6 +90,9 @@
     <string name="premium_no_glyphs">Aucun glyphe alphanumérique détecté. Essayez avec un meilleur éclairage et remplissez davantage le cadre avec la page. Utilisez le bouton retour pour revenir aux modèles.</string>
     <string name="premium_capture_complete">Capture premium terminée. %1$d découpes de glyphes extraites pour %2$d caractères uniques. Utilisez retour pour revenir aux modèles.</string>
     <string name="premium_capture_failed_focus">La reconnaissance de texte a échoué. Essayez une autre capture avec une mise au point plus nette.</string>
+    <string name="premium_marker_detection_failed">Ce scan ne ressemblait pas à la feuille d\'entraînement HandType. Assurez-vous que la feuille imprimée remplit la majeure partie du scan et que les quatre carrés noirs sont visibles.</string>
+    <string name="premium_save_failed">Impossible d\'enregistrer le modèle d\'écriture. Réessayez.</string>
+    <string name="premium_process_failed">Impossible de traiter la feuille. Re-scan avec les quatre marqueurs d\'angle visibles.</string>
     <string name="premium_camera_failed">La capture de la caméra a échoué. Réessayez.</string>
 
     <!-- Drawer navigation -->
@@ -79,6 +116,9 @@
     <string name="history_delete_title">Supprimer cette note ?</string>
     <string name="history_delete_body">Cela supprime la copie enregistrée de votre appareil. Les fichiers déjà exportés vers Images ou Téléchargements restent en place.</string>
     <string name="history_deleted_toast">Supprimé</string>
+    <string name="history_delete_selected_title">Supprimer %1$d notes ?</string>
+    <string name="history_delete_selected_body">Cela supprime %1$d copies enregistrées de votre appareil. Les fichiers déjà exportés vers Images ou Téléchargements restent en place.</string>
+    <string name="history_deleted_selected_toast">%1$d notes supprimées</string>
     <string name="history_note_desc">Note enregistrée</string>
     <string name="history_preview_desc">Aperçu de la note</string>
 

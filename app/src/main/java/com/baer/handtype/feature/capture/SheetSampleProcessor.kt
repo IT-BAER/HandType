@@ -139,10 +139,9 @@ object SheetSampleProcessor {
 
             val cellWidthPx = cellRight - cellLeft
             val cellHeightPx = cellBottom - cellTop
-            // Inset just enough to skip the printed grid border. Do NOT skip the upper-left
-            // corner: the printed character label there is a very light gray that Otsu in
-            // GlyphPostProcessor filters out, while the user's ink is dark enough to survive.
-            // Skipping the corner would lose handwriting that starts in the top-left of the cell.
+            // Inset just enough to skip the printed grid border. The printed character label in
+            // the upper-left corner can survive ML Kit auto-enhancement, so we blank that known
+            // label zone after cropping instead of discarding the whole corner up-front.
             val inset = (minOf(cellWidthPx, cellHeightPx) * 0.10f).toInt().coerceAtLeast(4)
 
             val cropLeft = cellLeft + inset
@@ -157,9 +156,10 @@ object SheetSampleProcessor {
                 cropRight - cropLeft,
                 cropBottom - cropTop,
             )
-            val cleaned = GlyphPostProcessor.cleanGlyph(cellCrop)
+            val sanitizedCellCrop = suppressPrintedCellLabel(cellCrop)
+            val cleaned = GlyphPostProcessor.cleanGlyph(sanitizedCellCrop)
 
-            debugContext?.let { dumpCellCrop(it, index, cell.character, cellCrop, cleaned) }
+            debugContext?.let { dumpCellCrop(it, index, cell.character, sanitizedCellCrop, cleaned) }
 
             // Detect empty cells: require enough strongly-opaque pixels (real ink, not faint
             // residue from the printed cell border / label).
@@ -177,6 +177,18 @@ object SheetSampleProcessor {
             rectifiedDebugBitmap = rectified,
             detectionFailed = false,
         )
+    }
+
+    private fun suppressPrintedCellLabel(cellCrop: Bitmap): Bitmap {
+        val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
+        val labelMaskWidth = (masked.width * 0.22f).toInt().coerceAtLeast(18).coerceAtMost(masked.width)
+        val labelMaskHeight = (masked.height * 0.24f).toInt().coerceAtLeast(24).coerceAtMost(masked.height)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        Canvas(masked).drawRect(0f, 0f, labelMaskWidth.toFloat(), labelMaskHeight.toFloat(), paint)
+        return masked
     }
 
     // ---------------------------------------------------------------------------------------------

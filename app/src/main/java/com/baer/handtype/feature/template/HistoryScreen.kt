@@ -8,6 +8,14 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,7 +33,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -58,6 +66,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.baer.handtype.R
+import com.baer.handtype.ui.animation.staggeredItemAnimation
 import com.baer.handtype.template.OutputExporter
 import java.io.File
 import java.text.SimpleDateFormat
@@ -186,57 +195,75 @@ fun HistoryScreen(
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-                if (selectionMode) {
-                    TextButton(onClick = ::clearSelection) {
-                        Text(stringResource(R.string.action_cancel))
-                    }
-                    TextButton(
-                        onClick = {
-                            pendingDelete = selectedEntries().takeIf { it.isNotEmpty() }
-                        },
-                    ) {
-                        Text(stringResource(R.string.action_delete))
+                AnimatedVisibility(
+                    visible = selectionMode,
+                    enter = fadeIn(tween(180)) + slideInHorizontally(tween(180)) { it / 3 },
+                    exit = fadeOut(tween(140)) + slideOutHorizontally(tween(140)) { it / 3 },
+                ) {
+                    Row {
+                        TextButton(onClick = ::clearSelection) {
+                            Text(stringResource(R.string.action_cancel))
+                        }
+                        TextButton(
+                            onClick = {
+                                pendingDelete = selectedEntries().takeIf { it.isNotEmpty() }
+                            },
+                        ) {
+                            Text(stringResource(R.string.action_delete))
+                        }
                     }
                 }
             }
 
-            if (entries.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.history_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    items(entries, key = { it.id }) { entry ->
-                        val isSelected = selectedIds.contains(entry.id)
-                        HistoryThumbnail(
-                            entry = entry,
-                            selectionMode = selectionMode,
-                            isSelected = isSelected,
-                            onClick = {
-                                if (selectionMode) {
-                                    toggleSelection(entry)
-                                } else {
-                                    selected = entry
-                                }
-                            },
-                            onLongClick = { toggleSelection(entry) },
-                            onSelectionToggle = { toggleSelection(entry) },
+            AnimatedContent(
+                targetState = entries.isEmpty(),
+                transitionSpec = {
+                    fadeIn(tween(300)).togetherWith(fadeOut(tween(200)))
+                },
+                label = "historyContent",
+                modifier = Modifier.weight(1f),
+            ) { isEmpty ->
+                if (isEmpty) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.history_empty),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        itemsIndexed(entries, key = { _, entry -> entry.id }) { index, entry ->
+                            val isSelected = selectedIds.contains(entry.id)
+                            staggeredItemAnimation(index = index) { animModifier ->
+                                HistoryThumbnail(
+                                    entry = entry,
+                                    selectionMode = selectionMode,
+                                    isSelected = isSelected,
+                                    modifier = animModifier,
+                                    onClick = {
+                                        if (selectionMode) {
+                                            toggleSelection(entry)
+                                        } else {
+                                            selected = entry
+                                        }
+                                    },
+                                    onLongClick = { toggleSelection(entry) },
+                                    onSelectionToggle = { toggleSelection(entry) },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -303,6 +330,7 @@ private fun HistoryThumbnail(
     entry: HistoryEntry,
     selectionMode: Boolean,
     isSelected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onSelectionToggle: () -> Unit,
@@ -310,7 +338,7 @@ private fun HistoryThumbnail(
     val bitmap = remember(entry.id) {
         runCatching { BitmapFactory.decodeFile(entry.pngFile.absolutePath) }.getOrNull()
     }
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = modifier.fillMaxWidth()) {
         Card(
             shape = RoundedCornerShape(18.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),

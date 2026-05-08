@@ -37,7 +37,9 @@ object PracticeSheetGenerator {
     private const val GRID_COLOR = 0xFFCCC4B4.toInt()
     private const val GUIDE_COLOR = 0xFFD8D1C3.toInt()
     private const val GUIDE_SEGMENT_LENGTH = 26f
+    private const val GUIDE_UPPER_RATIO = 0.32f
     private const val GUIDE_BASELINE_RATIO = 0.78f
+    private const val GUIDE_MIDDLE_RATIO = (GUIDE_UPPER_RATIO + GUIDE_BASELINE_RATIO) / 2f
 
     /** Characters laid out left-to-right, top-to-bottom into the 8×8 grid. */
     val cellCharacters: List<Char> = buildList {
@@ -201,7 +203,7 @@ object PracticeSheetGenerator {
                 gridTopPx + cell.bottom * gridHeightPx,
             )
             canvas.drawRect(rect, gridLinePaint)
-            drawBaselineGuideTicks(canvas, rect, guidePaint)
+            drawGuideTicks(canvas, rect, guidePaint)
             if (cell.character != ' ') {
                 canvas.drawText(
                     cell.character.toString(),
@@ -215,11 +217,15 @@ object PracticeSheetGenerator {
         return bitmap
     }
 
-    private fun drawBaselineGuideTicks(canvas: Canvas, rect: RectF, paint: Paint) {
+    private fun drawGuideTicks(canvas: Canvas, rect: RectF, paint: Paint) {
+        val upperGuideY = rect.top + rect.height() * GUIDE_UPPER_RATIO
+        val middleGuideY = rect.top + rect.height() * GUIDE_MIDDLE_RATIO
         val baselineY = rect.top + rect.height() * GUIDE_BASELINE_RATIO
         val centerX = rect.centerX()
         val halfSegment = GUIDE_SEGMENT_LENGTH / 2f
 
+        canvas.drawLine(centerX - halfSegment, upperGuideY, centerX + halfSegment, upperGuideY, paint)
+        canvas.drawLine(centerX - halfSegment, middleGuideY, centerX + halfSegment, middleGuideY, paint)
         canvas.drawLine(centerX - halfSegment, baselineY, centerX + halfSegment, baselineY, paint)
     }
 }

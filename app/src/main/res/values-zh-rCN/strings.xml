@@ -11,6 +11,22 @@
     <string name="render_instruction">在下方输入您的消息，然后点击"生成"以创建独特的手写便条。</string>
     <string name="render_text_label">您的消息</string>
     <string name="render_text_placeholder">你好，世界！</string>
+    <string name="render_background_title">纸张</string>
+    <string name="render_background_subtitle">为这张便条选择背景。</string>
+    <string name="render_background_set_default">设为默认</string>
+    <string name="render_background_current_default">已保存为默认</string>
+    <string name="render_background_default_badge">默认</string>
+    <string name="note_background_plain_white">纯白</string>
+    <string name="note_background_warm_cream">暖奶油</string>
+    <string name="note_background_soft_butter">柔和奶油黄</string>
+    <string name="note_background_rose_blush">淡玫瑰粉</string>
+    <string name="note_background_cool_mist">冷雾蓝</string>
+    <string name="note_background_soft_sage">柔和鼠尾草绿</string>
+    <string name="note_background_parchment_sheet">羊皮纸</string>
+    <string name="note_background_recycled_sheet">再生纸</string>
+    <string name="note_background_kraft_sheet">牛皮纸</string>
+    <string name="note_background_ruled_sheet">横线纸</string>
+    <string name="note_background_graph_sheet">方格纸</string>
     <string name="render_generate_button">生成</string>
     <string name="render_premium_button">高级版：使用我的笔迹</string>
     <string name="render_templates_button">模板</string>
@@ -35,6 +51,24 @@
 
     <string name="camera_section_title">捕捉您的手写纸张</string>
     <string name="camera_tip">提示：使用均匀的光线，并保持所有字母行可见。</string>
+    <string name="camera_pre_scan_title">扫描前</string>
+    <string name="camera_pre_scan_step_1">打印练习纸。</string>
+    <string name="camera_pre_scan_step_2">在每个方框中写入对应的字符，并保持在引导线上。</string>
+    <string name="camera_pre_scan_step_3">拍摄整页，并确保四个黑色方块完全可见。</string>
+    <string name="camera_pre_scan_step_4">使用均匀的光线，避免模糊、眩光和硬阴影。</string>
+    <string name="camera_sheet_button">获取练习纸（PNG）</string>
+    <string name="camera_scan_button">扫描或导入练习纸</string>
+    <string name="camera_gallery_button">从相册选择照片</string>
+    <string name="camera_opening_scanner">正在打开扫描器…</string>
+    <string name="camera_processing_button">正在处理…</string>
+    <string name="camera_preparing_image">正在准备图像…</string>
+    <string name="camera_adjust_title">提取前调整图像</string>
+    <string name="camera_adjust_body">在 ML Kit 读取纸张前提高对比度或亮度。</string>
+    <string name="camera_brightness_label">亮度</string>
+    <string name="camera_contrast_label">对比度</string>
+    <string name="camera_use_image_button">使用此图像</string>
+    <string name="camera_discard_image_button">丢弃图像</string>
+    <string name="camera_open_image_failed">无法打开该图像。请尝试其他文件。</string>
     <string name="camera_guide_label">将页面边缘与引导线对齐</string>
     <string name="camera_capture_button">捕捉样本</string>
     <string name="camera_capturing_button">正在捕捉…</string>
@@ -54,6 +88,9 @@
     <string name="premium_no_glyphs">未检测到字母数字字形。请尝试改善光线并让页面占据更多画面。使用系统返回键回到模板。</string>
     <string name="premium_capture_complete">高级捕捉完成。已从 %2$d 个唯一字符中提取 %1$d 个字形。使用返回键回到模板。</string>
     <string name="premium_capture_failed_focus">文本识别失败。请尝试对焦更清晰地重新拍摄。</string>
+    <string name="premium_marker_detection_failed">该扫描看起来不像 HandType 练习纸。请确保打印的纸张占据扫描的大部分，且四个黑色方块可见。</string>
+    <string name="premium_save_failed">无法保存手写模板。请重试。</string>
+    <string name="premium_process_failed">无法处理纸张。请重新扫描并确保四个角标记可见。</string>
     <string name="premium_camera_failed">相机捕捉失败。请重试。</string>
 
     <!-- Drawer navigation -->
@@ -77,6 +114,9 @@
     <string name="history_delete_title">删除此笔记？</string>
     <string name="history_delete_body">这将从您的设备中删除已保存的副本。已导出到图片或下载的文件将保留原位。</string>
     <string name="history_deleted_toast">已删除</string>
+    <string name="history_delete_selected_title">删除 %1$d 条笔记？</string>
+    <string name="history_delete_selected_body">这将从您的设备中删除 %1$d 条已保存的副本。已导出到图片或下载的文件将保留在原处。</string>
+    <string name="history_deleted_selected_toast">已删除 %1$d 条笔记</string>
     <string name="history_note_desc">已保存的笔记</string>
     <string name="history_preview_desc">笔记预览</string>
 

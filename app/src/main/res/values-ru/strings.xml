@@ -11,6 +11,22 @@
     <string name="render_instruction">Введите сообщение ниже и нажмите «Создать», чтобы сгенерировать уникальную рукописную заметку.</string>
     <string name="render_text_label">Ваше сообщение</string>
     <string name="render_text_placeholder">Привет, мир!</string>
+    <string name="render_background_title">Бумага</string>
+    <string name="render_background_subtitle">Выберите фон для этой заметки.</string>
+    <string name="render_background_set_default">Сделать по умолчанию</string>
+    <string name="render_background_current_default">Сохранено по умолчанию</string>
+    <string name="render_background_default_badge">По умолчанию</string>
+    <string name="note_background_plain_white">Чисто-белый</string>
+    <string name="note_background_warm_cream">Тёплый кремовый</string>
+    <string name="note_background_soft_butter">Мягкий масляный</string>
+    <string name="note_background_rose_blush">Нежно-розовый</string>
+    <string name="note_background_cool_mist">Холодная дымка</string>
+    <string name="note_background_soft_sage">Мягкий шалфей</string>
+    <string name="note_background_parchment_sheet">Пергаментная бумага</string>
+    <string name="note_background_recycled_sheet">Переработанная бумага</string>
+    <string name="note_background_kraft_sheet">Крафт-бумага</string>
+    <string name="note_background_ruled_sheet">Линованная бумага</string>
+    <string name="note_background_graph_sheet">Бумага в клетку</string>
     <string name="render_generate_button">Создать</string>
     <string name="render_premium_button">Премиум: мой почерк</string>
     <string name="render_templates_button">Шаблоны</string>
@@ -37,6 +53,24 @@
 
     <string name="camera_section_title">Сфотографируйте лист почерка</string>
     <string name="camera_tip">Совет: используйте равномерное освещение и держите все строки букв в кадре.</string>
+    <string name="camera_pre_scan_title">Перед сканированием</string>
+    <string name="camera_pre_scan_step_1">Распечатайте лист для практики.</string>
+    <string name="camera_pre_scan_step_2">Напишите соответствующий символ в каждой ячейке и держите его на линии-ориентире.</string>
+    <string name="camera_pre_scan_step_3">Сфотографируйте всю страницу и держите все четыре чёрных квадрата полностью видимыми.</string>
+    <string name="camera_pre_scan_step_4">Используйте равномерный свет и избегайте размытия, бликов и жёстких теней.</string>
+    <string name="camera_sheet_button">Получить лист для практики (PNG)</string>
+    <string name="camera_scan_button">Сканировать или импортировать лист для практики</string>
+    <string name="camera_gallery_button">Выбрать фото из галереи</string>
+    <string name="camera_opening_scanner">Открытие сканера…</string>
+    <string name="camera_processing_button">Обработка…</string>
+    <string name="camera_preparing_image">Подготовка изображения…</string>
+    <string name="camera_adjust_title">Настроить изображение перед извлечением</string>
+    <string name="camera_adjust_body">Увеличьте контраст или яркость перед тем, как ML Kit прочитает лист.</string>
+    <string name="camera_brightness_label">Яркость</string>
+    <string name="camera_contrast_label">Контраст</string>
+    <string name="camera_use_image_button">Использовать это изображение</string>
+    <string name="camera_discard_image_button">Отменить изображение</string>
+    <string name="camera_open_image_failed">Не удалось открыть это изображение. Попробуйте другой файл.</string>
     <string name="camera_guide_label">Совместите края страницы с направляющей</string>
     <string name="camera_capture_button">Сделать снимок</string>
     <string name="camera_capturing_button">Съёмка…</string>
@@ -56,6 +90,9 @@
     <string name="premium_no_glyphs">Буквенно-цифровые глифы не обнаружены. Попробуйте улучшить освещение и заполнить кадр страницей. Нажмите «Назад» для возврата к шаблонам.</string>
     <string name="premium_capture_complete">Захват завершён. Извлечено %1$d глифов для %2$d уникальных символов. Нажмите «Назад» для возврата к шаблонам.</string>
     <string name="premium_capture_failed_focus">Распознавание текста не удалось. Попробуйте ещё раз с более чётким фокусом.</string>
+    <string name="premium_marker_detection_failed">Этот скан не похож на лист для практики HandType. Убедитесь, что распечатанный лист заполняет большую часть скана и все четыре чёрных квадрата видны.</string>
+    <string name="premium_save_failed">Не удалось сохранить шаблон почерка. Попробуйте ещё раз.</string>
+    <string name="premium_process_failed">Не удалось обработать лист. Пересканируйте с видимыми четырьмя угловыми маркерами.</string>
     <string name="premium_camera_failed">Ошибка камеры. Попробуйте ещё раз.</string>
 
     <!-- Drawer navigation -->
@@ -79,6 +116,9 @@
     <string name="history_delete_title">Удалить эту заметку?</string>
     <string name="history_delete_body">Это удалит сохранённую копию с вашего устройства. Файлы, уже экспортированные в Изображения или Загрузки, останутся на месте.</string>
     <string name="history_deleted_toast">Удалено</string>
+    <string name="history_delete_selected_title">Удалить %1$d заметок?</string>
+    <string name="history_delete_selected_body">Это удалит %1$d сохранённых копий с вашего устройства. Файлы, уже экспортированные в Изображения или Загрузки, останутся на месте.</string>
+    <string name="history_deleted_selected_toast">Удалено %1$d заметок</string>
     <string name="history_note_desc">Сохранённая заметка</string>
     <string name="history_preview_desc">Предпросмотр заметки</string>
 

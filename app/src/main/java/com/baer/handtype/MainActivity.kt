@@ -7,6 +7,13 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
@@ -73,22 +80,11 @@ private fun HandTypeRoot() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val isImmersive = route == RootRoute.RenderTemplate.name || route == RootRoute.PremiumCapture.name
-
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
     BackHandler(enabled = !drawerState.isOpen && route != RootRoute.TemplateChooser.name) {
         route = RootRoute.TemplateChooser.name
-    }
-
-    val currentDest = when (route) {
-        RootRoute.TemplateChooser.name -> DrawerDestination.Templates
-        RootRoute.History.name -> DrawerDestination.History
-        RootRoute.Help.name -> DrawerDestination.Help
-        RootRoute.Faq.name -> DrawerDestination.Faq
-        RootRoute.About.name -> DrawerDestination.About
-        else -> DrawerDestination.Templates
     }
 
     fun navigate(dest: DrawerDestination) {
@@ -110,63 +106,98 @@ private fun HandTypeRoot() {
 
     val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
 
-    val content: @Composable () -> Unit = {
-        when (route) {
-            RootRoute.TemplateChooser.name -> TemplateChooserScreen(
-                templates = chooserTemplates,
-                premiumTemplate = premiumTemplate,
-                onTemplateSelected = { descriptor ->
-                    selectedTemplateId = descriptor.id
-                    route = RootRoute.RenderTemplate.name
-                },
-                onPremiumSelected = { route = RootRoute.PremiumCapture.name },
-                onOpenDrawer = openDrawer,
-                onDeleteTemplate = { descriptor ->
-                    repository.deleteUserTemplate(descriptor.id)
-                    userTemplates = repository.listUserTemplates()
-                },
-            )
+    AnimatedContent(
+        targetState = route,
+        transitionSpec = { routeTransitionSpec() },
+        label = "rootNav",
+    ) { currentRoute ->
+        val isImmersive = currentRoute == RootRoute.RenderTemplate.name ||
+            currentRoute == RootRoute.PremiumCapture.name
 
-            RootRoute.History.name -> HistoryScreen(onOpenDrawer = openDrawer)
-            RootRoute.Help.name -> HelpScreen(onOpenDrawer = openDrawer)
-            RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
-            RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
-
-            RootRoute.RenderTemplate.name -> {
-                val templateId = selectedTemplateId
-                if (templateId == null) {
-                    route = RootRoute.TemplateChooser.name
-                } else {
-                    TemplateRenderRoute(
-                        templateId = templateId,
-                        repository = repository,
-                        onBackToTemplates = { route = RootRoute.TemplateChooser.name },
+        if (isImmersive) {
+            when (currentRoute) {
+                RootRoute.RenderTemplate.name -> {
+                    val templateId = selectedTemplateId
+                    if (templateId == null) {
+                        route = RootRoute.TemplateChooser.name
+                    } else {
+                        TemplateRenderRoute(
+                            templateId = templateId,
+                            repository = repository,
+                            onBackToTemplates = { route = RootRoute.TemplateChooser.name },
+                            onPremiumSelected = { route = RootRoute.PremiumCapture.name },
+                        )
+                    }
+                }
+                RootRoute.PremiumCapture.name -> PremiumCaptureRoute(
+                    repository = repository,
+                    onTemplateSaved = { newId ->
+                        selectedTemplateId = newId
+                        route = RootRoute.RenderTemplate.name
+                    },
+                )
+            }
+        } else {
+            val drawerDest = when (currentRoute) {
+                RootRoute.History.name -> DrawerDestination.History
+                RootRoute.Help.name -> DrawerDestination.Help
+                RootRoute.Faq.name -> DrawerDestination.Faq
+                RootRoute.About.name -> DrawerDestination.About
+                else -> DrawerDestination.Templates
+            }
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = {
+                    AppDrawerContent(current = drawerDest, onSelect = ::navigate)
+                },
+            ) {
+                when (currentRoute) {
+                    RootRoute.TemplateChooser.name -> TemplateChooserScreen(
+                        templates = chooserTemplates,
+                        premiumTemplate = premiumTemplate,
+                        onTemplateSelected = { descriptor ->
+                            selectedTemplateId = descriptor.id
+                            route = RootRoute.RenderTemplate.name
+                        },
                         onPremiumSelected = { route = RootRoute.PremiumCapture.name },
+                        onOpenDrawer = openDrawer,
+                        onDeleteTemplate = { descriptor ->
+                            repository.deleteUserTemplate(descriptor.id)
+                            userTemplates = repository.listUserTemplates()
+                        },
                     )
+                    RootRoute.History.name -> HistoryScreen(onOpenDrawer = openDrawer)
+                    RootRoute.Help.name -> HelpScreen(onOpenDrawer = openDrawer)
+                    RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
+                    RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
                 }
             }
-
-            RootRoute.PremiumCapture.name -> PremiumCaptureRoute(
-                repository = repository,
-                onTemplateSaved = { newId ->
-                    selectedTemplateId = newId
-                    route = RootRoute.RenderTemplate.name
-                },
-            )
         }
     }
+}
 
-    if (isImmersive) {
-        content()
-    } else {
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            drawerContent = {
-                AppDrawerContent(current = currentDest, onSelect = ::navigate)
-            },
-        ) {
-            content()
-        }
+private fun AnimatedContentTransitionScope<String>.routeTransitionSpec(): ContentTransform {
+    val anim = tween<androidx.compose.ui.unit.IntOffset>(260, easing = FastOutSlowInEasing)
+    return when {
+        targetState == RootRoute.PremiumCapture.name ->
+            slideIntoContainer(SlideDirection.Up, anim)
+                .togetherWith(slideOutOfContainer(SlideDirection.Up, anim))
+
+        initialState == RootRoute.PremiumCapture.name ->
+            slideIntoContainer(SlideDirection.Down, anim)
+                .togetherWith(slideOutOfContainer(SlideDirection.Down, anim))
+
+        targetState == RootRoute.RenderTemplate.name ->
+            slideIntoContainer(SlideDirection.Start, anim)
+                .togetherWith(slideOutOfContainer(SlideDirection.Start, anim))
+
+        initialState == RootRoute.RenderTemplate.name ->
+            slideIntoContainer(SlideDirection.End, anim)
+                .togetherWith(slideOutOfContainer(SlideDirection.End, anim))
+
+        else ->
+            slideIntoContainer(SlideDirection.Start, anim)
+                .togetherWith(slideOutOfContainer(SlideDirection.Start, anim))
     }
 }
 

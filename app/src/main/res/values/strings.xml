@@ -13,9 +13,27 @@
     <string name="render_instruction">Type your message below, then tap Generate to create a unique handwritten note.</string>
     <string name="render_text_label">Your message</string>
     <string name="render_text_placeholder">Hello, world!</string>
+    <string name="render_background_title">Paper</string>
+    <string name="render_background_subtitle">Pick a background for this note.</string>
+    <string name="render_background_set_default">Make default</string>
+    <string name="render_background_current_default">Default saved</string>
+    <string name="render_background_default_badge">Default</string>
     <string name="render_generate_button">Generate</string>
     <string name="render_premium_button">Use My Handwriting</string>
     <string name="render_templates_button">Templates</string>
+
+    <!-- Note backgrounds -->
+    <string name="note_background_plain_white">Plain White</string>
+    <string name="note_background_warm_cream">Warm Cream</string>
+    <string name="note_background_soft_butter">Soft Butter</string>
+    <string name="note_background_rose_blush">Rose Blush</string>
+    <string name="note_background_cool_mist">Cool Mist</string>
+    <string name="note_background_soft_sage">Soft Sage</string>
+    <string name="note_background_parchment_sheet">Parchment Sheet</string>
+    <string name="note_background_recycled_sheet">Recycled Sheet</string>
+    <string name="note_background_kraft_sheet">Kraft Sheet</string>
+    <string name="note_background_ruled_sheet">Ruled Sheet</string>
+    <string name="note_background_graph_sheet">Graph Sheet</string>
 
     <!-- Render screen: generating phase -->
     <string name="render_generating_title">Generating your note…</string>
@@ -48,9 +66,18 @@
     <string name="camera_pre_scan_step_3">Capture the whole page and keep all four black squares fully visible.</string>
     <string name="camera_pre_scan_step_4">Use even light and avoid blur, glare, and hard shadows.</string>
     <string name="camera_sheet_button">Get the practice sheet (PNG)</string>
-    <string name="camera_scan_button">Scan practice sheet</string>
+    <string name="camera_scan_button">Scan or import practice sheet</string>
+    <string name="camera_gallery_button">Choose photo from gallery</string>
     <string name="camera_opening_scanner">Opening scanner...</string>
     <string name="camera_processing_button">Processing...</string>
+    <string name="camera_preparing_image">Preparing image...</string>
+    <string name="camera_adjust_title">Adjust image before extraction</string>
+    <string name="camera_adjust_body">Boost contrast or brightness before ML Kit reads the sheet.</string>
+    <string name="camera_brightness_label">Brightness</string>
+    <string name="camera_contrast_label">Contrast</string>
+    <string name="camera_use_image_button">Use this image</string>
+    <string name="camera_discard_image_button">Discard image</string>
+    <string name="camera_open_image_failed">Could not open that image. Try another file.</string>
     <string name="camera_guide_label">Align the page edges with the guide</string>
     <string name="camera_capture_button">Capture sample</string>
     <string name="camera_capturing_button">Capturing…</string>

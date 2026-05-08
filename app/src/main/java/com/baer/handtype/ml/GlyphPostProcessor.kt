@@ -22,6 +22,19 @@ import kotlin.math.roundToInt
  */
 object GlyphPostProcessor {
 
+    private data class InkComponent(
+        val pixels: IntArray,
+        val area: Int,
+        val left: Int,
+        val top: Int,
+        val right: Int,
+        val bottom: Int,
+    ) {
+        val width: Int get() = right - left + 1
+        val height: Int get() = bottom - top + 1
+        val centerX: Float get() = (left + right) / 2f
+    }
+
     private const val TARGET_CANVAS = 220
     private const val TARGET_GLYPH_HEIGHT = 199
     private const val TARGET_BASELINE_Y = 175
@@ -62,6 +75,17 @@ object GlyphPostProcessor {
         }
 
         val threshold = otsuThreshold(luma)
+        val inkMask = BooleanArray(pixels.size) { index -> luma[index] <= threshold }
+        val components = extractInkComponents(inkMask, width, height)
+        if (components.isEmpty()) return crop
+        val primary = components.maxByOrNull { it.area } ?: return crop
+        val keptComponents = components.filter { shouldKeepComponent(it, primary) }
+        val filteredInkMask = BooleanArray(inkMask.size)
+        keptComponents.forEach { component ->
+            component.pixels.forEach { pixelIndex ->
+                filteredInkMask[pixelIndex] = true
+            }
+        }
 
         // Bounding box of ink pixels.
         var top = height
@@ -71,7 +95,7 @@ object GlyphPostProcessor {
         for (y in 0 until height) {
             val rowOffset = y * width
             for (x in 0 until width) {
-                if (luma[rowOffset + x] <= threshold) {
+                if (filteredInkMask[rowOffset + x]) {
                     if (y < top) top = y
                     if (y > bottom) bottom = y
                     if (x < left) left = x
@@ -102,7 +126,7 @@ object GlyphPostProcessor {
             val dstRow = y * inkWidth
             for (x in 0 until inkWidth) {
                 val l = luma[srcRow + (left + x)]
-                val alpha = if (l > threshold) {
+                val alpha = if (!filteredInkMask[srcRow + (left + x)] || l > threshold) {
                     0
                 } else {
                     // l <= threshold: darker than threshold means more ink. Clamp at 255.
@@ -119,7 +143,131 @@ object GlyphPostProcessor {
         }
         masked.setPixels(maskedPixels, 0, inkWidth, 0, 0, inkWidth, inkHeight)
 
-        return placeOnCanvas(masked)
+        return placeOnCanvas(masked, preserveComponentSeparation = keptComponents.size > 1)
+    }
+
+    private fun extractInkComponents(mask: BooleanArray, width: Int, height: Int): List<InkComponent> {
+        val visited = BooleanArray(mask.size)
+        val stack = IntArray(mask.size)
+        val components = mutableListOf<InkComponent>()
+
+        for (start in mask.indices) {
+            if (!mask[start] || visited[start]) continue
+
+            var stackSize = 0
+            stack[stackSize++] = start
+            visited[start] = true
+
+            val pixels = ArrayList<Int>()
+            var left = width
+            var top = height
+            var right = -1
+            var bottom = -1
+
+            while (stackSize > 0) {
+                val index = stack[--stackSize]
+                pixels += index
+
+                val x = index % width
+                val y = index / width
+                if (x < left) left = x
+                if (x > right) right = x
+                if (y < top) top = y
+                if (y > bottom) bottom = y
+
+                val minY = maxOf(0, y - 1)
+                val maxY = minOf(height - 1, y + 1)
+                val minX = maxOf(0, x - 1)
+                val maxX = minOf(width - 1, x + 1)
+                for (ny in minY..maxY) {
+                    val rowOffset = ny * width
+                    for (nx in minX..maxX) {
+                        if (nx == x && ny == y) continue
+                        val neighbor = rowOffset + nx
+                        if (!mask[neighbor] || visited[neighbor]) continue
+                        visited[neighbor] = true
+                        stack[stackSize++] = neighbor
+                    }
+                }
+            }
+
+            components += InkComponent(
+                pixels = pixels.toIntArray(),
+                area = pixels.size,
+                left = left,
+                top = top,
+                right = right,
+                bottom = bottom,
+            )
+        }
+
+        return components
+    }
+
+    private fun shouldKeepComponent(component: InkComponent, primary: InkComponent): Boolean {
+        if (component == primary) return true
+
+        return shouldKeepComponentBounds(
+            componentLeft = component.left,
+            componentTop = component.top,
+            componentRight = component.right,
+            componentBottom = component.bottom,
+            componentArea = component.area,
+            primaryLeft = primary.left,
+            primaryTop = primary.top,
+            primaryRight = primary.right,
+            primaryBottom = primary.bottom,
+            primaryArea = primary.area,
+        )
+    }
+
+    internal fun shouldKeepComponentBounds(
+        componentLeft: Int,
+        componentTop: Int,
+        componentRight: Int,
+        componentBottom: Int,
+        componentArea: Int,
+        primaryLeft: Int,
+        primaryTop: Int,
+        primaryRight: Int,
+        primaryBottom: Int,
+        primaryArea: Int,
+    ): Boolean {
+        val componentWidth = componentRight - componentLeft + 1
+        val componentHeight = componentBottom - componentTop + 1
+        val primaryWidth = primaryRight - primaryLeft + 1
+        val primaryHeight = primaryBottom - primaryTop + 1
+
+        val componentAspectRatio = componentWidth.toFloat() / componentHeight.coerceAtLeast(1)
+        if (componentAspectRatio > 3.4f && componentHeight < maxOf(primaryHeight / 3, 10)) {
+            return false
+        }
+
+        val horizontalGap = axisGap(componentLeft, componentRight, primaryLeft, primaryRight)
+        val verticalGap = axisGap(componentTop, componentBottom, primaryTop, primaryBottom)
+        val componentCenterX = (componentLeft + componentRight) / 2f
+        val alignedWithPrimary = componentCenterX >= (primaryLeft - 12) && componentCenterX <= (primaryRight + 12)
+
+        val sitsAbovePrimary = componentBottom < primaryTop
+        if (sitsAbovePrimary) {
+            val maxGap = maxOf(primaryHeight / 2, 24)
+            val maxArea = maxOf(primaryArea / 2, 24)
+            return alignedWithPrimary && verticalGap <= maxGap && componentArea <= maxArea
+        }
+
+        val closeHorizontally = horizontalGap <= maxOf(primaryWidth / 2, 12)
+        val closeVertically = verticalGap <= maxOf(primaryHeight / 3, 14)
+        val minArea = maxOf(primaryArea / 10, 8)
+        val maxArea = maxOf((primaryArea * 0.95f).toInt(), 24)
+        return closeHorizontally && closeVertically && componentArea in minArea..maxArea
+    }
+
+    private fun axisGap(startA: Int, endA: Int, startB: Int, endB: Int): Int {
+        return when {
+            endA < startB -> startB - endA
+            endB < startA -> startA - endB
+            else -> 0
+        }
     }
 
     /** Renders the trimmed alpha glyph onto a canvas with baseline alignment.
@@ -129,7 +277,7 @@ object GlyphPostProcessor {
      * [HandwritingBitmapRenderer] advances by the real character width rather than the full
      * square canvas — eliminating the excessive inter-character gap in user-captured templates.
      */
-    private fun placeOnCanvas(glyph: Bitmap): Bitmap {
+    private fun placeOnCanvas(glyph: Bitmap, preserveComponentSeparation: Boolean = false): Bitmap {
         // Scale glyph to target glyph height, preserving aspect ratio.
         val srcH = glyph.height.toFloat()
         val srcW = glyph.width.toFloat()
@@ -150,7 +298,9 @@ object GlyphPostProcessor {
         val dst = RectF(left, max(0f, top), left + scaledW, max(0f, top) + scaledH)
         val src = Rect(0, 0, glyph.width, glyph.height)
 
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isFilterBitmap = !preserveComponentSeparation
+        }
         canvas.drawBitmap(glyph, src, dst, paint)
         return canvasBmp
     }

@@ -1,5 +1,8 @@
 package com.baer.handtype.feature.shell
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,16 +21,20 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.BuildConfig
+import kotlinx.coroutines.delay
 import com.baer.handtype.R
 
 private val PaperBg = Color(0xFFF5EFE4)
@@ -77,12 +84,19 @@ fun AppDrawerContent(
             }
         }
         Spacer(Modifier.height(8.dp))
-        DrawerDestination.entries.forEach { dest ->
+        DrawerDestination.entries.forEachIndexed { index, dest ->
+            val anim = remember(dest) { Animatable(0f) }
+            LaunchedEffect(dest) {
+                delay(index * 30L)
+                anim.animateTo(1f, tween(200, easing = FastOutSlowInEasing))
+            }
             NavigationDrawerItem(
                 label = { Text(stringResource(dest.titleResId)) },
                 selected = dest == current,
                 onClick = { onSelect(dest) },
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 2.dp)
+                    .graphicsLayer { alpha = anim.value },
                 colors = NavigationDrawerItemDefaults.colors(
                     selectedContainerColor = Teal.copy(alpha = 0.18f),
                     unselectedContainerColor = Color.Transparent,

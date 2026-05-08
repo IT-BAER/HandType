@@ -11,6 +11,22 @@
     <string name="render_instruction">아래에 메시지를 입력한 후 생성을 탭하여 고유한 손글씨 노트를 만드세요.</string>
     <string name="render_text_label">메시지</string>
     <string name="render_text_placeholder">안녕, 세계!</string>
+    <string name="render_background_title">종이</string>
+    <string name="render_background_subtitle">이 노트의 배경을 선택하세요.</string>
+    <string name="render_background_set_default">기본값으로</string>
+    <string name="render_background_current_default">기본값 저장됨</string>
+    <string name="render_background_default_badge">기본값</string>
+    <string name="note_background_plain_white">순백색</string>
+    <string name="note_background_warm_cream">따뜻한 크림</string>
+    <string name="note_background_soft_butter">부드러운 버터</string>
+    <string name="note_background_rose_blush">옅은 장미빛</string>
+    <string name="note_background_cool_mist">차가운 안개</string>
+    <string name="note_background_soft_sage">은은한 세이지</string>
+    <string name="note_background_parchment_sheet">양피지</string>
+    <string name="note_background_recycled_sheet">재생지</string>
+    <string name="note_background_kraft_sheet">크라프트지</string>
+    <string name="note_background_ruled_sheet">줄 공책</string>
+    <string name="note_background_graph_sheet">모눈종이</string>
     <string name="render_generate_button">생성</string>
     <string name="render_premium_button">프리미엄: 내 필기 사용</string>
     <string name="render_templates_button">템플릿</string>
@@ -37,6 +53,24 @@
 
     <string name="camera_section_title">필기 시트 캡처</string>
     <string name="camera_tip">팁: 균일한 조명을 사용하고 모든 글자 행이 보이도록 하세요.</string>
+    <string name="camera_pre_scan_title">스캔 전</string>
+    <string name="camera_pre_scan_step_1">연습 시트를 인쇄하세요.</string>
+    <string name="camera_pre_scan_step_2">각 칸에 해당 문자를 쓰고 가이드 라인 위에 유지하세요.</string>
+    <string name="camera_pre_scan_step_3">전체 페이지를 캡처하고 네 개의 검은 사각형이 완전히 보이도록 하세요.</string>
+    <string name="camera_pre_scan_step_4">균일한 조명을 사용하고 흐림, 눈부심, 강한 그림자를 피하세요.</string>
+    <string name="camera_sheet_button">연습 시트 받기 (PNG)</string>
+    <string name="camera_scan_button">연습 시트 스캔 또는 가져오기</string>
+    <string name="camera_gallery_button">갤러리에서 사진 선택</string>
+    <string name="camera_opening_scanner">스캐너 여는 중…</string>
+    <string name="camera_processing_button">처리 중…</string>
+    <string name="camera_preparing_image">이미지 준비 중…</string>
+    <string name="camera_adjust_title">추출 전 이미지 조정</string>
+    <string name="camera_adjust_body">ML Kit가 시트를 읽기 전에 대비 또는 밝기를 높이세요.</string>
+    <string name="camera_brightness_label">밝기</string>
+    <string name="camera_contrast_label">대비</string>
+    <string name="camera_use_image_button">이 이미지 사용</string>
+    <string name="camera_discard_image_button">이미지 버리기</string>
+    <string name="camera_open_image_failed">해당 이미지를 열 수 없습니다. 다른 파일을 시도하세요.</string>
     <string name="camera_guide_label">가이드에 페이지 가장자리를 맞추세요</string>
     <string name="camera_capture_button">샘플 캡처</string>
     <string name="camera_capturing_button">캡처 중…</string>
@@ -56,6 +90,9 @@
     <string name="premium_no_glyphs">영숫자 글리프가 감지되지 않았습니다. 더 밝은 조명을 시도하고 페이지로 더 많은 프레임을 채우세요. 템플릿으로 돌아가려면 시스템 뒤로 가기를 사용하세요.</string>
     <string name="premium_capture_complete">프리미엄 캡처 완료. %2$d개의 고유 문자에서 %1$d개의 글리프가 추출되었습니다. 템플릿으로 돌아가려면 뒤로 가기를 사용하세요.</string>
     <string name="premium_capture_failed_focus">텍스트 인식에 실패했습니다. 더 선명한 초점으로 다시 캡처해 보세요.</string>
+    <string name="premium_marker_detection_failed">해당 스캔이 HandType 연습 시트처럼 보이지 않았습니다. 인쇄된 시트가 스캔의 대부분을 채우고 네 개의 검은 사각형이 보이는지 확인하세요.</string>
+    <string name="premium_save_failed">필기 템플릿을 저장할 수 없습니다. 다시 시도하세요.</string>
+    <string name="premium_process_failed">시트를 처리할 수 없습니다. 네 개의 모서리 마커가 보이도록 다시 스캔하세요.</string>
     <string name="premium_camera_failed">카메라 캡처에 실패했습니다. 다시 시도하세요.</string>
 
     <!-- Drawer navigation -->
@@ -79,6 +116,9 @@
     <string name="history_delete_title">이 메모를 삭제하시겠습니까?</string>
     <string name="history_delete_body">기기에서 저장된 복사본이 삭제됩니다. 이미 사진이나 다운로드로 내보낸 파일은 그대로 유지됩니다.</string>
     <string name="history_deleted_toast">삭제됨</string>
+    <string name="history_delete_selected_title">%1$d개 메모를 삭제하시겠습니까?</string>
+    <string name="history_delete_selected_body">기기에서 %1$d개의 저장된 복사본을 삭제합니다. 이미 사진이나 다운로드로보낸 파일은 그대로 유지됩니다.</string>
+    <string name="history_deleted_selected_toast">%1$d개 메모 삭제됨</string>
     <string name="history_note_desc">저장된 메모</string>
     <string name="history_preview_desc">메모 미리보기</string>
 

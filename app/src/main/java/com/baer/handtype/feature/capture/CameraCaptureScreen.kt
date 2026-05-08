@@ -8,7 +8,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,7 +44,7 @@ import com.baer.handtype.R
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
-import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_BASE
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 
 /**
@@ -81,7 +82,7 @@ fun CameraCaptureScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scannerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult(),
+        contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult(),
     ) { activityResult ->
         isLaunching = false
         if (activityResult.resultCode == Activity.RESULT_OK) {
@@ -113,9 +114,9 @@ fun CameraCaptureScreen(
         isLaunching = true
         errorMessage = null
         val options = GmsDocumentScannerOptions.Builder()
-            .setScannerMode(SCANNER_MODE_BASE)
+            .setScannerMode(SCANNER_MODE_FULL)
             .setPageLimit(1)
-            .setGalleryImportAllowed(false)
+            .setGalleryImportAllowed(true)
             .setResultFormats(RESULT_FORMAT_JPEG)
             .build()
         GmsDocumentScanning.getClient(options)
@@ -138,7 +139,8 @@ fun CameraCaptureScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Card(shape = RoundedCornerShape(24.dp)) {
@@ -210,7 +212,7 @@ fun CameraCaptureScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = { launchScanner() },

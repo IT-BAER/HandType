@@ -11,6 +11,22 @@
     <string name="render_instruction">नीचे अपना संदेश टाइप करें, फिर एक अनूठी हस्तलिखित नोट बनाने के लिए जेनरेट पर टैप करें।</string>
     <string name="render_text_label">आपका संदेश</string>
     <string name="render_text_placeholder">नमस्ते, दुनिया!</string>
+    <string name="render_background_title">कागज़</string>
+    <string name="render_background_subtitle">इस नोट के लिए पृष्ठभूमि चुनें।</string>
+    <string name="render_background_set_default">डिफ़ॉल्ट बनाएं</string>
+    <string name="render_background_current_default">डिफ़ॉल्ट सहेजा गया</string>
+    <string name="render_background_default_badge">डिफ़ॉल्ट</string>
+    <string name="note_background_plain_white">सादा सफेद</string>
+    <string name="note_background_warm_cream">गरम क्रीम</string>
+    <string name="note_background_soft_butter">हल्का मक्खन पीला</string>
+    <string name="note_background_rose_blush">हल्का गुलाबी</string>
+    <string name="note_background_cool_mist">ठंडी धुंध</string>
+    <string name="note_background_soft_sage">हल्का सेज हरा</string>
+    <string name="note_background_parchment_sheet">पार्चमेंट कागज़</string>
+    <string name="note_background_recycled_sheet">रिसायकल किया हुआ कागज़</string>
+    <string name="note_background_kraft_sheet">क्राफ्ट कागज़</string>
+    <string name="note_background_ruled_sheet">रूल्ड कागज़</string>
+    <string name="note_background_graph_sheet">ग्राफ कागज़</string>
     <string name="render_generate_button">जेनरेट करें</string>
     <string name="render_premium_button">प्रीमियम: मेरी हस्तलेखन उपयोग करें</string>
     <string name="render_templates_button">टेम्पलेट</string>
@@ -37,6 +53,24 @@
 
     <string name="camera_section_title">अपनी हस्तलेखन शीट कैप्चर करें</string>
     <string name="camera_tip">टिप: समान प्रकाश व्यवस्था का उपयोग करें और सभी अक्षर पंक्तियाँ दृश्यमान रखें।</string>
+    <string name="camera_pre_scan_title">स्कैन करने से पहले</string>
+    <string name="camera_pre_scan_step_1">अभ्यास शीट प्रिंट करें।</string>
+    <string name="camera_pre_scan_step_2">प्रत्येक बॉक्स में मिलान वर्ण लिखें और उसे गाइड लाइन पर रखें।</string>
+    <string name="camera_pre_scan_step_3">पूरे पृष्ठ को कैप्चर करें और सभी चार काले वर्ग पूरी तरह दृश्यमान रखें।</string>
+    <string name="camera_pre_scan_step_4">समान प्रकाश का उपयोग करें और धुंधलापन, चमक और कठोर छायाओं से बचें।</string>
+    <string name="camera_sheet_button">अभ्यास शीट प्राप्त करें (PNG)</string>
+    <string name="camera_scan_button">अभ्यास शीट स्कैन या आयात करें</string>
+    <string name="camera_gallery_button">गैलरी से फोटो चुनें</string>
+    <string name="camera_opening_scanner">स्कैनर खोल रहा है…</string>
+    <string name="camera_processing_button">प्रसंस्करण हो रहा है…</string>
+    <string name="camera_preparing_image">छवि तैयार की जा रही है…</string>
+    <string name="camera_adjust_title">निष्कर्षण से पहले छवि समायोजित करें</string>
+    <string name="camera_adjust_body">ML Kit शीट पढ़ने से पहले कंट्रास्ट या चमक बढ़ाएं।</string>
+    <string name="camera_brightness_label">चमक</string>
+    <string name="camera_contrast_label">कंट्रास्ट</string>
+    <string name="camera_use_image_button">इस छवि का उपयोग करें</string>
+    <string name="camera_discard_image_button">छवि छोड़ें</string>
+    <string name="camera_open_image_failed">छवि खोलने में विफल। दूसरी फ़ाइल आज़माएं।</string>
     <string name="camera_guide_label">पृष्ठ के किनारों को गाइड से संरेखित करें</string>
     <string name="camera_capture_button">नमूना कैप्चर करें</string>
     <string name="camera_capturing_button">कैप्चर हो रहा है…</string>
@@ -56,6 +90,9 @@
     <string name="premium_no_glyphs">कोई अल्फ़ान्यूमेरिक ग्लिफ़ नहीं मिला। बेहतर प्रकाश व्यवस्था आज़माएं और पृष्ठ से अधिक फ्रेम भरें। टेम्पलेट पर वापस जाने के लिए सिस्टम बैक उपयोग करें।</string>
     <string name="premium_capture_complete">प्रीमियम कैप्चर पूर्ण। %2$d अनूठे अक्षरों में से %1$d ग्लिफ़ निकाले गए। टेम्पलेट पर वापस जाने के लिए बैक उपयोग करें।</string>
     <string name="premium_capture_failed_focus">टेक्स्ट पहचान विफल। अधिक तेज़ फ़ोकस के साथ दूसरा कैप्चर आज़माएं।</string>
+    <string name="premium_marker_detection_failed">वह स्कैन HandType अभ्यास शीट जैसा नहीं लगा। सुनिश्चित करें कि प्रिंटेड शीट स्कैन का अधिकांश भाग भरे और सभी चार काले वर्ग दृश्यमान हों।</string>
+    <string name="premium_save_failed">हस्तलेखन टेम्पलेट सहेजने में विफल। फिर से प्रयास करें।</string>
+    <string name="premium_process_failed">शीट प्रसंस्करण में विफल। सभी चार कोने मार्कर दृश्यमान होने पर पुनः स्कैन करें।</string>
     <string name="premium_camera_failed">कैमरा कैप्चर विफल। फिर से प्रयास करें।</string>
 
     <!-- Drawer navigation -->
@@ -79,6 +116,9 @@
     <string name="history_delete_title">यह नोट हटाएं?</string>
     <string name="history_delete_body">इससे आपके डिवाइस से सहेजी गई प्रति हट जाएगी। जो फ़ाइलें पहले से Pictures या Downloads में निर्यात की गई हैं वे वहीं रहेंगी।</string>
     <string name="history_deleted_toast">हटाया गया</string>
+    <string name="history_delete_selected_title">%1$d नोट हटाएं?</string>
+    <string name="history_delete_selected_body">यह आपके डिवाइस से %1$d सहेजी गई प्रतियां हटा देगा। पहले से Pictures या Downloads में निर्यात की गई फ़ाइलें वहीं रहेंगी।</string>
+    <string name="history_deleted_selected_toast">%1$d नोट हटाए गए</string>
     <string name="history_note_desc">सहेजा गया नोट</string>
     <string name="history_preview_desc">नोट का पूर्वावलोकन</string>
 

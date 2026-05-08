@@ -11,6 +11,22 @@
     <string name="render_instruction">Digite sua mensagem abaixo e toque em Gerar para criar uma nota manuscrita única.</string>
     <string name="render_text_label">Sua mensagem</string>
     <string name="render_text_placeholder">Olá, mundo!</string>
+    <string name="render_background_title">Papel</string>
+    <string name="render_background_subtitle">Escolha um fundo para esta nota.</string>
+    <string name="render_background_set_default">Definir padrão</string>
+    <string name="render_background_current_default">Padrão salvo</string>
+    <string name="render_background_default_badge">Padrão</string>
+    <string name="note_background_plain_white">Branco puro</string>
+    <string name="note_background_warm_cream">Creme suave</string>
+    <string name="note_background_soft_butter">Amarelo manteiga suave</string>
+    <string name="note_background_rose_blush">Rosa suave</string>
+    <string name="note_background_cool_mist">Névoa fria</string>
+    <string name="note_background_soft_sage">Sálvia suave</string>
+    <string name="note_background_parchment_sheet">Papel pergaminho</string>
+    <string name="note_background_recycled_sheet">Papel reciclado</string>
+    <string name="note_background_kraft_sheet">Papel kraft</string>
+    <string name="note_background_ruled_sheet">Papel pautado</string>
+    <string name="note_background_graph_sheet">Papel quadriculado</string>
     <string name="render_generate_button">Gerar</string>
     <string name="render_premium_button">Premium: Usar minha letra</string>
     <string name="render_templates_button">Modelos</string>
@@ -37,6 +53,24 @@
 
     <string name="camera_section_title">Capture sua folha de caligrafia</string>
     <string name="camera_tip">Dica: use iluminação uniforme e mantenha todas as linhas de letras visíveis.</string>
+    <string name="camera_pre_scan_title">Antes de escanear</string>
+    <string name="camera_pre_scan_step_1">Imprima a folha de prática.</string>
+    <string name="camera_pre_scan_step_2">Escreva o caractere correspondente em cada caixa e mantenha-o sobre a linha guia.</string>
+    <string name="camera_pre_scan_step_3">Capture a página inteira e mantenha os quatro quadrados pretos totalmente visíveis.</string>
+    <string name="camera_pre_scan_step_4">Use luz uniforme e evite desfoque, reflexos e sombras duras.</string>
+    <string name="camera_sheet_button">Obter a folha de prática (PNG)</string>
+    <string name="camera_scan_button">Escanear ou importar folha de prática</string>
+    <string name="camera_gallery_button">Escolher foto da galeria</string>
+    <string name="camera_opening_scanner">Abrindo scanner…</string>
+    <string name="camera_processing_button">Processando…</string>
+    <string name="camera_preparing_image">Preparando imagem…</string>
+    <string name="camera_adjust_title">Ajustar imagem antes da extração</string>
+    <string name="camera_adjust_body">Aumente o contraste ou o brilho antes do ML Kit ler a folha.</string>
+    <string name="camera_brightness_label">Brilho</string>
+    <string name="camera_contrast_label">Contraste</string>
+    <string name="camera_use_image_button">Usar esta imagem</string>
+    <string name="camera_discard_image_button">Descartar imagem</string>
+    <string name="camera_open_image_failed">Não foi possível abrir essa imagem. Tente outro arquivo.</string>
     <string name="camera_guide_label">Alinhe as bordas da página com o guia</string>
     <string name="camera_capture_button">Capturar amostra</string>
     <string name="camera_capturing_button">Capturando…</string>
@@ -56,6 +90,9 @@
     <string name="premium_no_glyphs">Nenhum glifo alfanumérico foi detectado. Tente com iluminação mais forte e preencha mais o quadro com a página. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_complete">Captura premium concluída. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_failed_focus">O reconhecimento de texto falhou. Tente outra captura com foco mais nítido.</string>
+    <string name="premium_marker_detection_failed">Esse escaneamento não parecia a folha de prática do HandType. Certifique-se de que a folha impressa preencha a maior parte do escaneamento e os quatro quadrados pretos estejam visíveis.</string>
+    <string name="premium_save_failed">Não foi possível salvar o modelo de caligrafia. Tente novamente.</string>
+    <string name="premium_process_failed">Não foi possível processar a folha. Re-escaneie com os quatro marcadores de canto visíveis.</string>
     <string name="premium_camera_failed">Falha na captura da câmera. Tente novamente.</string>
 
     <!-- Drawer navigation -->
@@ -79,6 +116,9 @@
     <string name="history_delete_title">Excluir esta nota?</string>
     <string name="history_delete_body">Isso remove a cópia salva do seu dispositivo. Arquivos já exportados para Imagens ou Downloads permanecem onde estão.</string>
     <string name="history_deleted_toast">Excluído</string>
+    <string name="history_delete_selected_title">Excluir %1$d notas?</string>
+    <string name="history_delete_selected_body">Isso remove %1$d cópias salvas do seu dispositivo. Arquivos já exportados para Imagens ou Downloads permanecem onde estão.</string>
+    <string name="history_deleted_selected_toast">%1$d notas excluídas</string>
     <string name="history_note_desc">Nota salva</string>
     <string name="history_preview_desc">Pré-visualização da nota</string>
 
