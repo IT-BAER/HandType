@@ -239,14 +239,19 @@ object GlyphPostProcessor {
         val primaryHeight = primaryBottom - primaryTop + 1
 
         val componentAspectRatio = componentWidth.toFloat() / componentHeight.coerceAtLeast(1)
-        if (componentAspectRatio > 3.4f && componentHeight < maxOf(primaryHeight / 3, 10)) {
-            return false
-        }
-
         val horizontalGap = axisGap(componentLeft, componentRight, primaryLeft, primaryRight)
         val verticalGap = axisGap(componentTop, componentBottom, primaryTop, primaryBottom)
         val componentCenterX = (componentLeft + componentRight) / 2f
         val alignedWithPrimary = componentCenterX >= (primaryLeft - 12) && componentCenterX <= (primaryRight + 12)
+
+        // Reject wide, short components that look like printed guide-line residue — but only
+        // when they are substantially wider than the primary letter stroke (guide lines span
+        // the full cell width), so wide horizontal letter arms (e.g. the bottom arm of 'E')
+        // whose width ≤ the primary's width are preserved.
+        if (componentAspectRatio > 3.4f && componentHeight < maxOf(primaryHeight / 3, 10)) {
+            val isNarrowerThanPrimary = componentWidth <= primaryWidth * 1.5f
+            if (!isNarrowerThanPrimary) return false
+        }
 
         val sitsAbovePrimary = componentBottom < primaryTop
         if (sitsAbovePrimary) {
