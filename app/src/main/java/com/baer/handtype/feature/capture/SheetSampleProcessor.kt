@@ -160,9 +160,10 @@ object SheetSampleProcessor {
                 cropBottom - cropTop,
             )
             val sanitizedCellCrop = suppressPrintedCellLabel(cellCrop)
-            val cleaned = GlyphPostProcessor.cleanGlyph(sanitizedCellCrop)
+            val guideFreeCellCrop = suppressGuideLinesInCrop(sanitizedCellCrop, topInset, cellHeightPx)
+            val cleaned = GlyphPostProcessor.cleanGlyph(guideFreeCellCrop)
 
-            debugContext?.let { dumpCellCrop(it, index, cell.character, sanitizedCellCrop, cleaned) }
+            debugContext?.let { dumpCellCrop(it, index, cell.character, guideFreeCellCrop, cleaned) }
 
             // Detect empty cells: require enough strongly-opaque pixels (real ink, not faint
             // residue from the printed cell border / label).
@@ -191,6 +192,38 @@ object SheetSampleProcessor {
             style = Paint.Style.FILL
         }
         Canvas(masked).drawRect(0f, 0f, labelMaskWidth.toFloat(), labelMaskHeight.toFloat(), paint)
+        return masked
+    }
+
+    /**
+     * Blanks thin horizontal bands at the three known guide-line positions (upper 32%, middle 55%,
+     * baseline 78% of full cell height) in the already-cropped bitmap so that surviving guide-line
+     * ink is removed before [GlyphPostProcessor.cleanGlyph] runs component extraction.
+     *
+     * [topInset] is the number of pixels removed from the cell top before cropping, so the guide
+     * positions in the crop coordinate system are shifted by that amount.
+     * [cellHeightPx] is the full cell height (before inset) used to compute absolute guide Y.
+     */
+    private fun suppressGuideLinesInCrop(cellCrop: Bitmap, topInset: Int, cellHeightPx: Int): Bitmap {
+        val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
+        val cropHeight = masked.height
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        val canvas = Canvas(masked)
+        // Guide ratios from PracticeSheetGenerator (upper, middle, baseline).
+        val guideRatios = floatArrayOf(0.32f, 0.55f, 0.78f)
+        // Widen the mask band slightly to catch any scan/enhancement spread (±4px each side).
+        val halfBand = 4
+        for (ratio in guideRatios) {
+            val guideCellY = (cellHeightPx * ratio).toInt()
+            val guideCropY = guideCellY - topInset
+            if (guideCropY < 0 || guideCropY >= cropHeight) continue
+            val top = (guideCropY - halfBand).coerceAtLeast(0).toFloat()
+            val bottom = (guideCropY + halfBand).coerceAtMost(cropHeight - 1).toFloat()
+            canvas.drawRect(0f, top, masked.width.toFloat(), bottom, paint)
+        }
         return masked
     }
 
