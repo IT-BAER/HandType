@@ -139,15 +139,18 @@ object SheetSampleProcessor {
 
             val cellWidthPx = cellRight - cellLeft
             val cellHeightPx = cellBottom - cellTop
-            // Inset just enough to skip the printed grid border. The printed character label in
-            // the upper-left corner can survive ML Kit auto-enhancement, so we blank that known
-            // label zone after cropping instead of discarding the whole corner up-front.
-            val inset = (minOf(cellWidthPx, cellHeightPx) * 0.10f).toInt().coerceAtLeast(4)
+            // Inset to skip the printed grid border. Use a larger inset on top (where the
+            // printed character label lives) and a smaller inset on bottom/right so that
+            // descenders (g, y, p, q) and wide letters (E bottom arm, k arm) are not clipped.
+            // suppressPrintedCellLabel() blanks the top-left label zone after crop, so the top
+            // inset only needs to clear the cell border line on left/right/bottom.
+            val topInset = (cellHeightPx * 0.08f).toInt().coerceAtLeast(4)
+            val sideInset = (minOf(cellWidthPx, cellHeightPx) * 0.03f).toInt().coerceAtLeast(3)
 
-            val cropLeft = cellLeft + inset
-            val cropTop = cellTop + inset
-            val cropRight = cellRight - inset
-            val cropBottom = cellBottom - inset
+            val cropLeft = cellLeft + sideInset
+            val cropTop = cellTop + topInset
+            val cropRight = cellRight - sideInset
+            val cropBottom = cellBottom - sideInset
 
             val cellCrop = Bitmap.createBitmap(
                 rectified,
