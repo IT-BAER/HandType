@@ -234,7 +234,7 @@ object SheetSampleProcessor {
         // We erase exactly that centered region ±3px tall.
         // Vertical letter strokes that cross a guide position are NOT erased: they have ink
         // above and below the band. Only isolated horizontal guide marks are fully removed.
-        val halfSegment = 17f  // guide is 26px (±13) but add ~4px tolerance for scan spread
+        val halfSegment = 13f  // matches GUIDE_SEGMENT_LENGTH=26 exactly
         val halfBand = 3
         val centerX = cropWidth / 2f
         val xLeft = (centerX - halfSegment).coerceAtLeast(0f)
