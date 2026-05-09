@@ -251,15 +251,24 @@ object GlyphPostProcessor {
         val sitsAbovePrimary = componentBottom < primaryTop
         if (sitsAbovePrimary) {
             val maxGap = maxOf(primaryHeight / 2, 24)
-            val maxArea = maxOf(primaryArea / 2, 24)
+            // Allow large components above the primary — they can be letter body parts (e.g. the
+            // main stem of an 'E' when the bottom arm is the dominant component, or the bowl of
+            // 'g' above its descender). Only reject components that are clearly larger than any
+            // reasonable letter part could be (> 3× primary area).
+            val maxArea = maxOf(primaryArea * 3, 24)
             return alignedWithPrimary && verticalGap <= maxGap && componentArea <= maxArea
         }
 
         val closeHorizontally = horizontalGap <= maxOf(primaryWidth / 2, 12)
         val closeVertically = verticalGap <= maxOf(primaryHeight / 3, 14)
         val minArea = maxOf(primaryArea / 10, 8)
-        val maxArea = maxOf((primaryArea * 0.95f).toInt(), 24)
-        return closeHorizontally && closeVertically && componentArea in minArea..maxArea
+        // For components directly touching the primary (gap = 0 on both axes), skip the area
+        // upper bound — they are almost certainly part of the same letter (e.g. the diagonal
+        // arms of 'k' or 'K' touching the central stem). For components with a gap, apply a
+        // relaxed upper bound (2× primary) to exclude large unrelated blobs.
+        val touching = horizontalGap == 0 && verticalGap == 0
+        val maxArea = if (touching) Int.MAX_VALUE else maxOf((primaryArea * 2.0f).toInt(), 24)
+        return closeHorizontally && closeVertically && componentArea >= minArea && componentArea <= maxArea
     }
 
     private fun axisGap(startA: Int, endA: Int, startB: Int, endB: Int): Int {
