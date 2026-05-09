@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Typeface
+import com.baer.handtype.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -15,6 +16,7 @@ data class TemplateDescriptor(
     val description: String,
     val premium: Boolean,
     val fontFamily: String? = null,
+    val isNew: Boolean = false,
 )
 
 data class HandwritingTemplate(
@@ -29,6 +31,32 @@ data class HandwritingTemplate(
 class BundledTemplateRepository(private val context: Context) {
 
     private val userRepository = UserTemplateRepository(context)
+
+    private val builtInTemplates = listOf(
+        TemplateDescriptor(
+            id = "classic_script",
+            displayName = context.getString(R.string.template_ink_script_name),
+            sampleText = "Meet HandType.",
+            description = context.getString(R.string.template_ink_script_description),
+            premium = false,
+        ),
+        TemplateDescriptor(
+            id = "flowing_cursive",
+            displayName = context.getString(R.string.template_flowing_cursive_name),
+            sampleText = "Elegant flow.",
+            description = context.getString(R.string.template_flowing_cursive_description),
+            premium = false,
+            fontFamily = "cursive",
+        ),
+    )
+
+    private val premiumTemplateDescriptor = TemplateDescriptor(
+        id = "custom_capture",
+        displayName = context.getString(R.string.premium_default_template_name),
+        sampleText = context.getString(R.string.template_premium_sample),
+        description = context.getString(R.string.template_premium_description),
+        premium = true,
+    )
 
     fun listBuiltInTemplates(): List<TemplateDescriptor> = builtInTemplates
 
@@ -93,32 +121,6 @@ class BundledTemplateRepository(private val context: Context) {
 
     companion object {
         private const val MAX_VARIANTS = 8
-
-        private val builtInTemplates = listOf(
-            TemplateDescriptor(
-                id = "classic_script",
-                displayName = "Ink Script",
-                sampleText = "Meet HandType.",
-                description = "A natural ink-style handwriting with organic variation and hand-drawn character.",
-                premium = false,
-            ),
-            TemplateDescriptor(
-                id = "flowing_cursive",
-                displayName = "Flowing Cursive",
-                sampleText = "Elegant flow.",
-                description = "A smooth cursive style with connected letters and natural rhythm.",
-                premium = false,
-                fontFamily = "cursive",
-            ),
-        )
-
-        private val premiumTemplateDescriptor = TemplateDescriptor(
-            id = "custom_capture",
-            displayName = "My Handwriting",
-            sampleText = "Capture your own style",
-            description = "Extract your personal handwriting from a photographed practice sheet.",
-            premium = true,
-        )
 
         private val supportedCharacters: List<Char> = buildList {
             addAll(('A'..'Z').toList())

@@ -124,7 +124,9 @@ object HandwritingBitmapRenderer {
         val cropped = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width, bounds.height)
         val lower = character.lowercaseChar()
         val baselineInSource = when {
-            isUserTemplate && lower in descenderChars -> {
+            // Only lowercase descenders get the fraction-based baseline.
+            // Uppercase G/J/P/Q/Y have no descender — their baseline is at bounds.bottom.
+            isUserTemplate && character.isLowerCase() && lower in descenderChars -> {
                 val baselineFraction = when (lower) {
                     'g', 'j' -> 0.50f
                     else -> 0.58f
@@ -623,7 +625,10 @@ object HandwritingBitmapRenderer {
                     val alpha = 0.90f + rng.nextFloat() * 0.08f  // 230-250 range
 
                     val baselineY = cursorY + baselineOffsetPx
-                    val descenderDrop = if (character.lowercaseChar() in descenderChars) {
+                    // For user templates the baselineFraction in prepareGlyph() already places
+                    // the glyph's ink-baseline at baselineY exactly — no additional drop needed.
+                    // For bundled templates the legacy descenderDrop gives the slight optical shift.
+                    val descenderDrop = if (!isUserTemplate && character.lowercaseChar() in descenderChars) {
                         (lineHeightPx * descenderDropRatio(isUserTemplate)).toInt()
                     } else {
                         0

@@ -69,6 +69,8 @@ object OutputExporter {
             val meta = File(dir, "${stamp}__${tag}.txt")
             meta.writeText(sourceText)
         }
+        // Persist the human-readable display name so history can show it without decoding the tag.
+        File(dir, "${stamp}__${tag}.name").writeText(templateName)
         png
     }
 

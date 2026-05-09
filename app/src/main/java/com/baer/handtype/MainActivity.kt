@@ -1,6 +1,7 @@
 package com.baer.handtype
 
 import android.content.Intent
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
@@ -40,12 +41,16 @@ import com.baer.handtype.feature.shell.DrawerDestination
 import com.baer.handtype.feature.template.HandwritingRenderScreen
 import com.baer.handtype.feature.template.HistoryScreen
 import com.baer.handtype.feature.template.LoadingTemplateScreen
+import com.baer.handtype.feature.template.RenameHandwritingDialog
 import com.baer.handtype.feature.template.TemplateChooserScreen
+import com.baer.handtype.template.TemplateDescriptor
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.template.HandwritingTemplate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.DateFormat
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,12 +72,18 @@ private fun HandTypeRoot() {
     val premiumTemplate = remember { repository.premiumTemplate() }
     var route by rememberSaveable { mutableStateOf(RootRoute.TemplateChooser.name) }
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingRenameTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingRenameTemplateName by rememberSaveable { mutableStateOf<String?>(null) }
     var userTemplates by remember { mutableStateOf(repository.listUserTemplates()) }
+
+    fun refreshUserTemplates() {
+        userTemplates = repository.listUserTemplates()
+    }
 
     // Refresh user templates whenever the chooser is shown so newly captured ones appear.
     LaunchedEffect(route) {
         if (route == RootRoute.TemplateChooser.name) {
-            userTemplates = repository.listUserTemplates()
+            refreshUserTemplates()
         }
     }
     val chooserTemplates = remember(builtInTemplates, userTemplates) { builtInTemplates + userTemplates }
@@ -131,9 +142,10 @@ private fun HandTypeRoot() {
                 }
                 RootRoute.PremiumCapture.name -> PremiumCaptureRoute(
                     repository = repository,
-                    onTemplateSaved = { newId ->
-                        selectedTemplateId = newId
-                        route = RootRoute.RenderTemplate.name
+                    onTemplateSaved = { newId, defaultName ->
+                        pendingRenameTemplateId = newId
+                        pendingRenameTemplateName = defaultName
+                        route = RootRoute.TemplateChooser.name
                     },
                 )
             }
@@ -155,6 +167,13 @@ private fun HandTypeRoot() {
                     RootRoute.TemplateChooser.name -> TemplateChooserScreen(
                         templates = chooserTemplates,
                         premiumTemplate = premiumTemplate,
+                        initialTemplateId = pendingRenameTemplateId ?: userTemplates.firstOrNull { it.isNew }?.id,
+                        onTemplateOpened = { descriptor ->
+                            if (descriptor.isNew) {
+                                repository.userRepository().markTemplateSeen(descriptor.id)
+                                refreshUserTemplates()
+                            }
+                        },
                         onTemplateSelected = { descriptor ->
                             selectedTemplateId = descriptor.id
                             route = RootRoute.RenderTemplate.name
@@ -163,13 +182,36 @@ private fun HandTypeRoot() {
                         onOpenDrawer = openDrawer,
                         onDeleteTemplate = { descriptor ->
                             repository.deleteUserTemplate(descriptor.id)
-                            userTemplates = repository.listUserTemplates()
+                            refreshUserTemplates()
                         },
                     )
                     RootRoute.History.name -> HistoryScreen(onOpenDrawer = openDrawer)
                     RootRoute.Help.name -> HelpScreen(onOpenDrawer = openDrawer)
                     RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
                     RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
+                }
+            }
+
+            if (currentRoute == RootRoute.TemplateChooser.name) {
+                val renameTemplateId = pendingRenameTemplateId
+                val renameTemplateName = pendingRenameTemplateName
+                    ?: renameTemplateId?.let { templateId ->
+                        repository.userRepository().getTemplateDescriptor(templateId)?.displayName
+                    }
+                if (renameTemplateId != null && renameTemplateName != null) {
+                    RenameHandwritingDialog(
+                        initialName = renameTemplateName,
+                        onConfirm = { updatedName ->
+                            repository.userRepository().renameTemplate(renameTemplateId, updatedName)
+                            refreshUserTemplates()
+                            pendingRenameTemplateId = null
+                            pendingRenameTemplateName = null
+                        },
+                        onDismiss = {
+                            pendingRenameTemplateId = null
+                            pendingRenameTemplateName = null
+                        },
+                    )
                 }
             }
         }
@@ -238,7 +280,7 @@ private fun TemplateRenderRoute(
 @Composable
 private fun PremiumCaptureRoute(
     repository: BundledTemplateRepository,
-    onTemplateSaved: (String) -> Unit,
+    onTemplateSaved: (String, String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -280,9 +322,10 @@ private fun PremiumCaptureRoute(
                         isProcessing = false
                         return@onSuccess
                     }
+                    val defaultTemplateName = createDefaultTemplateName(context)
                     val savedId = runCatching {
                         repository.userRepository().saveTemplate(
-                            displayName = "My Handwriting",
+                            displayName = defaultTemplateName,
                             glyphMap = result.glyphs,
                         )
                     }.getOrElse { throwable ->
@@ -296,7 +339,7 @@ private fun PremiumCaptureRoute(
                         "PremiumCapture",
                         "Sheet capture saved as $savedId. Glyphs=${result.glyphs.size} missing=${result.missing.size}",
                     )
-                    onTemplateSaved(savedId)
+                    onTemplateSaved(savedId, defaultTemplateName)
                 }.onFailure { throwable ->
                     android.util.Log.e("PremiumCapture", "Sheet processing failed", throwable)
                     instructionText = throwable.message
@@ -310,6 +353,15 @@ private fun PremiumCaptureRoute(
             instructionText = throwable.message ?: cameraFailedInstruction
             isProcessing = false
         },
+    )
+}
+
+private fun createDefaultTemplateName(context: Context): String {
+    val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+    return context.getString(
+        R.string.rename_handwriting_default_name,
+        context.getString(R.string.premium_default_template_name),
+        dateFormat.format(Date()),
     )
 }
 

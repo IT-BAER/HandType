@@ -76,12 +76,14 @@ import java.util.Locale
 /**
  * One archived handwriting note saved under [java.io.File.getFilesDir]/history/.
  * The PNG is `<stamp>__<tag>.png`; an optional sidecar `<stamp>__<tag>.txt`
- * holds the source text the user typed.
+ * holds the source text the user typed. An optional `<stamp>__<tag>.name` holds
+ * the human-readable display name of the template.
  */
 data class HistoryEntry(
     val id: String,
     val pngFile: File,
     val templateTag: String,
+    val templateDisplayName: String,
     val createdAtMillis: Long,
     val sourceText: String?,
 ) {
@@ -109,10 +111,13 @@ object HistoryStore {
         val tag = name.substring(sep + 2)
         val createdAt = runCatching { PARSER.parse(stampStr)?.time }.getOrNull() ?: png.lastModified()
         val txt = File(png.parentFile, "$name.txt").takeIf { it.isFile }?.readText()
+        val displayName = File(png.parentFile, "$name.name").takeIf { it.isFile }?.readText()?.trim()
+            ?: tag.replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
         return HistoryEntry(
             id = name,
             pngFile = png,
             templateTag = tag,
+            templateDisplayName = displayName,
             createdAtMillis = createdAt,
             sourceText = txt,
         )
@@ -121,6 +126,7 @@ object HistoryStore {
     fun delete(entry: HistoryEntry) {
         entry.pngFile.delete()
         File(entry.pngFile.parentFile, "${entry.id}.txt").takeIf { it.exists() }?.delete()
+        File(entry.pngFile.parentFile, "${entry.id}.name").takeIf { it.exists() }?.delete()
     }
 
     fun delete(entries: Collection<HistoryEntry>) {
@@ -372,7 +378,7 @@ private fun HistoryThumbnail(
                 }
                 Column(modifier = Modifier.padding(10.dp)) {
                     Text(
-                        text = entry.templateTag.replace('_', ' '),
+                        text = entry.templateDisplayName,
                         style = MaterialTheme.typography.labelLarge,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -420,7 +426,7 @@ private fun HistoryDetailDialog(
     ) { granted ->
         if (granted && pendingSave) {
             saveNow(context, bitmap, entry.templateTag, ::toast)
-        } else if (!granted) toast("Storage permission denied")
+        } else if (!granted) toast(context.getString(R.string.result_permission_denied))
         pendingSave = false
     }
 
@@ -449,7 +455,7 @@ private fun HistoryDetailDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(entry.templateTag.replace('_', ' ')) },
+        title = { Text(entry.templateDisplayName) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (bitmap != null) {

@@ -46,7 +46,7 @@ object GlyphPostProcessor {
      *
      * Falls back to the original [crop] if the glyph cannot be processed (e.g. blank crop).
      */
-    fun cleanGlyph(crop: Bitmap): Bitmap {
+    fun cleanGlyph(crop: Bitmap, guideYsInCrop: IntArray = intArrayOf()): Bitmap {
         val width = crop.width
         val height = crop.height
         if (width <= 0 || height <= 0) return crop
@@ -79,7 +79,7 @@ object GlyphPostProcessor {
         val components = extractInkComponents(inkMask, width, height)
         if (components.isEmpty()) return crop
         val primary = components.maxByOrNull { it.area } ?: return crop
-        val keptComponents = components.filter { shouldKeepComponent(it, primary) }
+        val keptComponents = components.filter { shouldKeepComponent(it, primary, guideYsInCrop) }
         val filteredInkMask = BooleanArray(inkMask.size)
         keptComponents.forEach { component ->
             component.pixels.forEach { pixelIndex ->
@@ -204,7 +204,11 @@ object GlyphPostProcessor {
         return components
     }
 
-    private fun shouldKeepComponent(component: InkComponent, primary: InkComponent): Boolean {
+    private fun shouldKeepComponent(
+        component: InkComponent,
+        primary: InkComponent,
+        guideYsInCrop: IntArray = intArrayOf(),
+    ): Boolean {
         if (component == primary) return true
 
         return shouldKeepComponentBounds(
@@ -218,6 +222,7 @@ object GlyphPostProcessor {
             primaryRight = primary.right,
             primaryBottom = primary.bottom,
             primaryArea = primary.area,
+            guideYsInCrop = guideYsInCrop,
         )
     }
 
@@ -232,6 +237,7 @@ object GlyphPostProcessor {
         primaryRight: Int,
         primaryBottom: Int,
         primaryArea: Int,
+        guideYsInCrop: IntArray = intArrayOf(),
     ): Boolean {
         val componentWidth = componentRight - componentLeft + 1
         val componentHeight = componentBottom - componentTop + 1
@@ -244,13 +250,29 @@ object GlyphPostProcessor {
         val componentCenterX = (componentLeft + componentRight) / 2f
         val alignedWithPrimary = componentCenterX >= (primaryLeft - 12) && componentCenterX <= (primaryRight + 12)
 
-        // Reject wide, short components that look like printed guide-line residue — but only
-        // when they are substantially wider than the primary letter stroke (guide lines span
-        // the full cell width), so wide horizontal letter arms (e.g. the bottom arm of 'E')
-        // whose width ≤ the primary's width are preserved.
-        if (componentAspectRatio > 3.4f && componentHeight < maxOf(primaryHeight / 3, 10)) {
-            val isNarrowerThanPrimary = componentWidth <= primaryWidth * 1.5f
-            if (!isNarrowerThanPrimary) return false
+        // Reject wide, short components that look like printed guide-line residue.
+        // Guide lines are 26px long × ~1.5px stroke → area ≈ 40-120px² in rectified space.
+        // Horizontal letter arms (e.g. the bottom arm of 'E') are as wide as the letter
+        // (~50-80px) and as thick as the pen stroke (~4-8px) → area ≈ 200-640px².
+        // Only reject if the component is also small in absolute pixel count so letter
+        // arms are not caught by the same filter.
+        if (componentAspectRatio > 3.4f && componentHeight < maxOf(primaryHeight / 3, 10)
+            && componentArea < 150) {
+            return false
+        }
+
+        // Reject components that lie entirely within a known guide-line band.
+        // A component whose vertical span [componentTop, componentBottom] is fully contained
+        // within [guideY−4, guideY+4] is almost certainly guide-line residue: printed tick marks
+        // are at most 1.5px thick (print) → ~3-5px after scan. Handwritten strokes that CROSS
+        // a guide position have ink above AND below the band, so their span exceeds the band.
+        // Note: if guide ink is fused with the handwritten letter (same component), both pixels
+        // belong to the primary and this check is never reached for them.
+        val guideBandHalf = 4
+        if (guideYsInCrop.any { gy ->
+                componentTop >= gy - guideBandHalf && componentBottom <= gy + guideBandHalf
+            }) {
+            return false
         }
 
         val sitsAbovePrimary = componentBottom < primaryTop
