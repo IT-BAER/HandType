@@ -522,7 +522,10 @@ object HandwritingBitmapRenderer {
         val placements = mutableListOf<GlyphPlacement>()
 
         var cursorX = config.marginPx
-        var cursorY = config.marginPx
+        // Ensure line 1 baseline has enough headroom for tall glyphs (e.g. uppercase at scaleY≈1.35).
+        // Without this, drawTop = baselineY - scaledGlyphH can go negative, clipping the top of
+        // letters on the first line.
+        var cursorY = (lineHeightPx - baselineOffsetPx + config.marginPx).coerceAtLeast(config.marginPx)
         var lineHeight = lineHeightPx
         var maxUsedX = config.marginPx
         var charIndexInLine = 0
@@ -546,7 +549,11 @@ object HandwritingBitmapRenderer {
                     ?: template.glyphs[ch.uppercaseChar()]
                 val glyph = variants?.firstOrNull()
                 if (glyph == null) {
-                    w += spaceWidth
+                    w += when {
+                        ch in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
+                        ch in punctuationChars -> (lineHeightPx * 0.08f).toInt().coerceAtLeast(4)
+                        else -> spaceWidth
+                    }
                 } else {
                     val prepared = preparedGlyph(ch, glyph)
                     val targetInkHeight = (lineHeightPx * targetInkHeightRatio(ch, isUserTemplate)).toInt().coerceAtLeast(12)
@@ -592,7 +599,12 @@ object HandwritingBitmapRenderer {
 
                     if (glyph == null) {
                         missingCharacters += character
-                        cursorX += spaceWidth
+                        val missingAdvance = when {
+                            character in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
+                            character in punctuationChars -> (lineHeightPx * 0.08f).toInt().coerceAtLeast(4)
+                            else -> spaceWidth
+                        }
+                        cursorX += missingAdvance
                         maxUsedX = max(maxUsedX, cursorX)
                         charIndexInLine++
                         continue
