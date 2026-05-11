@@ -5,6 +5,7 @@
     <string name="template_chooser_title">Handschriftstil wählen</string>
     <string name="template_chooser_subtitle">Integrierte Vorlagen sind der Standardweg. Du kannst auch deine eigene Handschrift aufnehmen.</string>
     <string name="template_chooser_use_template">Vorlage verwenden</string>
+    <string name="template_chooser_new_badge">Neu</string>
     <string name="template_chooser_premium_badge">Premium</string>
     <string name="template_chooser_premium_button">Handschrift aufnehmen</string>
 
@@ -30,6 +31,7 @@
     <string name="render_generate_button">Erstellen</string>
     <string name="render_premium_button">Meine Handschrift verwenden</string>
     <string name="render_templates_button">Vorlagen</string>
+    <string name="render_back_button">Zurück</string>
 
     <string name="render_generating_title">Notiz wird erstellt…</string>
     <string name="render_generating_subtitle">Jede Erzeugung ist einzigartig</string>
@@ -94,6 +96,14 @@
     <string name="premium_process_failed">Das Blatt konnte nicht verarbeitet werden. Scanne erneut mit allen vier sichtbaren Eckmarkierungen.</string>
     <string name="premium_capture_failed_focus">Texterkennung fehlgeschlagen. Versuche eine weitere Aufnahme mit schärferem Fokus.</string>
     <string name="premium_camera_failed">Kameraaufnahme fehlgeschlagen. Erneut versuchen.</string>
+    <string name="premium_default_template_name">Meine Handschrift</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">Deine Handschrift benennen</string>
+    <string name="rename_handwriting_body">Lege fest, wie diese gespeicherte Handschrift in deiner Vorlagenliste erscheinen soll.</string>
+    <string name="rename_handwriting_label">Name der Handschrift</string>
+    <string name="rename_handwriting_confirm">Name speichern</string>
+    <string name="rename_handwriting_cancel">Aktuellen Namen behalten</string>
+    <string name="rename_handwriting_error_blank">Bitte gib einen Namen ein.</string>
 
     <!-- Drawer navigation -->
     <string name="drawer_nav_templates">Vorlagen</string>
@@ -125,7 +135,7 @@
     <!-- Help screen -->
     <string name="help_title">Hilfe</string>
     <string name="help_s1_title">1. Vorlage wählen</string>
-    <string name="help_s1_body">Öffne Vorlagen aus dem Seitenmenü und wische durch die Stile. Tippe auf eine Karte, um mit dieser Handschrift zu beginnen.</string>
+    <string name="help_s1_body">Öffne Vorlagen aus dem Seitenmenü und wische durch die Stile. Tippe auf \'Vorlage verwenden\', um mit dieser Handschrift zu beginnen.</string>
     <string name="help_s2_title">2. Text eingeben</string>
     <string name="help_s2_body">Tippe oder füge beliebigen Text ein. Zeilenumbrüche und Satzzeichen bleiben erhalten.</string>
     <string name="help_s3_title">3. Erstellen</string>
@@ -156,4 +166,14 @@
     <string name="about_description">Verwandelt getippten Text in Handschrift, die sich wirklich handgeschrieben anfühlt. Integrierte Vorlagen funktionieren vollständig offline; nichts über deinen Text verlässt dein Gerät.</string>
     <string name="about_github_button">Quellcode auf GitHub ansehen</string>
     <string name="about_copyright">© 2025 IT-BAER. Mit Sorgfalt gemacht.</string>
+
+    <string name="template_ink_script_name">Tintenschrift</string>
+    <string name="template_ink_script_description">Eine natürliche Tintenschrift mit organischer Variation und handgezeichnetem Charakter.</string>
+    <string name="template_flowing_cursive_name">Fließende Kursivschrift</string>
+    <string name="template_flowing_cursive_description">Ein flüssiger Kursivstil mit verbundenen Buchstaben und natürlichem Rhythmus.</string>
+    <string name="template_premium_sample">Erfasse deinen eigenen Stil</string>
+    <string name="template_premium_description">Extrahiere deine persönliche Handschrift aus einem fotografierten Übungsblatt.</string>
+    <string name="template_delete_title">Vorlage löschen?</string>
+    <string name="template_delete_body">„%1$s“ wird dauerhaft von deinem Gerät entfernt.</string>
+    <string name="result_tip_share">💡 Tipp: Verwende \'Teilen\' oder \'PDF\', um deine Notiz in einer anderen App zu speichern.</string>
 </resources>

@@ -6,6 +6,7 @@
     <string name="template_chooser_title">Choose a handwriting style</string>
     <string name="template_chooser_subtitle">Built-in templates are the default path. You can also capture your own handwriting.</string>
     <string name="template_chooser_use_template">Use template</string>
+    <string name="template_chooser_new_badge">New</string>
     <string name="template_chooser_premium_badge">Premium</string>
     <string name="template_chooser_premium_button">Capture handwriting</string>
 
@@ -21,6 +22,7 @@
     <string name="render_generate_button">Generate</string>
     <string name="render_premium_button">Use My Handwriting</string>
     <string name="render_templates_button">Templates</string>
+    <string name="render_back_button">Back</string>
 
     <!-- Note backgrounds -->
     <string name="note_background_plain_white">Plain White</string>
@@ -103,6 +105,27 @@
     <string name="premium_process_failed">Could not process the sheet. Re-scan with all four corner markers visible.</string>
     <string name="premium_capture_failed_focus">Text recognition failed. Try another capture with sharper focus.</string>
     <string name="premium_camera_failed">Camera capture failed. Try again.</string>
+    <string name="premium_default_template_name">My Handwriting</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+
+    <!-- Template names and descriptions -->
+    <string name="template_ink_script_name">Ink Script</string>
+    <string name="template_ink_script_description">A natural ink-style handwriting with organic variation and hand-drawn character.</string>
+    <string name="template_flowing_cursive_name">Flowing Cursive</string>
+    <string name="template_flowing_cursive_description">A smooth cursive style with connected letters and natural rhythm.</string>
+    <string name="template_premium_sample">Capture your own style</string>
+    <string name="template_premium_description">Extract your personal handwriting from a photographed practice sheet.</string>
+
+    <!-- Template delete dialog -->
+    <string name="template_delete_title">Delete template?</string>
+    <string name="template_delete_body">"%1$s" will be permanently removed from your device.</string>
+
+    <string name="rename_handwriting_title">Name your handwriting</string>
+    <string name="rename_handwriting_body">Choose how this saved handwriting should appear in your template list.</string>
+    <string name="rename_handwriting_label">Handwriting name</string>
+    <string name="rename_handwriting_confirm">Save name</string>
+    <string name="rename_handwriting_cancel">Keep current name</string>
+    <string name="rename_handwriting_error_blank">Enter a name.</string>
 
     <!-- Drawer navigation -->
     <string name="drawer_nav_templates">Templates</string>
@@ -134,7 +157,7 @@
     <!-- Help screen -->
     <string name="help_title">Help</string>
     <string name="help_s1_title">1. Pick a template</string>
-    <string name="help_s1_body">Open Templates from the side menu and swipe through the styles. Tap a card to start composing in that handwriting.</string>
+    <string name="help_s1_body">Open Templates from the side menu and swipe through the styles. Tap \'Use template\' on the card you like to start composing.</string>
     <string name="help_s2_title">2. Type your text</string>
     <string name="help_s2_body">Type or paste any text into the field. Line breaks and punctuation are preserved as you wrote them.</string>
     <string name="help_s3_title">3. Generate</string>
@@ -165,4 +188,5 @@
     <string name="about_description">Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device.</string>
     <string name="about_github_button">View source on GitHub</string>
     <string name="about_copyright">© 2025 IT-BAER. Made with care.</string>
+    <string name="result_tip_share">💡 Tip: Use the Share or PDF button to save your note to another app.</string>
 </resources>

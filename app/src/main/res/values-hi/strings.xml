@@ -29,8 +29,7 @@
     <string name="note_background_graph_sheet">ग्राफ कागज़</string>
     <string name="render_generate_button">जेनरेट करें</string>
     <string name="render_premium_button">प्रीमियम: मेरी हस्तलेखन उपयोग करें</string>
-    <string name="render_templates_button">टेम्पलेट</string>
-
+    <string name="render_templates_button">टेम्पलेट</string>    <string name="render_back_button">वापस</string>
     <string name="render_generating_title">आपकी नोट जेनरेट हो रही है…</string>
     <string name="render_generating_subtitle">हर जेनरेशन अनोखी होती है</string>
 
@@ -156,4 +155,24 @@
     <string name="about_description">टाइप किए गए टेक्स्ट को ऐसी लिखावट में बदलता है जो वाकई हाथ से लिखी लगे। अंतर्निहित टेम्पलेट पूरी तरह ऑफलाइन काम करते हैं; आपके टेक्स्ट के बारे में कुछ भी डिवाइस नहीं छोड़ता।</string>
     <string name="about_github_button">GitHub पर सोर्स देखें</string>
     <string name="about_copyright">© 2025 IT-BAER. देखभाल से बनाया गया।</string>
+
+    <string name="template_chooser_new_badge">नया</string>
+    <string name="premium_default_template_name">मेरी लिखावट</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">अपनी लिखावट का नाम दें</string>
+    <string name="rename_handwriting_body">चुनें कि यह सहेजी गई लिखावट आपकी टेम्पलेट सूची में कैसे दिखे।</string>
+    <string name="rename_handwriting_label">लिखावट का नाम</string>
+    <string name="rename_handwriting_confirm">नाम सहेजें</string>
+    <string name="rename_handwriting_cancel">वर्तमान नाम रखें</string>
+    <string name="rename_handwriting_error_blank">एक नाम दर्ज करें।</string>
+
+    <string name="template_ink_script_name">स्याही लिपि</string>
+    <string name="template_ink_script_description">जैविक विविधता और हस्तनिर्मित चरित्र के साथ एक प्राकृतिक स्याही शैली की लिखावट।</string>
+    <string name="template_flowing_cursive_name">प्रवाहमय कर्सिव</string>
+    <string name="template_flowing_cursive_description">जुड़े हुए अक्षरों और प्राकृतिक लय के साथ एक सुंदर कर्सिव शैली।</string>
+    <string name="template_premium_sample">अपनी शैली कैप्चर करें</string>
+    <string name="template_premium_description">एक फोटोग्राफ किए गए अभ्यास पत्रक से अपनी व्यक्तिगत लिखावट निकालें।</string>
+    <string name="template_delete_title">टेम्पलेट हटाएं?</string>
+    <string name="template_delete_body">“%1$s” आपके डिवाइस से स्थायी रूप से हटा दिया जाएगा।</string>
+    <string name="result_tip_share">💡 सुझाव: नोट को दूसरे ऐप में सहेजने के लिए शेयर या PDF बटन का उपयोग करें।</string>
 </resources>

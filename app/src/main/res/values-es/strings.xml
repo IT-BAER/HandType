@@ -30,6 +30,7 @@
     <string name="render_generate_button">Generar</string>
     <string name="render_premium_button">Premium: Usar mi letra</string>
     <string name="render_templates_button">Plantillas</string>
+    <string name="render_back_button">Atrás</string>
 
     <string name="render_generating_title">Generando tu nota…</string>
     <string name="render_generating_subtitle">Cada generación es única</string>
@@ -125,7 +126,7 @@
     <!-- Help screen -->
     <string name="help_title">Ayuda</string>
     <string name="help_s1_title">1. Elige una plantilla</string>
-    <string name="help_s1_body">Abre Plantillas desde el menú lateral y desliza para ver los estilos. Toca una tarjeta para comenzar a componer con esa letra.</string>
+    <string name="help_s1_body">Abre Plantillas desde el menú lateral y desliza para ver los estilos. Toca \'Usar plantilla\' en la tarjeta que te guste para empezar.</string>
     <string name="help_s2_title">2. Escribe tu texto</string>
     <string name="help_s2_body">Escribe o pega cualquier texto en el campo. Los saltos de línea y la puntuación se conservan tal como los escribiste.</string>
     <string name="help_s3_title">3. Genera</string>
@@ -156,4 +157,24 @@
     <string name="about_description">Convierte texto escrito en letra que realmente parece escrita a mano. Las plantillas integradas funcionan completamente sin conexión; nada sobre tu texto sale de tu dispositivo.</string>
     <string name="about_github_button">Ver código fuente en GitHub</string>
     <string name="about_copyright">© 2025 IT-BAER. Hecho con cuidado.</string>
+
+    <string name="template_chooser_new_badge">Nuevo</string>
+    <string name="premium_default_template_name">Mi letra</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">Ponle nombre a tu letra</string>
+    <string name="rename_handwriting_body">Elige cómo debe aparecer esta letra guardada en tu lista de plantillas.</string>
+    <string name="rename_handwriting_label">Nombre de la letra</string>
+    <string name="rename_handwriting_confirm">Guardar nombre</string>
+    <string name="rename_handwriting_cancel">Mantener nombre actual</string>
+    <string name="rename_handwriting_error_blank">Escribe un nombre.</string>
+
+    <string name="template_ink_script_name">Escritura a tinta</string>
+    <string name="template_ink_script_description">Una escritura a mano natural con variación orgánica y carácter artesanal.</string>
+    <string name="template_flowing_cursive_name">Cursiva fluida</string>
+    <string name="template_flowing_cursive_description">Un estilo cursivo suave con letras unidas y ritmo natural.</string>
+    <string name="template_premium_sample">Captura tu propio estilo</string>
+    <string name="template_premium_description">Extrae tu escritura personal de una hoja de práctica fotografiada.</string>
+    <string name="template_delete_title">¿Eliminar plantilla?</string>
+    <string name="template_delete_body">“%1$s” se eliminará permanentemente de tu dispositivo.</string>
+    <string name="result_tip_share">💡 Consejo: Usa Compartir o PDF para guardar tu nota en otra aplicación.</string>
 </resources>

@@ -30,6 +30,7 @@
     <string name="render_generate_button">生成</string>
     <string name="render_premium_button">プレミアム：自分の手書き</string>
     <string name="render_templates_button">テンプレート</string>
+    <string name="render_back_button">戻る</string>
 
     <string name="render_generating_title">ノートを生成中…</string>
     <string name="render_generating_subtitle">毎回異なる生成結果</string>
@@ -154,4 +155,24 @@
     <string name="about_version">バージョン %1$s</string>
     <string name="about_description">入力したテキストを実際に手書きのような筆跡に変換します。内蔵テンプレートは完全オフラインで動作し、テキストに関する情報はデバイスの外に出ません。</string>
     <string name="about_github_button">GitHubでソースを見る</string>
-    <string name="about_copyright">© 2025 IT-BAER. 心を込めて作りました。</string></resources>
+    <string name="about_copyright">© 2025 IT-BAER. 心を込めて作りました。</string>
+    <string name="template_chooser_new_badge">新着</string>
+    <string name="premium_default_template_name">マイ手書き</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">手書きに名前をつける</string>
+    <string name="rename_handwriting_body">この保存した手書きがテンプレートリストにどのように表示されるかを選んでください。</string>
+    <string name="rename_handwriting_label">手書きの名前</string>
+    <string name="rename_handwriting_confirm">名前を保存</string>
+    <string name="rename_handwriting_cancel">現在の名前を維持</string>
+    <string name="rename_handwriting_error_blank">名前を入力してください。</string>
+
+    <string name="template_ink_script_name">インクスクリプト</string>
+    <string name="template_ink_script_description">有機的な変化と手描きの風味を持つ、自然なインクスタイルの手書き。</string>
+    <string name="template_flowing_cursive_name">フローイングカーシブ</string>
+    <string name="template_flowing_cursive_description">つながる字と自然なリズムの流れるようなカーシブスタイル。</string>
+    <string name="template_premium_sample">自分のスタイルをキャプチャ</string>
+    <string name="template_premium_description">写真撮影した練習シートから個人の手書きを抽出します。</string>
+    <string name="template_delete_title">テンプレートを削除？</string>
+    <string name="template_delete_body">「%1$s」はデバイスから永久に削除されます。</string>
+    <string name="result_tip_share">💡 ヒント：共有またはPDFボタンを使ってノートを他のアプリに保存できます。</string>
+</resources>

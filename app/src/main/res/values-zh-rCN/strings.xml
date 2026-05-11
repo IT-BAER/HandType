@@ -30,6 +30,7 @@
     <string name="render_generate_button">生成</string>
     <string name="render_premium_button">高级版：使用我的笔迹</string>
     <string name="render_templates_button">模板</string>
+    <string name="render_back_button">返回</string>
 
     <string name="render_generating_title">正在生成便条…</string>
     <string name="render_generating_subtitle">每次生成都独一无二</string>
@@ -154,4 +155,24 @@
     <string name="about_description">将输入的文字转化为真正看起来手写的笔迹。内置模板完全离线运行；您的文字信息不会离开设备。</string>
     <string name="about_github_button">在 GitHub 上查看源代码</string>
     <string name="about_copyright">© 2025 IT-BAER. 用心制作。</string>
+
+    <string name="template_chooser_new_badge">新</string>
+    <string name="premium_default_template_name">我的笔迹</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">为您的笔迹命名</string>
+    <string name="rename_handwriting_body">选择此保存的笔迹在模板列表中的显示方式。</string>
+    <string name="rename_handwriting_label">笔迹名称</string>
+    <string name="rename_handwriting_confirm">保存名称</string>
+    <string name="rename_handwriting_cancel">保留当前名称</string>
+    <string name="rename_handwriting_error_blank">请输入名称。</string>
+
+    <string name="template_ink_script_name">墙迹手写体</string>
+    <string name="template_ink_script_description">具有自然变化和手写质感的自然墙迹风格手写体。</string>
+    <string name="template_flowing_cursive_name">流畅草体</string>
+    <string name="template_flowing_cursive_description">字母相互连接、具有自然韵律感的光滑草体风格。</string>
+    <string name="template_premium_sample">捕捉您自己的风格</string>
+    <string name="template_premium_description">从拍摄的练习表中提取您的个人笔迹。</string>
+    <string name="template_delete_title">删除模板？</string>
+    <string name="template_delete_body">“%1$s”将永久从您的设备中删除。</string>
+    <string name="result_tip_share">💡 提示：使用分享或PDF按钮将笔记保存到其他应用。</string>
 </resources>

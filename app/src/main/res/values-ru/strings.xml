@@ -30,6 +30,7 @@
     <string name="render_generate_button">Создать</string>
     <string name="render_premium_button">Премиум: мой почерк</string>
     <string name="render_templates_button">Шаблоны</string>
+    <string name="render_back_button">Назад</string>
 
     <string name="render_generating_title">Генерация заметки…</string>
     <string name="render_generating_subtitle">Каждая генерация уникальна</string>
@@ -125,7 +126,7 @@
     <!-- Help screen -->
     <string name="help_title">Помощь</string>
     <string name="help_s1_title">1. Выберите шаблон</string>
-    <string name="help_s1_body">Откройте Шаблоны из бокового меню и пролистайте стили. Нажмите на карточку, чтобы начать текст в этом почерке.</string>
+    <string name="help_s1_body">Откройте Шаблоны из бокового меню и пролистайте стили. Нажмите «Использовать», чтобы начать в этом почерке.</string>
     <string name="help_s2_title">2. Введите текст</string>
     <string name="help_s2_body">Введите или вставьте любой текст в поле. Переносы строк и пунктуация сохраняются как вы написали.</string>
     <string name="help_s3_title">3. Создать</string>
@@ -156,4 +157,24 @@
     <string name="about_description">Превращает набранный текст в почерк, который действительно выглядит написанным от руки. Встроенные шаблоны работают полностью офлайн; ничто о вашем тексте не покидает устройство.</string>
     <string name="about_github_button">Просмотреть исходный код на GitHub</string>
     <string name="about_copyright">© 2025 IT-BAER. Сделано с заботой.</string>
+
+    <string name="template_chooser_new_badge">Новое</string>
+    <string name="premium_default_template_name">Мой почерк</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">Назовите свой почерк</string>
+    <string name="rename_handwriting_body">Выберите, как этот сохранённый почерк должен отображаться в вашем списке шаблонов.</string>
+    <string name="rename_handwriting_label">Название почерка</string>
+    <string name="rename_handwriting_confirm">Сохранить название</string>
+    <string name="rename_handwriting_cancel">Оставить текущее название</string>
+    <string name="rename_handwriting_error_blank">Введите название.</string>
+
+    <string name="template_ink_script_name">Чернильный шрифт</string>
+    <string name="template_ink_script_description">Естественный почерк в стиле чернил, с органическими вариациями и рукописным характером.</string>
+    <string name="template_flowing_cursive_name">Плавный курсив</string>
+    <string name="template_flowing_cursive_description">Плавный курсивный стиль с связанными буквами и естественным ритмом.</string>
+    <string name="template_premium_sample">Зафиксируйте свой стиль</string>
+    <string name="template_premium_description">Извлеките ваш личный почерк из сфотографированного упражнения.</string>
+    <string name="template_delete_title">Удалить шаблон?</string>
+    <string name="template_delete_body">«%1$s» будет навсегда удалён с вашего устройства.</string>
+    <string name="result_tip_share">💡 Совет: используйте кнопку «Поделиться» или «PDF», чтобы сохранить заметку в другом приложении.</string>
 </resources>

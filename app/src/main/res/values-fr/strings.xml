@@ -30,6 +30,7 @@
     <string name="render_generate_button">Générer</string>
     <string name="render_premium_button">Premium : utiliser mon écriture</string>
     <string name="render_templates_button">Modèles</string>
+    <string name="render_back_button">Retour</string>
 
     <string name="render_generating_title">Génération de votre note…</string>
     <string name="render_generating_subtitle">Chaque génération est unique</string>
@@ -125,7 +126,7 @@
     <!-- Help screen -->
     <string name="help_title">Aide</string>
     <string name="help_s1_title">1. Choisir un modèle</string>
-    <string name="help_s1_body">Ouvrez Modèles depuis le menu latéral et faites défiler les styles. Appuyez sur une carte pour commencer à composer dans cette écriture.</string>
+    <string name="help_s1_body">Ouvrez Modèles depuis le menu latéral et faites défiler les styles. Appuyez sur \'Utiliser le modèle\' pour commencer à composer dans cette écriture.</string>
     <string name="help_s2_title">2. Saisir votre texte</string>
     <string name="help_s2_body">Tapez ou collez n\'importe quel texte dans le champ. Les sauts de ligne et la ponctuation sont conservés tels quels.</string>
     <string name="help_s3_title">3. Générer</string>
@@ -156,4 +157,24 @@
     <string name="about_description">Transformez du texte tapé en écriture qui semble vraiment manuscrite. Les modèles intégrés fonctionnent entièrement hors ligne ; rien sur votre texte ne quitte votre appareil.</string>
     <string name="about_github_button">Voir le code source sur GitHub</string>
     <string name="about_copyright">© 2025 IT-BAER. Fait avec soin.</string>
+
+    <string name="template_chooser_new_badge">Nouveau</string>
+    <string name="premium_default_template_name">Mon écriture</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+    <string name="rename_handwriting_title">Nommez votre écriture</string>
+    <string name="rename_handwriting_body">Choisissez comment cette écriture enregistrée doit apparaître dans votre liste de modèles.</string>
+    <string name="rename_handwriting_label">Nom de l\'écriture</string>
+    <string name="rename_handwriting_confirm">Enregistrer le nom</string>
+    <string name="rename_handwriting_cancel">Conserver le nom actuel</string>
+    <string name="rename_handwriting_error_blank">Saisissez un nom.</string>
+
+    <string name="template_ink_script_name">Écriture à l\'encre</string>
+    <string name="template_ink_script_description">Une écriture manuscrite naturelle avec une variation organique et un caractère artisanal.</string>
+    <string name="template_flowing_cursive_name">Cursive fluide</string>
+    <string name="template_flowing_cursive_description">Un style cursif fluide avec des lettres liées et un rythme naturel.</string>
+    <string name="template_premium_sample">Capturez votre propre style</string>
+    <string name="template_premium_description">Extrayez votre écriture personnelle d’une feuille d’exercice photographiée.</string>
+    <string name="template_delete_title">Supprimer le modèle ?</string>
+    <string name="template_delete_body">« %1$s » sera définitivement supprimé de votre appareil.</string>
+    <string name="result_tip_share">💡 Astuce : Utilisez Partager ou PDF pour enregistrer votre note dans une autre application.</string>
 </resources>
