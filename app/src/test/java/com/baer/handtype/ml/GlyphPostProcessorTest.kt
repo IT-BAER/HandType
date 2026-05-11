@@ -7,6 +7,13 @@ import org.junit.Test
 class GlyphPostProcessorTest {
 
     @Test
+    fun resolveGuideBandUsesTopAndBottomOnly() {
+        assertTrue(
+            GlyphPostProcessor.resolveGuideBand(intArrayOf(118, 81, 46)) == 46..118,
+        )
+    }
+
+    @Test
     fun keepsNearbyBodyComponentForSplitLowercaseH() {
         assertTrue(
             GlyphPostProcessor.shouldKeepComponentBounds(
@@ -112,6 +119,24 @@ class GlyphPostProcessorTest {
                 primaryRight = 60,
                 primaryBottom = 88,
                 primaryArea = 110,
+            ),
+        )
+    }
+
+    @Test
+    fun keepsLowerArmComponentTouchingPrimaryForSplitUppercaseE() {
+        assertTrue(
+            GlyphPostProcessor.shouldKeepComponentBounds(
+                componentLeft = 18,
+                componentTop = 88,
+                componentRight = 58,
+                componentBottom = 96,
+                componentArea = 92,
+                primaryLeft = 18,
+                primaryTop = 18,
+                primaryRight = 32,
+                primaryBottom = 86,
+                primaryArea = 168,
             ),
         )
     }

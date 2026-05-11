@@ -22,6 +22,13 @@ import kotlin.math.roundToInt
  */
 object GlyphPostProcessor {
 
+    private data class GuideBand(
+        val upperY: Int,
+        val baselineY: Int,
+    ) {
+        val height: Int get() = baselineY - upperY
+    }
+
     private data class InkComponent(
         val pixels: IntArray,
         val area: Int,
@@ -37,7 +44,8 @@ object GlyphPostProcessor {
 
     private const val TARGET_CANVAS = 220
     private const val TARGET_GLYPH_HEIGHT = 199
-    private const val TARGET_BASELINE_Y = 175
+    private const val TARGET_BASELINE_Y = (TARGET_CANVAS * 0.74f).toInt()
+    private const val TARGET_GUIDE_BAND_HEIGHT = (TARGET_CANVAS * 0.46f).toInt()
     private const val INK_COLOR = 0xFF1A1410.toInt()
     private const val SIDE_PAD = 8
 
@@ -50,6 +58,7 @@ object GlyphPostProcessor {
         val width = crop.width
         val height = crop.height
         if (width <= 0 || height <= 0) return crop
+        val guideBand = resolveGuideBand(guideYsInCrop)?.let { GuideBand(it.first, it.last) }
 
         val pixels = IntArray(width * height)
         crop.getPixels(pixels, 0, width, 0, 0, width, height)
@@ -75,7 +84,33 @@ object GlyphPostProcessor {
         }
 
         val threshold = otsuThreshold(luma)
-        val inkMask = BooleanArray(pixels.size) { index -> luma[index] <= threshold }
+        // Use a permissive threshold (Otsu × 1.2, capped at 210) so lightly-written strokes
+        // such as i/j dots are classified as ink rather than paper. The component filter in
+        // shouldKeepComponent() handles any resulting noise (guide residue, paper texture) via
+        // area and proximity checks. Background paper is typically luma ≥ 225 so the cap of
+        // 210 keeps a comfortable margin.
+        val permissiveThreshold = (threshold * 1.2f).toInt().coerceAtMost(210)
+        val inkMask = BooleanArray(pixels.size) { index -> luma[index] <= permissiveThreshold }
+
+        // Secondary diacritic scan: search the top 30% of the crop for small connected groups
+        // of pixels that are darker than paper (luma < 220) but lighter than the Otsu threshold.
+        // These pixels represent lightly drawn i/j dots that global Otsu misses when strong body
+        // ink pulls the threshold below the dot's light grey. Only accept groups with area < 150
+        // to ensure we never pull in large paper-texture regions.
+        val diacriticZoneEnd = guideBand?.baselineY?.coerceIn(0, height) ?: (height * 0.40f).toInt()
+        val diacriticLumaMax = 240
+        if (diacriticZoneEnd > 0) {
+            val diacriticCandidates = BooleanArray(pixels.size) { index ->
+                val y = index / width
+                y < diacriticZoneEnd && !inkMask[index] && luma[index] < diacriticLumaMax
+            }
+            val candidateComponents = extractInkComponents(diacriticCandidates, width, height)
+            for (comp in candidateComponents) {
+                if (comp.area in 3..149) {
+                    comp.pixels.forEach { inkMask[it] = true }
+                }
+            }
+        }
         val components = extractInkComponents(inkMask, width, height)
         if (components.isEmpty()) return crop
         val primary = components.maxByOrNull { it.area } ?: return crop
@@ -120,17 +155,17 @@ object GlyphPostProcessor {
         // pixels at-or-below the threshold are mapped to opacity proportional to their darkness.
         val masked = Bitmap.createBitmap(inkWidth, inkHeight, Bitmap.Config.ARGB_8888)
         val maskedPixels = IntArray(inkWidth * inkHeight)
-        val darkSpan = (threshold - lumaMin).coerceAtLeast(1)
+        val darkSpan = (permissiveThreshold - lumaMin).coerceAtLeast(1)
         for (y in 0 until inkHeight) {
             val srcRow = (top + y) * width
             val dstRow = y * inkWidth
             for (x in 0 until inkWidth) {
                 val l = luma[srcRow + (left + x)]
-                val alpha = if (!filteredInkMask[srcRow + (left + x)] || l > threshold) {
+                val alpha = if (!filteredInkMask[srcRow + (left + x)] || l > permissiveThreshold) {
                     0
                 } else {
-                    // l <= threshold: darker than threshold means more ink. Clamp at 255.
-                    (((threshold - l).toFloat() / darkSpan) * 255f)
+                    // l <= permissiveThreshold: darker means more ink. Clamp at 255.
+                    (((permissiveThreshold - l).toFloat() / darkSpan) * 255f)
                         .toInt()
                         .coerceIn(0, 255)
                 }
@@ -143,7 +178,18 @@ object GlyphPostProcessor {
         }
         masked.setPixels(maskedPixels, 0, inkWidth, 0, 0, inkWidth, inkHeight)
 
-        return placeOnCanvas(masked, preserveComponentSeparation = keptComponents.size > 1)
+        val guideBandInMasked = guideBand?.let { band ->
+            GuideBand(
+                upperY = band.upperY - top,
+                baselineY = band.baselineY - top,
+            )
+        }
+
+        return placeOnCanvas(
+            glyph = masked,
+            preserveComponentSeparation = keptComponents.size > 1,
+            guideBand = guideBandInMasked,
+        )
     }
 
     private fun extractInkComponents(mask: BooleanArray, width: Int, height: Int): List<InkComponent> {
@@ -256,8 +302,15 @@ object GlyphPostProcessor {
         // (~50-80px) and as thick as the pen stroke (~4-8px) → area ≈ 200-640px².
         // Only reject if the component is also small in absolute pixel count so letter
         // arms are not caught by the same filter.
+        val touchingPrimary = horizontalGap == 0 && verticalGap == 0
+        val nearPrimaryEdge = componentTop <= primaryTop + maxOf(primaryHeight / 5, 8) ||
+            componentBottom >= primaryBottom - maxOf(primaryHeight / 5, 8)
+        val nearPrimaryArm = horizontalGap == 0 &&
+            verticalGap <= maxOf(primaryHeight / 6, 8) &&
+            componentArea >= maxOf(primaryArea / 8, 24) &&
+            nearPrimaryEdge
         if (componentAspectRatio > 3.4f && componentHeight < maxOf(primaryHeight / 3, 10)
-            && componentArea < 150) {
+            && componentArea < 150 && !(touchingPrimary && nearPrimaryEdge) && !nearPrimaryArm) {
             return false
         }
 
@@ -268,8 +321,12 @@ object GlyphPostProcessor {
         // a guide position have ink above AND below the band, so their span exceeds the band.
         // Note: if guide ink is fused with the handwritten letter (same component), both pixels
         // belong to the primary and this check is never reached for them.
+        // Reject components that lie entirely within a known guide-line band AND are small.
+        // After centered pixel blanking, any surviving guide remnant is partial (≤13px wide)
+        // and thin (≤3px), so area ≤ ~40px². Letter arms at this position are ≥50px wide
+        // and ≥3px tall, so area ≥ 150px². Upper bound of 80 gives safe separation.
         val guideBandHalf = 4
-        if (guideYsInCrop.any { gy ->
+        if (componentArea < 80 && guideYsInCrop.any { gy ->
                 componentTop >= gy - guideBandHalf && componentBottom <= gy + guideBandHalf
             }) {
             return false
@@ -277,13 +334,31 @@ object GlyphPostProcessor {
 
         val sitsAbovePrimary = componentBottom < primaryTop
         if (sitsAbovePrimary) {
-            val maxGap = maxOf(primaryHeight / 2, 24)
+            // Diacritics (i-dot, j-dot, accents) are tiny components that sit above the letter
+            // body. They can have a large vertical gap (dot at 32% zone, body at 78%) and may
+            // be slightly shifted horizontally from the body centre in the user's handwriting.
+            // Allow a 3× larger vertical gap AND a relaxed horizontal alignment for such marks.
+            val isDiacritic = componentArea < maxOf(primaryArea / 5, 30)
+                && componentWidth <= maxOf(primaryWidth + 6, 20)
+                && componentAspectRatio >= 0.3f  // tall narrow lines are residue, not diacritics
+            val maxGap = if (isDiacritic) maxOf(primaryHeight * 3, 60) else maxOf(primaryHeight / 2, 24)
+            val alignOk = if (isDiacritic) {
+                // Diacritics may be placed anywhere above the letter body in the cell.
+                // Don't require horizontal alignment — the cell belongs to one letter only.
+                true
+            } else {
+                alignedWithPrimary
+            }
             // Allow large components above the primary — they can be letter body parts (e.g. the
             // main stem of an 'E' when the bottom arm is the dominant component, or the bowl of
             // 'g' above its descender). Only reject components that are clearly larger than any
             // reasonable letter part could be (> 3× primary area).
             val maxArea = maxOf(primaryArea * 3, 24)
-            return alignedWithPrimary && verticalGap <= maxGap && componentArea <= maxArea
+            // Tall narrow components above the primary are almost certainly printed label/guide
+            // residue (a single stroke of the printed cell label). Reject them outright — even if
+            // horizontally aligned — unless they look like a diacritic.
+            if (!isDiacritic && componentAspectRatio < 0.25f) return false
+            return alignOk && verticalGap <= maxGap && componentArea <= maxArea
         }
 
         val closeHorizontally = horizontalGap <= maxOf(primaryWidth / 2, 12)
@@ -293,7 +368,7 @@ object GlyphPostProcessor {
         // upper bound — they are almost certainly part of the same letter (e.g. the diagonal
         // arms of 'k' or 'K' touching the central stem). For components with a gap, apply a
         // relaxed upper bound (2× primary) to exclude large unrelated blobs.
-        val touching = horizontalGap == 0 && verticalGap == 0
+        val touching = touchingPrimary
         val maxArea = if (touching) Int.MAX_VALUE else maxOf((primaryArea * 2.0f).toInt(), 24)
         return closeHorizontally && closeVertically && componentArea >= minArea && componentArea <= maxArea
     }
@@ -313,14 +388,20 @@ object GlyphPostProcessor {
      * [HandwritingBitmapRenderer] advances by the real character width rather than the full
      * square canvas — eliminating the excessive inter-character gap in user-captured templates.
      */
-    private fun placeOnCanvas(glyph: Bitmap, preserveComponentSeparation: Boolean = false): Bitmap {
-        // Scale glyph to target glyph height, preserving aspect ratio.
+    private fun placeOnCanvas(
+        glyph: Bitmap,
+        preserveComponentSeparation: Boolean = false,
+        guideBand: GuideBand? = null,
+    ): Bitmap {
         val srcH = glyph.height.toFloat()
         val srcW = glyph.width.toFloat()
         val targetH = TARGET_GLYPH_HEIGHT.toFloat()
-        val scale = targetH / srcH
-        val scaledW = (srcW * scale).roundToInt().coerceAtMost(TARGET_CANVAS)
-        val scaledH = TARGET_GLYPH_HEIGHT
+        val guideScale = guideBand
+            ?.takeIf { it.height >= 8 && it.baselineY > 0 }
+            ?.let { TARGET_GUIDE_BAND_HEIGHT.toFloat() / it.height.toFloat() }
+        val scale = guideScale ?: (targetH / srcH)
+        val scaledW = (srcW * scale).roundToInt().coerceAtLeast(1).coerceAtMost(TARGET_CANVAS)
+        val scaledH = (srcH * scale).roundToInt().coerceAtLeast(1).coerceAtMost(TARGET_CANVAS)
 
         // Width-trim: use actual ink width + small side padding so the renderer's
         // glyph.width advance reflects the true character width.
@@ -329,8 +410,10 @@ object GlyphPostProcessor {
         val canvas = Canvas(canvasBmp)
 
         val left = SIDE_PAD.toFloat()
-        // Bottom of glyph aligned to baseline.
-        val top = (TARGET_BASELINE_Y - scaledH).toFloat()
+        val top = guideBand
+            ?.takeIf { it.baselineY > 0 }
+            ?.let { TARGET_BASELINE_Y - it.baselineY * scale }
+            ?: (TARGET_BASELINE_Y - scaledH).toFloat()
         val dst = RectF(left, max(0f, top), left + scaledW, max(0f, top) + scaledH)
         val src = Rect(0, 0, glyph.width, glyph.height)
 
@@ -339,6 +422,19 @@ object GlyphPostProcessor {
         }
         canvas.drawBitmap(glyph, src, dst, paint)
         return canvasBmp
+    }
+
+    internal fun normalizedCanvasSize(): Int = TARGET_CANVAS
+
+    internal fun normalizedBaselineRow(): Int = TARGET_BASELINE_Y
+
+    internal fun normalizedGuideBandHeight(): Int = TARGET_GUIDE_BAND_HEIGHT
+
+    internal fun resolveGuideBand(guideYsInCrop: IntArray): IntRange? {
+        if (guideYsInCrop.size < 2) return null
+        val upper = guideYsInCrop.minOrNull() ?: return null
+        val baseline = guideYsInCrop.maxOrNull() ?: return null
+        return if (baseline - upper >= 8) upper..baseline else null
     }
 
     /**
