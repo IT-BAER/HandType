@@ -37,8 +37,8 @@ object PracticeSheetGenerator {
     private const val GRID_COLOR = 0xFFCCC4B4.toInt()
     private const val GUIDE_COLOR = 0xFFD8D1C3.toInt()
     private const val GUIDE_SEGMENT_LENGTH = 26f
-    private const val GUIDE_UPPER_RATIO = 0.32f
-    private const val GUIDE_BASELINE_RATIO = 0.78f
+    internal const val GUIDE_UPPER_RATIO = 0.32f
+    internal const val GUIDE_BASELINE_RATIO = 0.78f
     private const val GUIDE_MIDDLE_RATIO = (GUIDE_UPPER_RATIO + GUIDE_BASELINE_RATIO) / 2f
 
     /** Characters laid out left-to-right, top-to-bottom into the 8×8 grid. */

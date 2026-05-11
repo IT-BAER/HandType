@@ -139,12 +139,11 @@ object SheetSampleProcessor {
 
             val cellWidthPx = cellRight - cellLeft
             val cellHeightPx = cellBottom - cellTop
-            // Inset to skip the printed grid border. Use a larger inset on top (where the
-            // printed character label lives) and a smaller inset on bottom/right so that
-            // descenders (g, y, p, q) and wide letters (E bottom arm, k arm) are not clipped.
-            // suppressPrintedCellLabel() blanks the top-left label zone after crop, so the top
-            // inset only needs to clear the cell border line on left/right/bottom.
-            val topInset = (cellHeightPx * 0.08f).toInt().coerceAtLeast(4)
+            // Inset to skip the printed grid border line only. suppressPrintedCellLabel()
+            // blanks the printed character label in the top-left corner independently, so
+            // the top inset only needs to clear the 2px border line — same as sides.
+            // Previously 8% (13 px) which was cutting the tops of tall letters (A, T, etc.).
+            val topInset = (cellHeightPx * 0.03f).toInt().coerceAtLeast(3)
             val sideInset = (minOf(cellWidthPx, cellHeightPx) * 0.03f).toInt().coerceAtLeast(3)
 
             val cropLeft = cellLeft + sideInset
@@ -159,22 +158,36 @@ object SheetSampleProcessor {
                 cropRight - cropLeft,
                 cropBottom - cropTop,
             )
-            val sanitizedCellCrop = suppressPrintedCellLabel(cellCrop)
-            // Erase the centered 26-px guide-tick print marks at the three known guide positions
-            // BEFORE running component extraction. Vertical letter strokes that cross a guide
-            // position keep their ink above/below the erased zone; isolated guide-residue is
-            // fully removed because the tick fits entirely within the blanked rectangle.
-            val guideFreeCellCrop = suppressGuideLinesInCrop(sanitizedCellCrop, topInset, cellHeightPx)
-            // Compute guide Y positions in crop coordinates so cleanGlyph can additionally reject
-            // any remaining guide-line residue via its component-level guide-band filter.
-            val guideRatios = floatArrayOf(0.32f, 0.55f, 0.78f)
+            val sanitizedCellCrop = suppressPrintedCellLabel(cell.character, cellCrop)
+            val guideSuppressedCellCrop = if (cell.character.lowercaseChar() in setOf('i', 'j')) {
+                suppressCenteredGuideTicks(
+                    cellCrop = sanitizedCellCrop,
+                    topInset = topInset,
+                    cellHeightPx = cellHeightPx,
+                    guideRatios = floatArrayOf(0.55f),
+                )
+            } else {
+                sanitizedCellCrop
+            }
+            // Note: pixel-level guide erasure was removed. Guide ticks are isolated horizontal
+            // marks that GlyphPostProcessor.shouldKeepComponent() already rejects via aspect-ratio
+            // and area checks. Pixel erasure severed letter strokes (e.g. 'H' crossbar at 55%)
+            // turning connected components into isolated noise that was then also rejected.
+            val edgeCleanCellCrop = suppressCellEdgeResidue(guideSuppressedCellCrop)
+            // Use only the top guide and baseline for normalization. The middle guide is a
+            // handwriting aid for the user, not a signal for glyph height reconstruction.
+            // Dots on i/j can sit above the middle guide and must remain valid ink.
+            val guideRatios = floatArrayOf(
+                PracticeSheetGenerator.GUIDE_UPPER_RATIO,
+                PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
+            )
             val guideYsInCrop = guideRatios
                 .map { ratio -> (cellHeightPx * ratio).toInt() - topInset }
-                .filter { it >= 0 && it < guideFreeCellCrop.height }
+                .filter { it >= 0 && it < edgeCleanCellCrop.height }
                 .toIntArray()
-            val cleaned = GlyphPostProcessor.cleanGlyph(guideFreeCellCrop, guideYsInCrop)
+            val cleaned = GlyphPostProcessor.cleanGlyph(edgeCleanCellCrop, guideYsInCrop)
 
-            debugContext?.let { dumpCellCrop(it, index, cell.character, guideFreeCellCrop, cleaned) }
+            debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
 
             // Detect empty cells: require enough strongly-opaque pixels (real ink, not faint
             // residue from the printed cell border / label).
@@ -194,10 +207,15 @@ object SheetSampleProcessor {
         )
     }
 
-    private fun suppressPrintedCellLabel(cellCrop: Bitmap): Bitmap {
+    private fun suppressPrintedCellLabel(character: Char, cellCrop: Bitmap): Bitmap {
         val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
-        val labelMaskWidth = (masked.width * 0.22f).toInt().coerceAtLeast(18).coerceAtMost(masked.width)
-        val labelMaskHeight = (masked.height * 0.24f).toInt().coerceAtLeast(24).coerceAtMost(masked.height)
+        val isDottedLowercase = character.lowercaseChar() in setOf('i', 'j')
+        val labelMaskWidth = (
+            masked.width * if (isDottedLowercase) 0.14f else 0.22f
+        ).toInt().coerceAtLeast(if (isDottedLowercase) 12 else 16).coerceAtMost(masked.width)
+        val labelMaskHeight = (
+            masked.height * if (isDottedLowercase) 0.18f else 0.24f
+        ).toInt().coerceAtLeast(if (isDottedLowercase) 16 else 20).coerceAtMost(masked.height)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             style = Paint.Style.FILL
@@ -207,44 +225,53 @@ object SheetSampleProcessor {
     }
 
     /**
-     * Blanks the exact printed guide-tick region at each of the three guide-line positions
-     * (upper 32%, middle 55%, baseline 78% of full cell height) in the already-cropped bitmap.
-     *
-     * Only the **centered [GUIDE_SEGMENT_LENGTH]px wide** horizontal segment is erased, matching
-     * the actual printed tick mark from [PracticeSheetGenerator.drawGuideTicks]. This preserves
-     * ink that is part of vertical letter strokes (which extend well above/below the band) while
-     * removing isolated guide-residue that is entirely within the tick region.
-     *
-     * [topInset] is the number of pixels removed from the cell top before cropping, so the guide
-     * positions in the crop coordinate system are shifted by that amount.
-     * [cellHeightPx] is the full cell height (before inset) used to compute absolute guide Y.
+     * Drops the tiny residual frame that can remain after rectification and cell insetting.
+     * Real handwriting should never touch the crop edges here, but page-shadow and border ink do.
      */
-    private fun suppressGuideLinesInCrop(cellCrop: Bitmap, topInset: Int, cellHeightPx: Int): Bitmap {
+    private fun suppressCellEdgeResidue(cellCrop: Bitmap): Bitmap {
         val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
-        val cropWidth = masked.width
-        val cropHeight = masked.height
+        val insetX = 2f.coerceAtMost((masked.width / 4f).coerceAtLeast(0f))
+        val insetY = 2f.coerceAtMost((masked.height / 4f).coerceAtLeast(0f))
+        if (insetX <= 0f || insetY <= 0f) return masked
+
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             style = Paint.Style.FILL
         }
         val canvas = Canvas(masked)
-        // Guide ratios from PracticeSheetGenerator (upper, middle, baseline).
-        val guideRatios = floatArrayOf(0.32f, 0.55f, 0.78f)
-        // Guide ticks are GUIDE_SEGMENT_LENGTH (26px) wide, centered in the cell.
-        // We erase exactly that centered region ±3px tall.
-        // Vertical letter strokes that cross a guide position are NOT erased: they have ink
-        // above and below the band. Only isolated horizontal guide marks are fully removed.
-        val halfSegment = 13f  // matches GUIDE_SEGMENT_LENGTH=26 exactly
-        val halfBand = 3
-        val centerX = cropWidth / 2f
+        canvas.drawRect(0f, 0f, insetX, masked.height.toFloat(), paint)
+        canvas.drawRect(masked.width - insetX, 0f, masked.width.toFloat(), masked.height.toFloat(), paint)
+        canvas.drawRect(0f, 0f, masked.width.toFloat(), insetY, paint)
+        canvas.drawRect(0f, masked.height - insetY, masked.width.toFloat(), masked.height.toFloat(), paint)
+        return masked
+    }
+
+    /**
+     * Removes only the centered printed tick segments for known guide lines. This is used
+     * sparingly for dotted stem letters where a fused guide tick dramatically inflates width.
+     */
+    private fun suppressCenteredGuideTicks(
+        cellCrop: Bitmap,
+        topInset: Int,
+        cellHeightPx: Int,
+        guideRatios: FloatArray,
+    ): Bitmap {
+        val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        val canvas = Canvas(masked)
+        val centerX = masked.width / 2f
+        val halfSegment = 13f
         val xLeft = (centerX - halfSegment).coerceAtLeast(0f)
-        val xRight = (centerX + halfSegment).coerceAtMost(cropWidth.toFloat())
-        for (ratio in guideRatios) {
+        val xRight = (centerX + halfSegment).coerceAtMost(masked.width.toFloat())
+        guideRatios.forEach { ratio ->
             val guideCellY = (cellHeightPx * ratio).toInt()
             val guideCropY = guideCellY - topInset
-            if (guideCropY < 0 || guideCropY >= cropHeight) continue
-            val top = (guideCropY - halfBand).coerceAtLeast(0).toFloat()
-            val bottom = (guideCropY + halfBand).coerceAtMost(cropHeight - 1).toFloat()
+            if (guideCropY !in 0 until masked.height) return@forEach
+            val top = (guideCropY - 3).coerceAtLeast(0).toFloat()
+            val bottom = (guideCropY + 3).coerceAtMost(masked.height - 1).toFloat()
             canvas.drawRect(xLeft, top, xRight, bottom, paint)
         }
         return masked
