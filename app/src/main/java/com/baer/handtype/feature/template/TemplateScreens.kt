@@ -102,6 +102,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -133,6 +134,7 @@ import com.baer.handtype.template.NoteBackgroundPreviewPattern
 import com.baer.handtype.template.OutputExporter
 import com.baer.handtype.template.TemplateDescriptor
 import com.baer.handtype.template.UserTemplateRepository
+import com.baer.handtype.testing.HandTypeTestTags
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -222,6 +224,7 @@ fun TemplateChooserScreen(
                 contentPadding = PaddingValues(horizontal = 32.dp),
                 pageSpacing = 12.dp,
                 modifier = Modifier
+                    .testTag(HandTypeTestTags.TEMPLATE_PAGER)
                     .fillMaxWidth()
                     .height(280.dp),
                 flingBehavior = PagerDefaults.flingBehavior(
@@ -271,6 +274,7 @@ fun TemplateChooserScreen(
                         androidx.compose.material3.IconButton(
                             onClick = { pendingDeleteTemplate = descriptor },
                             modifier = Modifier
+                                .testTag(HandTypeTestTags.templateDeleteButton(descriptor.id))
                                 .align(Alignment.BottomEnd)
                                 .padding(end = 14.dp, bottom = 14.dp),
                         ) {
@@ -650,7 +654,9 @@ private fun ComposePhaseContent(
                 onValueChange = onTextChange,
                 label = { Text(stringResource(R.string.render_text_label)) },
                 placeholder = { Text(stringResource(R.string.render_text_placeholder)) },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .testTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
+                    .fillMaxSize(),
                 maxLines = 20,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
@@ -677,6 +683,7 @@ private fun ComposePhaseContent(
                 onGenerate()
             },
             modifier = Modifier
+                .testTag(HandTypeTestTags.RENDER_GENERATE_BUTTON)
                 .fillMaxWidth()
                 .pressScale(),
             shape = RoundedCornerShape(18.dp),
@@ -873,6 +880,7 @@ private fun ResultPhaseContent(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = stringResource(R.string.render_result_image_desc),
                     modifier = Modifier
+                        .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
                         .fillMaxWidth()
                         .padding(4.dp)
                         .stripReveal(progress = inkRevealProgress.value),
@@ -1732,7 +1740,9 @@ fun RenameHandwritingDialog(
                             name = updated
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .testTag(HandTypeTestTags.RENAME_HANDWRITING_INPUT)
+                        .fillMaxWidth(),
                     singleLine = true,
                     label = { Text(text = stringResource(R.string.rename_handwriting_label)) },
                     supportingText = {

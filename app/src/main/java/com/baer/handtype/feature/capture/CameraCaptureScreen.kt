@@ -37,10 +37,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.R
+import com.baer.handtype.testing.HandTypeDebugHooks
+import com.baer.handtype.testing.HandTypeTestTags
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
@@ -107,6 +110,12 @@ fun CameraCaptureScreen(
 
     fun launchScanner() {
         if (isLaunching || isProcessing) return
+        val debugBitmap = runCatching { HandTypeDebugHooks.loadImportedScanBitmap() }.getOrNull()
+        if (debugBitmap != null) {
+            errorMessage = null
+            currentOnImageCaptured(debugBitmap)
+            return
+        }
         val activity = context.findActivity() ?: run {
             currentOnCaptureError(IllegalStateException("Cannot launch scanner: no Activity context"))
             return
@@ -218,6 +227,7 @@ fun CameraCaptureScreen(
                 onClick = { launchScanner() },
                 enabled = !isLaunching && !isProcessing,
                 modifier = Modifier
+                    .testTag(HandTypeTestTags.CAMERA_SCAN_BUTTON)
                     .fillMaxWidth()
                     .height(72.dp),
                 shape = RoundedCornerShape(22.dp),
