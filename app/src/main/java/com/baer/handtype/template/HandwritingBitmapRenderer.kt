@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PathMeasure
 import android.graphics.Typeface
+import com.baer.handtype.ml.GlyphPostProcessor
 import kotlin.math.max
 import kotlin.math.sin
 import kotlin.random.Random
@@ -58,6 +59,7 @@ object HandwritingBitmapRenderer {
     private data class PreparedGlyph(
         val bitmap: Bitmap,
         val baselineRow: Int,
+        val normalizedUserCanvas: Boolean,
     )
 
     private fun drawBackground(
@@ -121,6 +123,14 @@ object HandwritingBitmapRenderer {
         isUserTemplate: Boolean,
     ): PreparedGlyph {
         val bounds = measureInkBounds(bitmap)
+        if (isUserTemplate && bitmap.height == GlyphPostProcessor.normalizedCanvasSize()) {
+            return PreparedGlyph(
+                bitmap = Bitmap.createBitmap(bitmap, bounds.left, 0, bounds.width, bitmap.height),
+                baselineRow = GlyphPostProcessor.normalizedBaselineRow().coerceIn(0, bitmap.height - 1),
+                normalizedUserCanvas = true,
+            )
+        }
+
         val cropped = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width, bounds.height)
         val lower = character.lowercaseChar()
         val baselineInSource = when {
@@ -139,6 +149,7 @@ object HandwritingBitmapRenderer {
         return PreparedGlyph(
             bitmap = cropped,
             baselineRow = (baselineInSource - bounds.top).coerceIn(0, cropped.height - 1),
+            normalizedUserCanvas = false,
         )
     }
 
@@ -167,15 +178,64 @@ object HandwritingBitmapRenderer {
 
     internal fun descenderDropRatio(isUserTemplate: Boolean): Float = if (isUserTemplate) 0.08f else 0.05f
 
+    internal fun targetInkHeightPx(
+        lineHeightPx: Int,
+        character: Char,
+        isUserTemplate: Boolean,
+        normalizedUserCanvas: Boolean,
+    ): Int {
+        return if (normalizedUserCanvas) {
+            lineHeightPx.coerceAtLeast(12)
+        } else {
+            (lineHeightPx * targetInkHeightRatio(character, isUserTemplate)).toInt().coerceAtLeast(12)
+        }
+    }
+
+    private fun leadingPullPx(
+        character: Char,
+        lineHeightPx: Int,
+        normalizedUserCanvas: Boolean,
+    ): Int {
+        if (!normalizedUserCanvas) return 0
+        return when {
+            character.lowercaseChar() in setOf('i', 'j', 'l') || character in setOf('I', '1') -> {
+                (lineHeightPx * 0.03f).toInt().coerceAtLeast(2)
+            }
+            character.lowercaseChar() in setOf('f', 't', 'r') -> {
+                (lineHeightPx * 0.015f).toInt().coerceAtLeast(1)
+            }
+            else -> 0
+        }
+    }
+
     private fun glyphAdvancePx(
         glyph: PreparedGlyph,
         character: Char,
         scaleX: Float,
         lineHeightPx: Int,
+        normalizedUserCanvas: Boolean,
     ): Int {
-        val rawAdvance = (glyph.bitmap.width * scaleX * 0.90f).toInt() +
-            (lineHeightPx * 0.04f).toInt()
+        val rawAdvance = if (normalizedUserCanvas) {
+            (glyph.bitmap.width * scaleX * 0.78f).toInt() + when {
+                character in punctuationChars -> 0
+                character.lowercaseChar() in setOf('i', 'l') || character in setOf('I', '1') -> 0
+                character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W') -> 2
+                else -> 1
+            }
+        } else {
+            (glyph.bitmap.width * scaleX * 0.90f).toInt() + (lineHeightPx * 0.04f).toInt()
+        }
         val minAdvance = when {
+            normalizedUserCanvas && character in punctuationChars -> (lineHeightPx * 0.02f).toInt()
+            normalizedUserCanvas &&
+                (character.lowercaseChar() in setOf('i', 'l') || character in setOf('I', '1')) -> {
+                (lineHeightPx * 0.035f).toInt()
+            }
+            normalizedUserCanvas &&
+                (character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W')) -> {
+                (lineHeightPx * 0.15f).toInt()
+            }
+            normalizedUserCanvas -> (lineHeightPx * 0.07f).toInt()
             character in punctuationChars -> (lineHeightPx * 0.08f).toInt()
             character.lowercaseChar() in setOf('i', 'l') || character in setOf('I', '1') -> (lineHeightPx * 0.12f).toInt()
             character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W') -> (lineHeightPx * 0.22f).toInt()
@@ -506,15 +566,41 @@ object HandwritingBitmapRenderer {
 
         val averageInkWidth = rawBounds.values.map(InkBounds::width).average().toInt().coerceAtLeast(24)
         val averageInkHeight = rawBounds.values.map(InkBounds::height).average().toInt().coerceAtLeast(48)
-        val lineHeightPx = if (config.targetLineHeightPx > 0) {
+        val hasNormalizedUserCanvas = isUserTemplate && allGlyphs.all {
+            it.height == GlyphPostProcessor.normalizedCanvasSize()
+        }
+        val rawLineHeightPx = if (config.targetLineHeightPx > 0) {
             config.targetLineHeightPx
         } else {
             (averageInkHeight * 1.35f).toInt().coerceAtLeast(72)
+        }
+        val lineHeightPx = if (hasNormalizedUserCanvas && config.targetLineHeightPx <= 0) {
+            max(rawLineHeightPx, (GlyphPostProcessor.normalizedGuideBandHeight() * 1.35f).toInt())
+        } else {
+            rawLineHeightPx
         }
         val effectiveVerticalSpacingPx = if (isUserTemplate) {
             (config.verticalSpacingPx / 2).coerceAtLeast(4)
         } else {
             config.verticalSpacingPx
+        }
+        val effectiveHorizontalSpacingPx = if (hasNormalizedUserCanvas) {
+            config.horizontalSpacingPx.coerceAtMost(1)
+        } else {
+            config.horizontalSpacingPx
+        }
+        val effectiveSpacingJitterPx = if (hasNormalizedUserCanvas) 0 else config.spacingJitter
+        val effectiveJitterXPx = if (hasNormalizedUserCanvas) config.jitterX.coerceAtMost(1) else config.jitterX
+        val effectiveJitterYPx = if (hasNormalizedUserCanvas) config.jitterY.coerceAtMost(1) else config.jitterY
+        val effectiveBaselineWaveAmplitude = if (hasNormalizedUserCanvas) {
+            config.baselineWaveAmplitude.coerceAtMost(1.5f)
+        } else {
+            6f
+        }
+        val effectiveLineDriftPx = if (hasNormalizedUserCanvas) {
+            config.lineDriftPx.coerceAtMost(1.5f)
+        } else {
+            config.lineDriftPx
         }
         val baselineOffsetPx = (lineHeightPx * 0.74f).toInt().coerceAtLeast(1)
         val spaceWidth = max((lineHeightPx * 0.20f).toInt(), (averageInkWidth * 0.45f).toInt()).coerceAtLeast(14)
@@ -530,7 +616,7 @@ object HandwritingBitmapRenderer {
         var maxUsedX = config.marginPx
         var charIndexInLine = 0
         var lineBaselinePhase = rng.nextFloat() * 6.2832f
-        var lineDriftSlope = (rng.nextFloat() * 2f - 1f) * config.lineDriftPx
+        var lineDriftSlope = (rng.nextFloat() * 2f - 1f) * effectiveLineDriftPx
 
         fun moveToNextLine() {
             cursorX = config.marginPx
@@ -538,7 +624,7 @@ object HandwritingBitmapRenderer {
             lineHeight = lineHeightPx
             charIndexInLine = 0
             lineBaselinePhase = rng.nextFloat() * 6.2832f
-            lineDriftSlope = (rng.nextFloat() * 2f - 1f) * config.lineDriftPx
+            lineDriftSlope = (rng.nextFloat() * 2f - 1f) * effectiveLineDriftPx
         }
 
         fun wordWidth(word: String): Int {
@@ -556,7 +642,12 @@ object HandwritingBitmapRenderer {
                     }
                 } else {
                     val prepared = preparedGlyph(ch, glyph)
-                    val targetInkHeight = (lineHeightPx * targetInkHeightRatio(ch, isUserTemplate)).toInt().coerceAtLeast(12)
+                    val targetInkHeight = targetInkHeightPx(
+                        lineHeightPx = lineHeightPx,
+                        character = ch,
+                        isUserTemplate = isUserTemplate,
+                        normalizedUserCanvas = prepared.normalizedUserCanvas,
+                    )
                     val (glyphScaleX, _) = UserGlyphWidthNormalizer.scales(
                         character = ch,
                         templateId = template.descriptor.id,
@@ -564,7 +655,13 @@ object HandwritingBitmapRenderer {
                         glyphHeightPx = prepared.bitmap.height,
                         targetInkHeightPx = targetInkHeight,
                     )
-                    w += glyphAdvancePx(prepared, ch, glyphScaleX, lineHeightPx) + config.horizontalSpacingPx
+                    w += glyphAdvancePx(
+                        glyph = prepared,
+                        character = ch,
+                        scaleX = glyphScaleX,
+                        lineHeightPx = lineHeightPx,
+                        normalizedUserCanvas = prepared.normalizedUserCanvas,
+                    ) + effectiveHorizontalSpacingPx
                 }
             }
             return w
@@ -585,7 +682,11 @@ object HandwritingBitmapRenderer {
                     if (cursorX + neededWidth > safeWidth - config.marginPx && cursorX > config.marginPx) {
                         moveToNextLine()
                     } else {
-                        cursorX += spaceWidth + rng.nextInt(-config.spacingJitter, config.spacingJitter + 1)
+                        cursorX += spaceWidth + if (effectiveSpacingJitterPx > 0) {
+                            rng.nextInt(-effectiveSpacingJitterPx, effectiveSpacingJitterPx + 1)
+                        } else {
+                            0
+                        }
                         maxUsedX = max(maxUsedX, cursorX)
                     }
                 }
@@ -611,7 +712,12 @@ object HandwritingBitmapRenderer {
                     }
 
                     val prepared = preparedGlyph(character, glyph)
-                    val targetInkHeight = (lineHeightPx * targetInkHeightRatio(character, isUserTemplate)).toInt().coerceAtLeast(12)
+                    val targetInkHeight = targetInkHeightPx(
+                        lineHeightPx = lineHeightPx,
+                        character = character,
+                        isUserTemplate = isUserTemplate,
+                        normalizedUserCanvas = prepared.normalizedUserCanvas,
+                    )
                     val (glyphScaleX, glyphScaleY) = UserGlyphWidthNormalizer.scales(
                         character = character,
                         templateId = template.descriptor.id,
@@ -621,15 +727,21 @@ object HandwritingBitmapRenderer {
                     )
                     val scaledGlyphW = (prepared.bitmap.width * glyphScaleX).toInt().coerceAtLeast(1)
                     val scaledGlyphH = (prepared.bitmap.height * glyphScaleY).toInt().coerceAtLeast(1)
-                    val advance = glyphAdvancePx(prepared, character, glyphScaleX, lineHeightPx)
+                    val advance = glyphAdvancePx(
+                        glyph = prepared,
+                        character = character,
+                        scaleX = glyphScaleX,
+                        lineHeightPx = lineHeightPx,
+                        normalizedUserCanvas = prepared.normalizedUserCanvas,
+                    )
 
                     if (cursorX + scaledGlyphW > safeWidth - config.marginPx && cursorX > config.marginPx) {
                         moveToNextLine()
                     }
 
-                    val jx = rng.nextInt(-config.jitterX, config.jitterX + 1)
-                    val jy = rng.nextInt(-config.jitterY, config.jitterY + 1)
-                    val waveOffset = 6f *
+                    val jx = rng.nextInt(-effectiveJitterXPx, effectiveJitterXPx + 1)
+                    val jy = rng.nextInt(-effectiveJitterYPx, effectiveJitterYPx + 1)
+                    val waveOffset = effectiveBaselineWaveAmplitude *
                         sin((charIndexInLine / config.baselineWavePeriod + lineBaselinePhase).toDouble()).toFloat()
                     val driftOffset = lineDriftSlope * (charIndexInLine.toFloat() / totalCharsInLine)
                     val rotationLimit = if (isUserTemplate) 1.8f else 3.5f
@@ -646,10 +758,15 @@ object HandwritingBitmapRenderer {
                         0
                     }
                     val drawTop = baselineY - (prepared.baselineRow * glyphScaleY).toInt() + descenderDrop
+                    val drawLeft = cursorX + jx - leadingPullPx(
+                        character = character,
+                        lineHeightPx = lineHeightPx,
+                        normalizedUserCanvas = prepared.normalizedUserCanvas,
+                    )
 
                     placements += GlyphPlacement(
                         bitmap = prepared.bitmap,
-                        left = cursorX + jx,
+                        left = drawLeft,
                         top = drawTop + jy + waveOffset.toInt() + driftOffset.toInt(),
                         rotationDeg = rotation,
                         alpha = alpha,
@@ -657,8 +774,11 @@ object HandwritingBitmapRenderer {
                         drawScaleY = glyphScaleY,
                     )
 
-                    cursorX += (advance + config.horizontalSpacingPx +
-                        rng.nextInt(-config.spacingJitter, config.spacingJitter + 1))
+                    cursorX += advance + effectiveHorizontalSpacingPx + if (effectiveSpacingJitterPx > 0) {
+                        rng.nextInt(-effectiveSpacingJitterPx, effectiveSpacingJitterPx + 1)
+                    } else {
+                        0
+                    }
                     lineHeight = max(lineHeight, max(lineHeightPx, scaledGlyphH + effectiveVerticalSpacingPx / 2))
                     maxUsedX = max(maxUsedX, cursorX)
                     charIndexInLine++
@@ -667,13 +787,13 @@ object HandwritingBitmapRenderer {
             moveToNextLine()
         }
 
-        val extraBottom = (config.baselineWaveAmplitude + config.lineDriftPx + config.jitterY).toInt()
+        val extraBottom = (effectiveBaselineWaveAmplitude + effectiveLineDriftPx + effectiveJitterYPx).toInt()
         val bitmapHeight = (cursorY + lineHeight + config.marginPx + extraBottom).coerceAtLeast(1)
         val bitmapWidth = max(maxUsedX + config.marginPx, safeWidth)
         val output = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(output)
         val lineSpacingPx = lineHeightPx + effectiveVerticalSpacingPx
-        val firstBaselinePx = config.marginPx + baselineOffsetPx
+        val firstBaselinePx = config.marginPx + lineHeightPx
         drawBackground(
             canvas = canvas,
             width = bitmapWidth,
