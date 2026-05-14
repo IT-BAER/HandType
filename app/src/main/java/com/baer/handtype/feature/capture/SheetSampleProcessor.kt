@@ -185,7 +185,11 @@ object SheetSampleProcessor {
                 .map { ratio -> (cellHeightPx * ratio).toInt() - topInset }
                 .filter { it >= 0 && it < edgeCleanCellCrop.height }
                 .toIntArray()
-            val cleaned = GlyphPostProcessor.cleanGlyph(edgeCleanCellCrop, guideYsInCrop)
+            val cleaned = GlyphPostProcessor.cleanGlyph(
+                edgeCleanCellCrop,
+                guideYsInCrop,
+                expectsDiacritic = characterHasDiacritic(cell.character),
+            )
 
             debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
 
@@ -729,6 +733,21 @@ object SheetSampleProcessor {
     // ---------------------------------------------------------------------------------------------
     // Empty-cell detection
     // ---------------------------------------------------------------------------------------------
+
+    private fun characterHasDiacritic(c: Char): Boolean {
+        // Only lowercase 'i' and 'j' carry tittles in English. Uppercase 'I' and 'J' have no
+        // dot, so we must not run the diacritic-recovery passes on them.
+        if (c == 'i' || c == 'j') return true
+        return c in DIACRITIC_CHARS
+    }
+
+    private val DIACRITIC_CHARS = setOf(
+        'ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü',
+        'á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú',
+        'à', 'è', 'ì', 'ò', 'ù', 'À', 'È', 'Ì', 'Ò', 'Ù',
+        'â', 'ê', 'î', 'ô', 'û', 'Â', 'Ê', 'Î', 'Ô', 'Û',
+        'ñ', 'Ñ', 'ç', 'Ç',
+    )
 
     private fun hasInk(glyph: Bitmap): Boolean {
         val w = glyph.width

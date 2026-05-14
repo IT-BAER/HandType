@@ -38,6 +38,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,6 +80,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -451,7 +453,7 @@ fun HandwritingRenderScreen(
                 with(density) { (maxWidth - 32.dp).roundToPx() }
             }
             val targetLineHeightPx = remember(density) {
-                with(density) { 34.dp.roundToPx() }
+                with(density) { 76.dp.roundToPx() }
             }
 
             suspend fun renderNote(inputText: String, backgroundId: String, seed: Long) = withContext(Dispatchers.Default) {
@@ -871,10 +873,14 @@ private fun ResultPhaseContent(
         }
 
         if (bitmap != null) {
+            var imageScale by remember(bitmap) { mutableFloatStateOf(1f) }
+            var imageOffsetX by remember(bitmap) { mutableFloatStateOf(0f) }
+            var imageOffsetY by remember(bitmap) { mutableFloatStateOf(0f) }
             Card(
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.clipToBounds(),
             ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
@@ -883,6 +889,32 @@ private fun ResultPhaseContent(
                         .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
                         .fillMaxWidth()
                         .padding(4.dp)
+                        .graphicsLayer(
+                            scaleX = imageScale,
+                            scaleY = imageScale,
+                            translationX = imageOffsetX,
+                            translationY = imageOffsetY,
+                        )
+                        .pointerInput(bitmap) {
+                            detectTapGestures(onDoubleTap = {
+                                imageScale = 1f
+                                imageOffsetX = 0f
+                                imageOffsetY = 0f
+                            })
+                        }
+                        .pointerInput(bitmap) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                val newScale = (imageScale * zoom).coerceIn(1f, 6f)
+                                imageScale = newScale
+                                if (newScale > 1f) {
+                                    imageOffsetX += pan.x
+                                    imageOffsetY += pan.y
+                                } else {
+                                    imageOffsetX = 0f
+                                    imageOffsetY = 0f
+                                }
+                            }
+                        }
                         .stripReveal(progress = inkRevealProgress.value),
                     contentScale = ContentScale.FillWidth,
                 )

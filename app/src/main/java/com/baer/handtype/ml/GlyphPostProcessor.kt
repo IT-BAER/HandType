@@ -54,7 +54,11 @@ object GlyphPostProcessor {
      *
      * Falls back to the original [crop] if the glyph cannot be processed (e.g. blank crop).
      */
-    fun cleanGlyph(crop: Bitmap, guideYsInCrop: IntArray = intArrayOf()): Bitmap {
+    fun cleanGlyph(
+        crop: Bitmap,
+        guideYsInCrop: IntArray = intArrayOf(),
+        expectsDiacritic: Boolean = false,
+    ): Bitmap {
         val width = crop.width
         val height = crop.height
         if (width <= 0 || height <= 0) return crop
@@ -98,16 +102,43 @@ object GlyphPostProcessor {
         // ink pulls the threshold below the dot's light grey. Only accept groups with area < 150
         // to ensure we never pull in large paper-texture regions.
         val diacriticZoneEnd = guideBand?.baselineY?.coerceIn(0, height) ?: (height * 0.40f).toInt()
-        val diacriticLumaMax = 240
+        // Track pixels recovered by the diacritic scan so we can force them to full opacity
+        // later — faint dots/accents otherwise render at low alpha and disappear when scaled.
+        val diacriticPixelMask = BooleanArray(pixels.size)
+        // Pass 1: gentle scan (luma < 240, area 3..149) — picks up clearly faint dots without
+        // pulling in paper grain.
         if (diacriticZoneEnd > 0) {
             val diacriticCandidates = BooleanArray(pixels.size) { index ->
                 val y = index / width
-                y < diacriticZoneEnd && !inkMask[index] && luma[index] < diacriticLumaMax
+                y < diacriticZoneEnd && !inkMask[index] && luma[index] < 240
             }
             val candidateComponents = extractInkComponents(diacriticCandidates, width, height)
             for (comp in candidateComponents) {
                 if (comp.area in 3..149) {
-                    comp.pixels.forEach { inkMask[it] = true }
+                    comp.pixels.forEach {
+                        inkMask[it] = true
+                        diacriticPixelMask[it] = true
+                    }
+                }
+            }
+        }
+        // Pass 2 (aggressive, only for chars known to carry a diacritic): always runs additively
+        // for expectsDiacritic to catch barely-visible i/j dots (luma 240..249 vs ~252 paper).
+        // Restricted to expectsDiacritic so we never invent dots on letters that shouldn't have
+        // them. Picks at most the single most-compact upper-zone blob to avoid paper smudges.
+        if (expectsDiacritic && diacriticZoneEnd > 0) {
+            val diacriticCandidates = BooleanArray(pixels.size) { index ->
+                val y = index / width
+                y < diacriticZoneEnd && !inkMask[index] && luma[index] < 250
+            }
+            val candidateComponents = extractInkComponents(diacriticCandidates, width, height)
+            val best = candidateComponents
+                .filter { it.area in 1..149 }
+                .minByOrNull { it.area }
+            if (best != null) {
+                best.pixels.forEach {
+                    inkMask[it] = true
+                    diacriticPixelMask[it] = true
                 }
             }
         }
@@ -115,6 +146,108 @@ object GlyphPostProcessor {
         if (components.isEmpty()) return crop
         val primary = components.maxByOrNull { it.area } ?: return crop
         val keptComponents = components.filter { shouldKeepComponent(it, primary, guideYsInCrop) }
+            .toMutableList()
+        // Char-aware diacritic safety net: i/j and accented vowels can have small dots/accents
+        // that the strict shouldKeepComponent rules reject. Only for characters we KNOW carry a
+        // diacritic, pick the single best candidate sitting above the primary that looks like a
+        // dot/accent (compact area, AR in 0.3..3.0, centered horizontally on the body, within
+        // 3× the primary height). Avoids re-introducing paper-noise dots above all letters.
+        // Map from shifted dot pixel index → original pixel index (used to source luma for alpha
+        // calc when the dot is relocated below for visual proximity to the body).
+        val diacriticSourceMap = HashMap<Int, Int>()
+        if (expectsDiacritic) {
+            val primaryHeight = primary.bottom - primary.top + 1
+            val primaryWidth = primary.right - primary.left + 1
+            val diacriticReach = maxOf(primaryHeight * 3, 60)
+            // True dots/accents always sit in the upper portion of the cell, above the body.
+            // Pick the TOP-MOST candidate (smallest .top) in the upper half of the canvas that
+            // is centered roughly above the primary. Selecting by area was unreliable when stray
+            // ink fragments between dot and body had similar pixel counts to the real dot.
+            val matchesDiacritic: (InkComponent) -> Boolean = { c ->
+                c !== primary &&
+                    c.area in 2..200 &&
+                    c.bottom < primary.top &&
+                    c.top < height / 2 &&
+                    run {
+                        val w = c.right - c.left + 1
+                        val h = c.bottom - c.top + 1
+                        val ar = w.toFloat() / h.coerceAtLeast(1)
+                        // i/j dots from handwriting are often a horizontal smear (AR up to ~5),
+                        // accents like acute/grave are slanted lines (AR ~0.4..2.5). Be permissive.
+                        ar in 0.3f..5.0f
+                    } &&
+                    (primary.top - c.bottom - 1) <= diacriticReach
+                // No horizontal alignment check: the cell contains a single letter, so any
+                // small mark in the upper portion of the cell that matches dot/accent shape
+                // belongs to this letter. Users routinely place i/j dots slightly off-center
+                // and sometimes far to the left of the body.
+            }
+
+            // 1) Safety-net: if a likely dot was rejected by shouldKeepComponent, add it.
+            val safetyNet = components.asSequence()
+                .filter { it !in keptComponents }
+                .filter(matchesDiacritic)
+                .minByOrNull { it.top }
+            if (safetyNet != null) {
+                keptComponents += safetyNet
+                safetyNet.pixels.forEach { diacriticPixelMask[it] = true }
+            }
+
+            // 2) Relocate ANY kept component that looks like a dot/accent so it sits close to
+            //    the body AND horizontally centered above the primary's body. The user may have
+            //    drawn it far above (near the cell top) or off to the side (j dots especially);
+            //    after normalization that places it well outside the ascender zone or visually
+            //    detached from the letter.
+            //    Target gap = 18% of primary height (e.g. ~14px for an ~80px-tall i stem).
+            val targetGap = maxOf(2, (primaryHeight * 0.18f).toInt())
+            val primaryCenterX = (primary.left + primary.right) / 2
+            val toRemove = mutableListOf<InkComponent>()
+            val toAdd = mutableListOf<InkComponent>()
+            for (dot in keptComponents) {
+                if (!matchesDiacritic(dot)) continue
+                val currentGap = primary.top - dot.bottom - 1
+                val dotCenterX = (dot.left + dot.right) / 2
+                val shiftY = (currentGap - targetGap).coerceAtLeast(0)
+                val shiftX = primaryCenterX - dotCenterX
+                if (shiftY <= 0 && shiftX == 0) {
+                    // Already in position — just ensure it gets diacritic alpha treatment.
+                    dot.pixels.forEach { diacriticPixelMask[it] = true }
+                    continue
+                }
+                val shifted = IntArray(dot.pixels.size)
+                var n = 0
+                for (origIdx in dot.pixels) {
+                    val oy = origIdx / width
+                    val ox = origIdx % width
+                    val ny = oy + shiftY
+                    val nx = ox + shiftX
+                    if (ny in 0 until height && nx in 0 until width) {
+                        val newIdx = ny * width + nx
+                        shifted[n++] = newIdx
+                        diacriticPixelMask[newIdx] = true
+                        diacriticSourceMap[newIdx] = origIdx
+                    }
+                }
+                // Clear the diacritic flag from original positions (the relocated pixels carry it
+                // now). The original positions are also removed from the kept set below.
+                dot.pixels.forEach { diacriticPixelMask[it] = false }
+                // Re-mark shifted positions (the loop above may have cleared overlapping ones).
+                for (i in 0 until n) diacriticPixelMask[shifted[i]] = true
+                if (n > 0) {
+                    toRemove += dot
+                    toAdd += InkComponent(
+                        pixels = shifted.copyOf(n),
+                        area = n,
+                        left = dot.left + shiftX,
+                        top = dot.top + shiftY,
+                        right = dot.right + shiftX,
+                        bottom = dot.bottom + shiftY,
+                    )
+                }
+            }
+            keptComponents.removeAll(toRemove)
+            keptComponents.addAll(toAdd)
+        }
         val filteredInkMask = BooleanArray(inkMask.size)
         keptComponents.forEach { component ->
             component.pixels.forEach { pixelIndex ->
@@ -140,6 +273,43 @@ object GlyphPostProcessor {
         }
         if (bottom < 0) return crop // no ink found
 
+        // Dilate diacritic pixels by 3x3 — ONLY for characters known to carry a diacritic, and
+        // only seeds that already survived component filtering. This avoids promoting paper
+        // grain into visible dots above letters that shouldn't have any.
+        if (expectsDiacritic) {
+            val dilated = BooleanArray(diacriticPixelMask.size)
+            for (i in diacriticPixelMask.indices) {
+                if (!diacriticPixelMask[i] || !filteredInkMask[i]) continue
+                val cy = i / width
+                val cx = i % width
+                for (dy in -1..1) {
+                    val ny = cy + dy
+                    if (ny < 0 || ny >= height) continue
+                    for (dx in -1..1) {
+                        val nx = cx + dx
+                        if (nx < 0 || nx >= width) continue
+                        dilated[ny * width + nx] = true
+                    }
+                }
+            }
+            for (i in dilated.indices) {
+                if (dilated[i]) {
+                    diacriticPixelMask[i] = true
+                    filteredInkMask[i] = true
+                }
+            }
+            // Recompute bounding box including dilated dot pixels.
+            for (i in filteredInkMask.indices) {
+                if (!filteredInkMask[i]) continue
+                val y = i / width
+                val x = i % width
+                if (x < left) left = x
+                if (x > right) right = x
+                if (y < top) top = y
+                if (y > bottom) bottom = y
+            }
+        }
+
         val padding = 4
         left = (left - padding).coerceAtLeast(0)
         top = (top - padding).coerceAtLeast(0)
@@ -160,8 +330,25 @@ object GlyphPostProcessor {
             val srcRow = (top + y) * width
             val dstRow = y * inkWidth
             for (x in 0 until inkWidth) {
-                val l = luma[srcRow + (left + x)]
-                val alpha = if (!filteredInkMask[srcRow + (left + x)] || l > permissiveThreshold) {
+                val srcIdx = srcRow + (left + x)
+                val l = luma[srcIdx]
+                val alpha = if (!filteredInkMask[srcIdx]) {
+                    0
+                } else if (diacriticPixelMask[srcIdx]) {
+                    // Diacritic pixels may have been relocated (see expectsDiacritic block);
+                    // source the luma from their original position. Boost alpha so faint dots
+                    // remain visible after downscale, but don't force pure black — that creates
+                    // harsher dots than the rest of the stroke.
+                    val sourceIdx = diacriticSourceMap[srcIdx] ?: srcIdx
+                    val srcLuma = luma[sourceIdx]
+                    if (srcLuma > permissiveThreshold) {
+                        240
+                    } else {
+                        (((permissiveThreshold - srcLuma).toFloat() / darkSpan) * 255f)
+                            .toInt()
+                            .coerceIn(230, 255)
+                    }
+                } else if (l > permissiveThreshold) {
                     0
                 } else {
                     // l <= permissiveThreshold: darker means more ink. Clamp at 255.
@@ -414,7 +601,7 @@ object GlyphPostProcessor {
             ?.takeIf { it.baselineY > 0 }
             ?.let { TARGET_BASELINE_Y - it.baselineY * scale }
             ?: (TARGET_BASELINE_Y - scaledH).toFloat()
-        val dst = RectF(left, max(0f, top), left + scaledW, max(0f, top) + scaledH)
+        val dst = RectF(left, top, left + scaledW, top + scaledH)
         val src = Rect(0, 0, glyph.width, glyph.height)
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

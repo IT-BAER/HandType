@@ -124,9 +124,25 @@ object HandwritingBitmapRenderer {
     ): PreparedGlyph {
         val bounds = measureInkBounds(bitmap)
         if (isUserTemplate && bitmap.height == GlyphPostProcessor.normalizedCanvasSize()) {
+            // Trim vertical canvas padding. Raw normalized canvas (220px) has lots of empty
+            // space above the cap-top and below the descender — when scaled to lineHeightPx
+            // the visible ink ends up only ~27% of line spacing. Crop to a tight ascender/
+            // descender window so ink fills the line height.
+            val canvasH = bitmap.height
+            val canvasBaseline = GlyphPostProcessor.normalizedBaselineRow()
+            // Reserve space above baseline for tall ascenders/caps; below for descenders.
+            val ascenderReserve = (canvasH * 0.56f).toInt()    // ~123px above baseline
+            val descenderReserve = (canvasH * 0.21f).toInt()   // ~46px below baseline
+            val rawTop = (canvasBaseline - ascenderReserve).coerceAtLeast(0)
+            val rawBot = (canvasBaseline + descenderReserve).coerceAtMost(canvasH - 1)
+            // Honor actual ink top in case capture left ink in the diacritic zone (e.g., dots
+            // on 'i', 'j'). Never crop below row 0 or above the ink.
+            val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
+            val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
+            val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
             return PreparedGlyph(
-                bitmap = Bitmap.createBitmap(bitmap, bounds.left, 0, bounds.width, bitmap.height),
-                baselineRow = GlyphPostProcessor.normalizedBaselineRow().coerceIn(0, bitmap.height - 1),
+                bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
+                baselineRow = (canvasBaseline - cropTop).coerceIn(0, cropH - 1),
                 normalizedUserCanvas = true,
             )
         }
@@ -216,11 +232,11 @@ object HandwritingBitmapRenderer {
         normalizedUserCanvas: Boolean,
     ): Int {
         val rawAdvance = if (normalizedUserCanvas) {
-            (glyph.bitmap.width * scaleX * 0.78f).toInt() + when {
+            (glyph.bitmap.width * scaleX * 0.95f).toInt() + when {
                 character in punctuationChars -> 0
                 character.lowercaseChar() in setOf('i', 'l') || character in setOf('I', '1') -> 0
-                character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W') -> 2
-                else -> 1
+                character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W') -> 3
+                else -> 2
             }
         } else {
             (glyph.bitmap.width * scaleX * 0.90f).toInt() + (lineHeightPx * 0.04f).toInt()
@@ -558,6 +574,11 @@ object HandwritingBitmapRenderer {
         val templateBaselineRow = baselineRows.getOrElse(baselineRows.size / 2) { 0 }
         val isUserTemplate = template.descriptor.id.startsWith(UserTemplateRepository.USER_ID_PREFIX)
         val preparedGlyphs = HashMap<Bitmap, PreparedGlyph>(allGlyphs.size)
+        val synthesizedGlyphCache = HashMap<Char, Bitmap?>()
+        val synthesizedInkStyle by lazy {
+            if (isUserTemplate) PunctuationSynthesizer.InkStyle.estimate(allGlyphs)
+            else PunctuationSynthesizer.InkStyle.DEFAULT
+        }
         fun preparedGlyph(character: Char, bitmap: Bitmap): PreparedGlyph {
             return preparedGlyphs.getOrPut(bitmap) {
                 prepareGlyph(bitmap, character, templateBaselineRow, isUserTemplate)
@@ -618,9 +639,20 @@ object HandwritingBitmapRenderer {
         var lineBaselinePhase = rng.nextFloat() * 6.2832f
         var lineDriftSlope = (rng.nextFloat() * 2f - 1f) * effectiveLineDriftPx
 
+        // For normalized user canvas glyphs, the 220x220 canvas has the body confined to ~46%
+        // of the height with large transparent zones above (ascender) and below (descender).
+        // Advancing cursorY by full lineHeight wastes that empty space and makes lines look
+        // sparse. Compress to ~78% so successive lines visually nestle without ascenders/
+        // descenders colliding.
+        val lineAdvancePx = if (hasNormalizedUserCanvas) {
+            (lineHeightPx * 0.62f).toInt()
+        } else {
+            lineHeightPx
+        }
+
         fun moveToNextLine() {
             cursorX = config.marginPx
-            cursorY += lineHeight + effectiveVerticalSpacingPx
+            cursorY += (if (hasNormalizedUserCanvas) lineAdvancePx else lineHeight) + effectiveVerticalSpacingPx
             lineHeight = lineHeightPx
             charIndexInLine = 0
             lineBaselinePhase = rng.nextFloat() * 6.2832f
@@ -696,7 +728,17 @@ object HandwritingBitmapRenderer {
                         ?: template.glyphs[character.lowercaseChar()]
                         ?: template.glyphs[character.uppercaseChar()]
 
-                    val glyph = variants?.let { it[rng.nextInt(it.size)] }
+                    var glyph: Bitmap? = variants?.let { it[rng.nextInt(it.size)] }
+
+                    // Auto-synthesize common punctuation that the user template does not
+                    // contain — pen-style approximations of '.', ',', '!', '?', ':', ';',
+                    // quotes, and hyphen. Only applies to user templates; bundled templates
+                    // already ship complete punctuation sets.
+                    if (glyph == null && isUserTemplate && PunctuationSynthesizer.supports(character)) {
+                        glyph = synthesizedGlyphCache.getOrPut(character) {
+                            PunctuationSynthesizer.synthesize(character, synthesizedInkStyle)
+                        }
+                    }
 
                     if (glyph == null) {
                         missingCharacters += character
@@ -779,7 +821,21 @@ object HandwritingBitmapRenderer {
                     } else {
                         0
                     }
-                    lineHeight = max(lineHeight, max(lineHeightPx, scaledGlyphH + effectiveVerticalSpacingPx / 2))
+                    lineHeight = max(
+                        lineHeight,
+                        max(
+                            lineHeightPx,
+                            // Normalized user canvas glyphs are pre-scaled to lineHeightPx, so
+                            // adding effectiveVerticalSpacingPx/2 here would push lineHeight just
+                            // above lineHeightPx and cause the text baselines to drift below the
+                            // background guide lines line by line.
+                            if (prepared.normalizedUserCanvas) {
+                                scaledGlyphH
+                            } else {
+                                scaledGlyphH + effectiveVerticalSpacingPx / 2
+                            },
+                        ),
+                    )
                     maxUsedX = max(maxUsedX, cursorX)
                     charIndexInLine++
                 }
@@ -792,7 +848,11 @@ object HandwritingBitmapRenderer {
         val bitmapWidth = max(maxUsedX + config.marginPx, safeWidth)
         val output = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(output)
-        val lineSpacingPx = lineHeightPx + effectiveVerticalSpacingPx
+        val lineSpacingPx = if (hasNormalizedUserCanvas) {
+            lineAdvancePx + effectiveVerticalSpacingPx
+        } else {
+            lineHeightPx + effectiveVerticalSpacingPx
+        }
         val firstBaselinePx = config.marginPx + lineHeightPx
         drawBackground(
             canvas = canvas,

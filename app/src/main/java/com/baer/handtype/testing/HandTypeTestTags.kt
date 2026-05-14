@@ -11,5 +11,8 @@ object HandTypeTestTags {
     const val RENDER_GENERATE_BUTTON = "render_generate_button"
     const val RENDER_RESULT_IMAGE = "render_result_image"
 
+    const val RENAME_HANDWRITING_INPUT = "rename_handwriting_input"
+
     fun templateDeleteButton(templateId: String): String = "template_delete_$templateId"
+    fun backgroundPresetCard(id: String): String = "bg_preset_$id"
 }

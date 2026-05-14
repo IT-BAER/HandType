@@ -173,6 +173,7 @@ private data class GuidedPaperBackgroundStyle(
     val guideColor: Int,
     val accentColor: Int,
     val graph: Boolean,
+    val showMarginLine: Boolean = true,
 ) : NoteBackgroundStyle {
     override fun render(
         canvas: Canvas,
@@ -268,10 +269,12 @@ private data class GuidedPaperBackgroundStyle(
                 canvas.drawLine(0f, y, width.toFloat(), y, linePaint)
                 y += step
             }
-            linePaint.color = withAlpha(accentColor, 96)
-            linePaint.strokeWidth = 1.6f
-            val marginLineX = (marginPx * 1.75f).coerceAtLeast(48f)
-            canvas.drawLine(marginLineX, 0f, marginLineX, height.toFloat(), linePaint)
+            if (showMarginLine) {
+                linePaint.color = withAlpha(accentColor, 96)
+                linePaint.strokeWidth = 1.6f
+                val marginLineX = (marginPx * 1.75f).coerceAtLeast(48f)
+                canvas.drawLine(marginLineX, 0f, marginLineX, height.toFloat(), linePaint)
+            }
         }
     }
 }
@@ -392,6 +395,7 @@ object NoteBackgroundCatalog {
                 guideColor = 0xFF9BB7DB.toInt(),
                 accentColor = 0xFFD58F8F.toInt(),
                 graph = false,
+                showMarginLine = false,
             ),
         ),
         NoteBackgroundPreset(

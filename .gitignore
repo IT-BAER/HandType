@@ -25,3 +25,7 @@ ASSETS/android-base.psd
 /app/release.keystore
 /app/release.keystore.passwords.txt
 AGENTS.md
+
+# Agent memory and accidental Windows nul files
+/memories/
+nul
