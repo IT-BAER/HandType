@@ -59,7 +59,7 @@
     <string name="camera_pre_scan_step_2">Écrivez le caractère correspondant dans chaque case et maintenez-le sur la ligne de guide.</string>
     <string name="camera_pre_scan_step_3">Capturez la page entière et gardez les quatre carrés noirs entièrement visibles.</string>
     <string name="camera_pre_scan_step_4">Utilisez une lumière uniforme et évitez le flou, les reflets et les ombres dures.</string>
-    <string name="camera_sheet_button">Obtenir la feuille d\'entraînement (PNG)</string>
+    <string name="camera_sheet_button">Partager ou imprimer la feuille d\'entraînement</string>
     <string name="camera_scan_button">Scanner ou importer la feuille d\'entraînement</string>
     <string name="camera_gallery_button">Choisir une photo dans la galerie</string>
     <string name="camera_opening_scanner">Ouverture du scanner…</string>
@@ -176,5 +176,52 @@
     <string name="template_premium_description">Extrayez votre écriture personnelle d’une feuille d’exercice photographiée.</string>
     <string name="template_delete_title">Supprimer le modèle ?</string>
     <string name="template_delete_body">« %1$s » sera définitivement supprimé de votre appareil.</string>
-    <string name="result_tip_share">💡 Astuce : Utilisez Partager ou PDF pour enregistrer votre note dans une autre application.</string>
+    <string name="result_tip_share">💡 Astuce : pincez pour zoomer sur la note, double-appuyez pour réinitialiser.</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_menu">Ouvrir le menu</string>
+    <string name="cd_back">Retour</string>
+    <string name="cd_opens_external">S\'ouvre en externe</string>
+
+    <!-- Generic actions (new) -->
+    <string name="action_export">Exporter</string>
+    <string name="action_rename">Renommer</string>
+    <string name="action_retry">Scanner à nouveau</string>
+    <string name="action_open">Ouvrir</string>
+    <string name="action_create_note">Créer une note</string>
+
+    <!-- Template chooser -->
+    <string name="template_chooser_tagline">Saisissez du texte, obtenez une écriture convaincante.</string>
+
+    <!-- Render screen -->
+    <string name="render_text_supporting">Les sauts de ligne et la ponctuation sont conservés.</string>
+
+    <!-- Export sheet -->
+    <string name="result_export_sheet_title">Exporter</string>
+    <string name="result_export_png">Enregistrer comme image</string>
+    <string name="result_export_png_desc">PNG dans votre galerie</string>
+    <string name="result_export_pdf_desc">PDF multi-pages dans Téléchargements</string>
+    <string name="result_export_transparent">PNG transparent</string>
+    <string name="result_export_transparent_desc">Écriture sans le fond papier</string>
+
+    <!-- Camera screen -->
+    <string name="camera_title">Capturer l\'écriture</string>
+    <string name="camera_share_sheet_title">Partager la feuille d\'entraînement</string>
+    <string name="camera_share_sheet_subject">Feuille d\'entraînement HandType</string>
+    <string name="camera_priming">Ceci ouvre le scanner de documents. Votre photo est traitée sur votre appareil et ne le quitte jamais.</string>
+
+    <!-- History screen (new) -->
+    <string name="history_empty_title">Pas encore de notes</string>
+    <string name="history_rename_title">Renommer la note</string>
+    <string name="history_rename_label">Nom de la note</string>
+    <string name="history_saved_toast">Enregistré dans Images/HandType</string>
+
+    <!-- Privacy screen -->
+    <string name="privacy_title">Confidentialité</string>
+    <string name="privacy_load_error">Impossible de charger la politique de confidentialité. Consultez-la sur GitHub.</string>
+    <string name="privacy_view_on_github">Voir sur GitHub</string>
+
+    <!-- Drawer sections -->
+    <string name="drawer_section_create">Créer</string>
+    <string name="drawer_section_info">Informations</string>
 </resources>

@@ -59,7 +59,7 @@
     <string name="camera_pre_scan_step_2">Напишите соответствующий символ в каждой ячейке и держите его на линии-ориентире.</string>
     <string name="camera_pre_scan_step_3">Сфотографируйте всю страницу и держите все четыре чёрных квадрата полностью видимыми.</string>
     <string name="camera_pre_scan_step_4">Используйте равномерный свет и избегайте размытия, бликов и жёстких теней.</string>
-    <string name="camera_sheet_button">Получить лист для практики (PNG)</string>
+    <string name="camera_sheet_button">Поделиться или распечатать лист для практики</string>
     <string name="camera_scan_button">Сканировать или импортировать лист для практики</string>
     <string name="camera_gallery_button">Выбрать фото из галереи</string>
     <string name="camera_opening_scanner">Открытие сканера…</string>
@@ -176,5 +176,35 @@
     <string name="template_premium_description">Извлеките ваш личный почерк из сфотографированного упражнения.</string>
     <string name="template_delete_title">Удалить шаблон?</string>
     <string name="template_delete_body">«%1$s» будет навсегда удалён с вашего устройства.</string>
-    <string name="result_tip_share">💡 Совет: используйте кнопку «Поделиться» или «PDF», чтобы сохранить заметку в другом приложении.</string>
+    <string name="result_tip_share">💡 Совет: сведите два пальца для масштабирования заметки, двойное касание сбрасывает вид.</string>
+
+    <string name="cd_menu">Открыть меню</string>
+    <string name="cd_back">Назад</string>
+    <string name="cd_opens_external">Открывается внешне</string>
+    <string name="action_export">Экспортировать</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_retry">Сканировать снова</string>
+    <string name="action_open">Открыть</string>
+    <string name="action_create_note">Создать заметку</string>
+    <string name="template_chooser_tagline">Введите текст — получите правдоподобный почерк.</string>
+    <string name="render_text_supporting">Переносы строк и пунктуация сохраняются.</string>
+    <string name="result_export_sheet_title">Экспорт</string>
+    <string name="result_export_png">Сохранить как изображение</string>
+    <string name="result_export_png_desc">PNG в галерею</string>
+    <string name="result_export_pdf_desc">Многостраничный PDF в Загрузки</string>
+    <string name="result_export_transparent">Прозрачный PNG</string>
+    <string name="result_export_transparent_desc">Почерк без фона бумаги</string>
+    <string name="camera_title">Захват почерка</string>
+    <string name="camera_share_sheet_title">Поделиться листом для практики</string>
+    <string name="camera_share_sheet_subject">Лист для практики HandType</string>
+    <string name="camera_priming">Открывается сканер документов. Ваше фото обрабатывается на устройстве и никогда его не покидает.</string>
+    <string name="history_empty_title">Пока нет заметок</string>
+    <string name="history_rename_title">Переименовать заметку</string>
+    <string name="history_rename_label">Название заметки</string>
+    <string name="history_saved_toast">Сохранено в Изображения/HandType</string>
+    <string name="privacy_title">Конфиденциальность</string>
+    <string name="privacy_load_error">Не удалось загрузить политику конфиденциальности. Просмотрите её на GitHub.</string>
+    <string name="privacy_view_on_github">Просмотреть на GitHub</string>
+    <string name="drawer_section_create">Создать</string>
+    <string name="drawer_section_info">Информация</string>
 </resources>

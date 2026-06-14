@@ -59,7 +59,7 @@
     <string name="camera_pre_scan_step_2">각 칸에 해당 문자를 쓰고 가이드 라인 위에 유지하세요.</string>
     <string name="camera_pre_scan_step_3">전체 페이지를 캡처하고 네 개의 검은 사각형이 완전히 보이도록 하세요.</string>
     <string name="camera_pre_scan_step_4">균일한 조명을 사용하고 흐림, 눈부심, 강한 그림자를 피하세요.</string>
-    <string name="camera_sheet_button">연습 시트 받기 (PNG)</string>
+    <string name="camera_sheet_button">연습 시트 공유 또는 인쇄</string>
     <string name="camera_scan_button">연습 시트 스캔 또는 가져오기</string>
     <string name="camera_gallery_button">갤러리에서 사진 선택</string>
     <string name="camera_opening_scanner">스캐너 여는 중…</string>
@@ -176,5 +176,52 @@
     <string name="template_premium_description">촬영한 연습 시트에서 개인 필기체를 추출합니다.</string>
     <string name="template_delete_title">템플릿을 삭제할까요?</string>
     <string name="template_delete_body">“%1$s”이(가) 기기에서 영구적으로 삭제됩니다.</string>
-    <string name="result_tip_share">💡 팁: 공유 또는 PDF 버튼을 사용하여 다른 앱에 노트를 저장하세요.</string>
+    <string name="result_tip_share">💡 팁: 노트를 핀치로 확대하고 두 번 탭하면 원래대로 돌아옵니다.</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_menu">메뉴 열기</string>
+    <string name="cd_back">뒤로</string>
+    <string name="cd_opens_external">외부에서 열기</string>
+
+    <!-- Generic actions (additional) -->
+    <string name="action_export">내보내기</string>
+    <string name="action_rename">이름 바꾸기</string>
+    <string name="action_retry">다시 스캔</string>
+    <string name="action_open">열기</string>
+    <string name="action_create_note">노트 만들기</string>
+
+    <!-- Template chooser -->
+    <string name="template_chooser_tagline">텍스트를 입력하면 실제 손글씨처럼 변환됩니다.</string>
+
+    <!-- Render screen -->
+    <string name="render_text_supporting">줄 바꿈과 구두점은 그대로 유지됩니다.</string>
+
+    <!-- Export sheet -->
+    <string name="result_export_sheet_title">내보내기</string>
+    <string name="result_export_png">이미지로 저장</string>
+    <string name="result_export_png_desc">PNG를 갤러리에 저장</string>
+    <string name="result_export_pdf_desc">여러 페이지 PDF를 다운로드에 저장</string>
+    <string name="result_export_transparent">투명 PNG</string>
+    <string name="result_export_transparent_desc">종이 배경 없는 손글씨</string>
+
+    <!-- Camera screen -->
+    <string name="camera_title">필기 캡처</string>
+    <string name="camera_share_sheet_title">연습 시트 공유</string>
+    <string name="camera_share_sheet_subject">HandType 연습 시트</string>
+    <string name="camera_priming">문서 스캐너가 열립니다. 사진은 기기에서 처리되며 외부로 전송되지 않습니다.</string>
+
+    <!-- History screen (additional) -->
+    <string name="history_empty_title">아직 노트가 없습니다</string>
+    <string name="history_rename_title">노트 이름 바꾸기</string>
+    <string name="history_rename_label">노트 이름</string>
+    <string name="history_saved_toast">Pictures/HandType에 저장됨</string>
+
+    <!-- Privacy screen -->
+    <string name="privacy_title">개인정보</string>
+    <string name="privacy_load_error">개인정보 처리방침을 불러올 수 없습니다. 대신 GitHub에서 확인하세요.</string>
+    <string name="privacy_view_on_github">GitHub에서 보기</string>
+
+    <!-- Drawer sections -->
+    <string name="drawer_section_create">만들기</string>
+    <string name="drawer_section_info">정보</string>
 </resources>

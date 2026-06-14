@@ -1,8 +1,6 @@
 package com.baer.handtype
 
-import android.content.Intent
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
@@ -16,7 +14,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.togetherWith
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -34,8 +31,8 @@ import com.baer.handtype.feature.capture.CameraCaptureScreen
 import com.baer.handtype.feature.capture.SheetSampleProcessor
 import com.baer.handtype.feature.info.AboutScreen
 import com.baer.handtype.feature.info.FaqScreen
-import com.baer.handtype.feature.info.GITHUB_PRIVACY_URL
 import com.baer.handtype.feature.info.HelpScreen
+import com.baer.handtype.feature.info.PrivacyScreen
 import com.baer.handtype.feature.shell.AppDrawerContent
 import com.baer.handtype.feature.shell.DrawerDestination
 import com.baer.handtype.feature.template.HandwritingRenderScreen
@@ -46,6 +43,7 @@ import com.baer.handtype.feature.template.TemplateChooserScreen
 import com.baer.handtype.template.TemplateDescriptor
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.template.HandwritingTemplate
+import com.baer.handtype.ui.theme.HandTypeTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,7 +55,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            HandTypeTheme {
                 HandTypeRoot()
             }
         }
@@ -99,18 +97,13 @@ private fun HandTypeRoot() {
     }
 
     fun navigate(dest: DrawerDestination) {
-        if (dest == DrawerDestination.Privacy) {
-            scope.launch { drawerState.close() }
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PRIVACY_URL)))
-            return
-        }
         route = when (dest) {
             DrawerDestination.Templates -> RootRoute.TemplateChooser.name
             DrawerDestination.History -> RootRoute.History.name
             DrawerDestination.Help -> RootRoute.Help.name
             DrawerDestination.Faq -> RootRoute.Faq.name
             DrawerDestination.About -> RootRoute.About.name
-            DrawerDestination.Privacy -> RootRoute.TemplateChooser.name
+            DrawerDestination.Privacy -> RootRoute.Privacy.name
         }
         scope.launch { drawerState.close() }
     }
@@ -147,6 +140,7 @@ private fun HandTypeRoot() {
                         pendingRenameTemplateName = defaultName
                         route = RootRoute.TemplateChooser.name
                     },
+                    onBack = { route = RootRoute.TemplateChooser.name },
                 )
             }
         } else {
@@ -155,6 +149,7 @@ private fun HandTypeRoot() {
                 RootRoute.Help.name -> DrawerDestination.Help
                 RootRoute.Faq.name -> DrawerDestination.Faq
                 RootRoute.About.name -> DrawerDestination.About
+                RootRoute.Privacy.name -> DrawerDestination.Privacy
                 else -> DrawerDestination.Templates
             }
             ModalNavigationDrawer(
@@ -185,10 +180,14 @@ private fun HandTypeRoot() {
                             refreshUserTemplates()
                         },
                     )
-                    RootRoute.History.name -> HistoryScreen(onOpenDrawer = openDrawer)
+                    RootRoute.History.name -> HistoryScreen(
+                        onOpenDrawer = openDrawer,
+                        onCreateNote = { route = RootRoute.TemplateChooser.name },
+                    )
                     RootRoute.Help.name -> HelpScreen(onOpenDrawer = openDrawer)
                     RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
                     RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
+                    RootRoute.Privacy.name -> PrivacyScreen(onOpenDrawer = openDrawer)
                 }
             }
 
@@ -271,8 +270,8 @@ private fun TemplateRenderRoute(
         )
     } else if (showLoading) {
         LoadingTemplateScreen(
-            title = "Loading template",
-            body = "Preparing bundled bitmap glyphs for the default handwriting flow.",
+            title = stringResource(R.string.loading_template_title),
+            body = stringResource(R.string.loading_template_body),
         )
     }
 }
@@ -281,6 +280,7 @@ private fun TemplateRenderRoute(
 private fun PremiumCaptureRoute(
     repository: BundledTemplateRepository,
     onTemplateSaved: (String, String) -> Unit,
+    onBack: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -299,6 +299,7 @@ private fun PremiumCaptureRoute(
     CameraCaptureScreen(
         instructionText = instructionText,
         isProcessing = isProcessing,
+        onBack = onBack,
         onImageCaptured = { bitmap ->
             if (isProcessing) return@CameraCaptureScreen
             isProcessing = true
@@ -373,4 +374,5 @@ private enum class RootRoute {
     Help,
     Faq,
     About,
+    Privacy,
 }

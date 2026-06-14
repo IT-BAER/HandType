@@ -59,7 +59,7 @@
     <string name="camera_pre_scan_step_2">各ボックスに対応する文字を書き、ガイドライン上に置いてください。</string>
     <string name="camera_pre_scan_step_3">ページ全体をキャプチャし、4つの黒い四角が完全に見えるようにしてください。</string>
     <string name="camera_pre_scan_step_4">均一な光を使用し、ぼかし、グレア、硬い影を避けてください。</string>
-    <string name="camera_sheet_button">練習シートを取得（PNG）</string>
+    <string name="camera_sheet_button">練習シートを共有または印刷</string>
     <string name="camera_scan_button">練習シートをスキャンまたはインポート</string>
     <string name="camera_gallery_button">ギャラリーから写真を選択</string>
     <string name="camera_opening_scanner">スキャナーを開いています…</string>
@@ -174,5 +174,52 @@
     <string name="template_premium_description">写真撮影した練習シートから個人の手書きを抽出します。</string>
     <string name="template_delete_title">テンプレートを削除？</string>
     <string name="template_delete_body">「%1$s」はデバイスから永久に削除されます。</string>
-    <string name="result_tip_share">💡 ヒント：共有またはPDFボタンを使ってノートを他のアプリに保存できます。</string>
+    <string name="result_tip_share">💡 ヒント：ノートをピンチでズーム、ダブルタップでリセットできます。</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_menu">メニューを開く</string>
+    <string name="cd_back">戻る</string>
+    <string name="cd_opens_external">外部で開く</string>
+
+    <!-- Generic actions (additional) -->
+    <string name="action_export">エクスポート</string>
+    <string name="action_rename">名前を変更</string>
+    <string name="action_retry">再スキャン</string>
+    <string name="action_open">開く</string>
+    <string name="action_create_note">ノートを作成</string>
+
+    <!-- Template chooser -->
+    <string name="template_chooser_tagline">テキストを入力して、本物らしい手書きを。</string>
+
+    <!-- Render screen -->
+    <string name="render_text_supporting">改行と句読点はそのまま保持されます。</string>
+
+    <!-- Export sheet -->
+    <string name="result_export_sheet_title">エクスポート</string>
+    <string name="result_export_png">画像として保存</string>
+    <string name="result_export_png_desc">PNGをギャラリーに保存</string>
+    <string name="result_export_pdf_desc">複数ページのPDFをダウンロードに保存</string>
+    <string name="result_export_transparent">透過PNG</string>
+    <string name="result_export_transparent_desc">紙の背景なしの手書き</string>
+
+    <!-- Camera screen -->
+    <string name="camera_title">手書きをキャプチャ</string>
+    <string name="camera_share_sheet_title">練習シートを共有</string>
+    <string name="camera_share_sheet_subject">HandType 練習シート</string>
+    <string name="camera_priming">これはドキュメントスキャナーを開きます。写真はデバイス上で処理され、外部に送信されません。</string>
+
+    <!-- History screen (additional) -->
+    <string name="history_empty_title">まだノートがありません</string>
+    <string name="history_rename_title">ノートの名前を変更</string>
+    <string name="history_rename_label">ノート名</string>
+    <string name="history_saved_toast">Pictures/HandTypeに保存しました</string>
+
+    <!-- Privacy screen -->
+    <string name="privacy_title">プライバシー</string>
+    <string name="privacy_load_error">プライバシーポリシーを読み込めませんでした。代わりにGitHubでご覧ください。</string>
+    <string name="privacy_view_on_github">GitHubで見る</string>
+
+    <!-- Drawer sections -->
+    <string name="drawer_section_create">作成</string>
+    <string name="drawer_section_info">情報</string>
 </resources>

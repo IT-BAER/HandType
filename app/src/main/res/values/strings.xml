@@ -67,7 +67,7 @@
     <string name="camera_pre_scan_step_2">Write the matching character in each box and keep it sitting on the guide line.</string>
     <string name="camera_pre_scan_step_3">Capture the whole page and keep all four black squares fully visible.</string>
     <string name="camera_pre_scan_step_4">Use even light and avoid blur, glare, and hard shadows.</string>
-    <string name="camera_sheet_button">Get the practice sheet (PNG)</string>
+    <string name="camera_sheet_button">Share or print practice sheet</string>
     <string name="camera_scan_button">Scan or import practice sheet</string>
     <string name="camera_gallery_button">Choose photo from gallery</string>
     <string name="camera_opening_scanner">Opening scanner...</string>
@@ -188,5 +188,50 @@
     <string name="about_description">Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device.</string>
     <string name="about_github_button">View source on GitHub</string>
     <string name="about_copyright">© 2025 IT-BAER. Made with care.</string>
-    <string name="result_tip_share">💡 Tip: Use the Share or PDF button to save your note to another app.</string>
+    <string name="result_tip_share">💡 Tip: pinch to zoom the note, double-tap to reset.</string>
+
+    <!-- UX overhaul: content descriptions and shared actions -->
+    <string name="cd_menu">Open menu</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_opens_external">Opens externally</string>
+    <string name="action_export">Export</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_retry">Scan again</string>
+    <string name="action_open">Open</string>
+    <string name="action_create_note">Create a note</string>
+
+    <!-- UX overhaul: home -->
+    <string name="template_chooser_tagline">Type text, get believable handwriting.</string>
+
+    <!-- UX overhaul: editor -->
+    <string name="render_text_supporting">Line breaks and punctuation are kept.</string>
+
+    <!-- UX overhaul: result export sheet -->
+    <string name="result_export_sheet_title">Export</string>
+    <string name="result_export_png">Save as image</string>
+    <string name="result_export_png_desc">PNG to your gallery</string>
+    <string name="result_export_pdf_desc">Multi-page PDF to Downloads</string>
+    <string name="result_export_transparent">Transparent PNG</string>
+    <string name="result_export_transparent_desc">Handwriting without the paper background</string>
+
+    <!-- UX overhaul: capture -->
+    <string name="camera_title">Capture handwriting</string>
+    <string name="camera_share_sheet_title">Share practice sheet</string>
+    <string name="camera_share_sheet_subject">HandType practice sheet</string>
+    <string name="camera_priming">This opens the document scanner. Your photo is processed on your device and never leaves it.</string>
+
+    <!-- UX overhaul: history -->
+    <string name="history_empty_title">No notes yet</string>
+    <string name="history_rename_title">Rename note</string>
+    <string name="history_rename_label">Note name</string>
+    <string name="history_saved_toast">Saved to Pictures/HandType</string>
+
+    <!-- UX overhaul: privacy (in-app) -->
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_load_error">Could not load the privacy policy. View it on GitHub instead.</string>
+    <string name="privacy_view_on_github">View on GitHub</string>
+
+    <!-- UX overhaul: drawer sections -->
+    <string name="drawer_section_create">Create</string>
+    <string name="drawer_section_info">Info</string>
 </resources>

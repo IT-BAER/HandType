@@ -34,6 +34,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -65,15 +66,34 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -160,7 +180,7 @@ fun TemplateChooserScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = Color(0xFFF5EFE4),
+        containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -176,21 +196,11 @@ fun TemplateChooserScreen(
                     .padding(start = 4.dp, end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.material3.IconButton(onClick = onOpenDrawer) {
-                    Column(
-                        modifier = Modifier.size(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        repeat(3) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(2.dp)
-                                    .background(Color(0xFF1A1410), RoundedCornerShape(1.dp)),
-                            )
-                        }
-                    }
+                IconButton(onClick = onOpenDrawer) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = stringResource(R.string.cd_menu),
+                    )
                 }
             }
             Text(
@@ -199,8 +209,14 @@ fun TemplateChooserScreen(
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
             Text(
+                text = stringResource(R.string.template_chooser_tagline),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
+            Text(
                 text = stringResource(R.string.template_chooser_subtitle),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
@@ -223,7 +239,7 @@ fun TemplateChooserScreen(
 
             HorizontalPager(
                 state = pagerState,
-                contentPadding = PaddingValues(horizontal = 32.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp),
                 pageSpacing = 12.dp,
                 modifier = Modifier
                     .testTag(HandTypeTestTags.TEMPLATE_PAGER)
@@ -266,24 +282,24 @@ fun TemplateChooserScreen(
                     val descriptor = templates[page]
                     TemplateOptionCard(
                         descriptor = descriptor,
-                        accentColor = Color(0xFF23443A),
+                        accentColor = MaterialTheme.colorScheme.primary,
                         buttonText = stringResource(R.string.template_chooser_use_template),
                         badgeText = if (descriptor.isNew) stringResource(R.string.template_chooser_new_badge) else null,
                         modifier = Modifier.fillMaxSize(),
                     )
                     // Delete button: only for user-captured templates
                     if (onDeleteTemplate != null && descriptor.id.startsWith("user_")) {
-                        androidx.compose.material3.IconButton(
+                        IconButton(
                             onClick = { pendingDeleteTemplate = descriptor },
                             modifier = Modifier
                                 .testTag(HandTypeTestTags.templateDeleteButton(descriptor.id))
                                 .align(Alignment.BottomEnd)
                                 .padding(end = 14.dp, bottom = 14.dp),
                         ) {
-                            Text(
-                                text = "\u2715",
-                                color = Color(0xFFAA3333),
-                                style = MaterialTheme.typography.titleMedium,
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.action_delete),
+                                tint = MaterialTheme.colorScheme.error,
                             )
                         }
                     }
@@ -291,32 +307,42 @@ fun TemplateChooserScreen(
             }
 
             if (templates.size > 1) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    repeat(templates.size) { index ->
-                        val selected = pagerState.currentPage == index
-                        val dotSize by animateDpAsState(
-                            targetValue = if (selected) 8.dp else 6.dp,
-                            animationSpec = spring(),
-                            label = "dotSize",
-                        )
-                        val dotColor by animateColorAsState(
-                            targetValue = if (selected) Color(0xFF23443A)
-                                else Color(0xFF23443A).copy(alpha = 0.3f),
-                            animationSpec = tween(300),
-                            label = "dotColor",
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .size(dotSize)
-                                .clip(CircleShape)
-                                .background(dotColor),
-                        )
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        repeat(templates.size) { index ->
+                            val selected = pagerState.currentPage == index
+                            val dotSize by animateDpAsState(
+                                targetValue = if (selected) 8.dp else 6.dp,
+                                animationSpec = spring(),
+                                label = "dotSize",
+                            )
+                            val dotColor by animateColorAsState(
+                                targetValue = if (selected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                animationSpec = tween(300),
+                                label = "dotColor",
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .size(dotSize)
+                                    .clip(CircleShape)
+                                    .background(dotColor),
+                            )
+                        }
                     }
+                    Text(
+                        text = "${pagerState.currentPage + 1} / ${templates.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 
@@ -329,9 +355,9 @@ fun TemplateChooserScreen(
                 modifier = Modifier
                     .padding(horizontal = 20.dp)
                     .pressScale(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF9F2)),
-                border = BorderStroke(1.dp, Color(0xFF7C4D11).copy(alpha = 0.18f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f)),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -344,32 +370,33 @@ fun TemplateChooserScreen(
                     ) {
                         Text(
                             text = premiumTemplate.displayName,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Surface(
-                            color = Color(0xFF7C4D11).copy(alpha = 0.14f),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             shape = RoundedCornerShape(999.dp),
                         ) {
                             Text(
                                 text = stringResource(R.string.template_chooser_premium_badge),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                color = Color(0xFF7C4D11),
-                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                             )
                         }
                     }
 
                     Surface(
-                        color = Color(0xFF7C4D11).copy(alpha = 0.08f),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
                         shape = RoundedCornerShape(20.dp),
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Text(
                                 text = premiumTemplate.sampleText,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = Color(0xFF7C4D11),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -380,16 +407,16 @@ fun TemplateChooserScreen(
                         }
                     }
 
-                    Surface(
-                        color = Color(0xFF7C4D11),
+                    FilledTonalButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onPremiumSelected()
+                        },
                         shape = RoundedCornerShape(18.dp),
                     ) {
                         Text(
                             text = stringResource(R.string.template_chooser_premium_button),
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                            color = Color.White,
                             style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }
@@ -407,7 +434,7 @@ fun TemplateChooserScreen(
                 TextButton(onClick = {
                     onDeleteTemplate?.invoke(descriptor)
                     pendingDeleteTemplate = null
-                }) { Text(stringResource(R.string.action_delete), color = Color(0xFFAA3333)) }
+                }) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
                 TextButton(onClick = { pendingDeleteTemplate = null }) { Text(stringResource(R.string.action_cancel)) }
@@ -438,10 +465,12 @@ fun HandwritingRenderScreen(
     var selectedBackgroundId by rememberSaveable { mutableStateOf(initialDefaultBackgroundId) }
     var lastRenderedText by rememberSaveable { mutableStateOf("") }
     var lastRenderSeed by rememberSaveable { mutableStateOf<Long?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         modifier = modifier,
-        containerColor = Color(0xFFF5EFE4),
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         BoxWithConstraints(
             modifier = Modifier
@@ -539,6 +568,7 @@ fun HandwritingRenderScreen(
                         bitmap = resultBitmap,
                         templateName = template.descriptor.displayName,
                         missingCharacters = missingChars,
+                        snackbarHostState = snackbarHostState,
                         onSaveTransparent = {
                             val seed = lastRenderSeed ?: return@ResultPhaseContent
                             val inputText = lastRenderedText.ifBlank { return@ResultPhaseContent }
@@ -555,21 +585,17 @@ fun HandwritingRenderScreen(
                                         templateName = "${template.descriptor.displayName}_transparent",
                                     )
                                         .onSuccess {
-                                            Toast.makeText(
-                                                context,
+                                            snackbarHostState.showSnackbar(
                                                 context.getString(R.string.result_saved_transparent),
-                                                Toast.LENGTH_SHORT,
-                                            ).show()
+                                            )
                                         }
                                         .onFailure {
-                                            Toast.makeText(
-                                                context,
+                                            snackbarHostState.showSnackbar(
                                                 context.getString(
                                                     R.string.result_save_failed,
                                                     it.message ?: "unknown",
                                                 ),
-                                                Toast.LENGTH_SHORT,
-                                            ).show()
+                                            )
                                         }
                                 } finally {
                                     transparentBitmap.recycle()
@@ -623,16 +649,22 @@ private fun ComposePhaseContent(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            IconButton(onClick = onBackToTemplates) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.render_back_button),
+                )
+            }
+            Spacer(Modifier.width(4.dp))
             Text(
                 text = templateName,
                 style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
-            TextButton(onClick = onBackToTemplates) {
-                Text(text = stringResource(R.string.render_templates_button))
-            }
         }
 
         Text(
@@ -669,6 +701,12 @@ private fun ComposePhaseContent(
             )
         }
 
+        Text(
+            text = stringResource(R.string.render_text_supporting),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
         BackgroundPicker(
             presets = backgroundPresets,
             selectedBackgroundId = selectedBackgroundId,
@@ -690,9 +728,6 @@ private fun ComposePhaseContent(
                 .pressScale(),
             shape = RoundedCornerShape(18.dp),
             contentPadding = PaddingValues(vertical = 16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF23443A),
-            ),
         ) {
             Text(
                 text = stringResource(R.string.render_generate_button),
@@ -718,7 +753,7 @@ private fun GeneratingOverlay() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5EFE4)),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
         AnimatedVisibility(
@@ -731,7 +766,7 @@ private fun GeneratingOverlay() {
             Card(
                 shape = RoundedCornerShape(28.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             ) {
                 Column(
                     modifier = Modifier.padding(32.dp),
@@ -740,8 +775,8 @@ private fun GeneratingOverlay() {
                 ) {
                     PenWritingAnimation(
                         modifier = Modifier.size(140.dp),
-                        inkColor = Color(0xFF1A1410),
-                        traceColor = Color(0xFF23443A),
+                        inkColor = MaterialTheme.colorScheme.onSurface,
+                        traceColor = MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         text = stringResource(R.string.render_generating_title),
@@ -758,11 +793,13 @@ private fun GeneratingOverlay() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ResultPhaseContent(
     bitmap: Bitmap?,
     templateName: String,
     missingCharacters: Set<Char>,
+    snackbarHostState: SnackbarHostState,
     onSaveTransparent: () -> Unit,
     onNewNote: () -> Unit,
     onRegenerate: () -> Unit,
@@ -771,12 +808,14 @@ private fun ResultPhaseContent(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
 
     fun toast(msg: String) {
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        scope.launch { snackbarHostState.showSnackbar(msg) }
     }
 
     var pendingTransparent by remember { mutableStateOf(false) }
+    var showExportSheet by remember { mutableStateOf(false) }
 
     // Ink-reveal animation for the result bitmap
     val inkRevealProgress = remember { androidx.compose.animation.core.Animatable(0f) }
@@ -929,26 +968,29 @@ private fun ResultPhaseContent(
             )
         }
 
-        // Primary export actions
+        // Primary action: Save. Secondary: Share (tonal). Tertiary: Export (opens sheet).
+        Button(
+            onClick = { saveWithPermission(false) },
+            enabled = bitmap != null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(),
+            shape = RoundedCornerShape(18.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
+        ) {
+            Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.result_save_button),
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Button(
-                onClick = { saveWithPermission(false) },
-                enabled = bitmap != null,
-                modifier = Modifier
-                    .weight(1f)
-                    .pressScale(),
-                shape = RoundedCornerShape(18.dp),
-                contentPadding = PaddingValues(vertical = 14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF23443A),
-                ),
-            ) {
-                Text(text = stringResource(R.string.result_save_button))
-            }
-            Button(
+            FilledTonalButton(
                 onClick = ::shareImage,
                 enabled = bitmap != null,
                 modifier = Modifier
@@ -956,80 +998,104 @@ private fun ResultPhaseContent(
                     .pressScale(),
                 shape = RoundedCornerShape(18.dp),
                 contentPadding = PaddingValues(vertical = 14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7C4D11),
-                ),
             ) {
+                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(text = stringResource(R.string.result_share_button))
+            }
+            OutlinedButton(
+                onClick = { showExportSheet = true },
+                enabled = bitmap != null,
+                modifier = Modifier
+                    .weight(1f)
+                    .pressScale(),
+                shape = RoundedCornerShape(18.dp),
+                contentPadding = PaddingValues(vertical = 14.dp),
+            ) {
+                Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(text = stringResource(R.string.action_export))
             }
         }
 
-        OutlinedButton(
-            onClick = ::exportPdf,
-            enabled = bitmap != null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .pressScale(),
-            shape = RoundedCornerShape(18.dp),
-            contentPadding = PaddingValues(vertical = 14.dp),
-        ) {
-            Text(text = stringResource(R.string.result_export_pdf_button))
-        }
-
-        TextButton(
-            onClick = { saveWithPermission(true) },
-            enabled = bitmap != null,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            Text(text = stringResource(R.string.result_save_transparent_button))
-        }
-
-        // Secondary navigation actions
+        // Secondary navigation actions (lower emphasis)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            OutlinedButton(
+            TextButton(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onRegenerate()
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .pressScale(),
-                shape = RoundedCornerShape(18.dp),
-                contentPadding = PaddingValues(vertical = 14.dp),
+                modifier = Modifier.weight(1f),
             ) {
+                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(text = stringResource(R.string.result_regenerate_button))
             }
 
-            OutlinedButton(
+            TextButton(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onNewNote()
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .pressScale(),
-                shape = RoundedCornerShape(18.dp),
-                contentPadding = PaddingValues(vertical = 14.dp),
+                modifier = Modifier.weight(1f),
             ) {
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(text = stringResource(R.string.result_new_note_button))
             }
         }
 
-        // Tip card to fill remaining space and surface the sharing feature
+        // Tip card: how to interact with the preview.
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFEEE8DB)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 text = stringResource(R.string.result_tip_share),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF1A1410).copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
+        }
+    }
+
+    if (showExportSheet) {
+        val sheetState = rememberModalBottomSheetState()
+        ModalBottomSheet(
+            onDismissRequest = { showExportSheet = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+        ) {
+            Text(
+                text = stringResource(R.string.result_export_sheet_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.result_export_pdf_button)) },
+                supportingContent = { Text(stringResource(R.string.result_export_pdf_desc)) },
+                leadingContent = { Icon(Icons.Default.PictureAsPdf, contentDescription = null) },
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.clickable {
+                    showExportSheet = false
+                    exportPdf()
+                },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.result_export_transparent)) },
+                supportingContent = { Text(stringResource(R.string.result_export_transparent_desc)) },
+                leadingContent = { Icon(Icons.Default.Layers, contentDescription = null) },
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.clickable {
+                    showExportSheet = false
+                    saveWithPermission(true)
+                },
+            )
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
@@ -1064,31 +1130,31 @@ private fun BackgroundPicker(
                     Text(
                         text = stringResource(selectedPreset.labelRes),
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF1A1410),
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     if (selectedPreset.premium) {
                         Surface(
                             shape = RoundedCornerShape(999.dp),
-                            color = Color(0xFF7C4D11).copy(alpha = 0.12f),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                         ) {
                             Text(
                                 text = stringResource(R.string.template_chooser_premium_badge),
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF7C4D11),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
                         }
                     }
                     if (isCurrentDefault) {
                         Surface(
                             shape = RoundedCornerShape(999.dp),
-                            color = Color(0xFF23443A).copy(alpha = 0.12f),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                         ) {
                             Text(
                                 text = stringResource(R.string.render_background_default_badge),
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF23443A),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         }
                     }
@@ -1134,35 +1200,55 @@ private fun BackgroundPresetCard(
     onClick: () -> Unit,
 ) {
     val borderColor = when {
-        selected -> Color(0xFF23443A)
-        isDefault -> Color(0xFF23443A).copy(alpha = 0.24f)
-        else -> Color(0xFF1A1410).copy(alpha = 0.12f)
+        selected -> MaterialTheme.colorScheme.primary
+        isDefault -> MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+        else -> MaterialTheme.colorScheme.outlineVariant
     }
     val bounceScale = selectionBounceScale(selected)
 
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .width(58.dp)
-            .graphicsLayer {
-                scaleX = bounceScale
-                scaleY = bounceScale
-            },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(if (selected) 2.5.dp else 1.dp, borderColor),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (selected) 4.dp else 0.dp,
-        ),
-    ) {
-        PaperPreviewSurface(
-            preset = preset,
+    Box {
+        Card(
+            onClick = onClick,
             modifier = Modifier
-                .padding(4.dp)
-                .size(width = 50.dp, height = 40.dp),
-            shape = RoundedCornerShape(10.dp),
-            showPremiumBadge = true,
-        )
+                .width(58.dp)
+                .graphicsLayer {
+                    scaleX = bounceScale
+                    scaleY = bounceScale
+                },
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(if (selected) 2.5.dp else 1.dp, borderColor),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = if (selected) 4.dp else 0.dp,
+            ),
+        ) {
+            PaperPreviewSurface(
+                preset = preset,
+                modifier = Modifier
+                    .padding(4.dp)
+                    .size(width = 50.dp, height = 40.dp),
+                shape = RoundedCornerShape(10.dp),
+                showPremiumBadge = true,
+            )
+        }
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(2.dp)
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(11.dp),
+                )
+            }
+        }
     }
 }
 
@@ -1287,7 +1373,7 @@ fun LoadingTemplateScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF5EFE4)),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
         Card(shape = RoundedCornerShape(28.dp)) {
@@ -1298,8 +1384,8 @@ fun LoadingTemplateScreen(
             ) {
                 PenWritingAnimation(
                     modifier = Modifier.size(100.dp),
-                    inkColor = Color(0xFF1A1410),
-                    traceColor = Color(0xFF23443A),
+                    inkColor = MaterialTheme.colorScheme.onSurface,
+                    traceColor = MaterialTheme.colorScheme.primary,
                 )
                 Text(text = title, style = MaterialTheme.typography.headlineSmall)
                 Text(
@@ -1382,7 +1468,7 @@ private fun TemplateOptionCard(
         }
     }
     val cardShape = RoundedCornerShape(28.dp)
-    val cardContainerColor = if (isUserTemplate) Color(0xFFFFF8EC) else Color.White
+    val cardContainerColor = if (isUserTemplate) Color(0xFFFFF8EC) else MaterialTheme.colorScheme.surface
     val cardBorder = if (isUserTemplate) {
         BorderStroke(1.dp, Color(0xFFE5C57A).copy(alpha = 0.9f))
     } else {
@@ -1486,7 +1572,7 @@ private fun TemplateOptionCard(
                     Text(
                         text = buttonText,
                         modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                        color = Color.White,
+                        color = if (isUserTemplate) Color.White else MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isUserTemplate) FontWeight.Bold else FontWeight.Normal,
                     )

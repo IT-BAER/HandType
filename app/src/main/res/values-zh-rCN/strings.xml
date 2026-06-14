@@ -57,7 +57,7 @@
     <string name="camera_pre_scan_step_2">在每个方框中写入对应的字符，并保持在引导线上。</string>
     <string name="camera_pre_scan_step_3">拍摄整页，并确保四个黑色方块完全可见。</string>
     <string name="camera_pre_scan_step_4">使用均匀的光线，避免模糊、眩光和硬阴影。</string>
-    <string name="camera_sheet_button">获取练习纸（PNG）</string>
+    <string name="camera_sheet_button">分享或打印练习纸</string>
     <string name="camera_scan_button">扫描或导入练习纸</string>
     <string name="camera_gallery_button">从相册选择照片</string>
     <string name="camera_opening_scanner">正在打开扫描器…</string>
@@ -174,5 +174,52 @@
     <string name="template_premium_description">从拍摄的练习表中提取您的个人笔迹。</string>
     <string name="template_delete_title">删除模板？</string>
     <string name="template_delete_body">“%1$s”将永久从您的设备中删除。</string>
-    <string name="result_tip_share">💡 提示：使用分享或PDF按钮将笔记保存到其他应用。</string>
+    <string name="result_tip_share">💡 提示：双指缩放查看便条，双击可重置。</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_menu">打开菜单</string>
+    <string name="cd_back">返回</string>
+    <string name="cd_opens_external">在外部打开</string>
+
+    <!-- Generic actions (additional) -->
+    <string name="action_export">导出</string>
+    <string name="action_rename">重命名</string>
+    <string name="action_retry">重新扫描</string>
+    <string name="action_open">打开</string>
+    <string name="action_create_note">创建便条</string>
+
+    <!-- Template chooser -->
+    <string name="template_chooser_tagline">输入文字，生成逼真的手写效果。</string>
+
+    <!-- Render screen -->
+    <string name="render_text_supporting">换行和标点符号均会保留。</string>
+
+    <!-- Export sheet -->
+    <string name="result_export_sheet_title">导出</string>
+    <string name="result_export_png">保存为图片</string>
+    <string name="result_export_png_desc">PNG 保存到图库</string>
+    <string name="result_export_pdf_desc">多页 PDF 保存到下载</string>
+    <string name="result_export_transparent">透明 PNG</string>
+    <string name="result_export_transparent_desc">无纸张背景的手写内容</string>
+
+    <!-- Camera screen -->
+    <string name="camera_title">捕捉手写</string>
+    <string name="camera_share_sheet_title">分享练习纸</string>
+    <string name="camera_share_sheet_subject">HandType 练习纸</string>
+    <string name="camera_priming">这将打开文档扫描仪。您的照片在设备上处理，不会离开设备。</string>
+
+    <!-- History screen (additional) -->
+    <string name="history_empty_title">暂无便条</string>
+    <string name="history_rename_title">重命名便条</string>
+    <string name="history_rename_label">便条名称</string>
+    <string name="history_saved_toast">已保存至图片/HandType</string>
+
+    <!-- Privacy screen -->
+    <string name="privacy_title">隐私</string>
+    <string name="privacy_load_error">无法加载隐私政策。请改在 GitHub 上查看。</string>
+    <string name="privacy_view_on_github">在 GitHub 上查看</string>
+
+    <!-- Drawer sections -->
+    <string name="drawer_section_create">创建</string>
+    <string name="drawer_section_info">信息</string>
 </resources>

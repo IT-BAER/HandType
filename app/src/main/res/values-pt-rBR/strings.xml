@@ -59,7 +59,7 @@
     <string name="camera_pre_scan_step_2">Escreva o caractere correspondente em cada caixa e mantenha-o sobre a linha guia.</string>
     <string name="camera_pre_scan_step_3">Capture a página inteira e mantenha os quatro quadrados pretos totalmente visíveis.</string>
     <string name="camera_pre_scan_step_4">Use luz uniforme e evite desfoque, reflexos e sombras duras.</string>
-    <string name="camera_sheet_button">Obter a folha de prática (PNG)</string>
+    <string name="camera_sheet_button">Compartilhar ou imprimir a folha de prática</string>
     <string name="camera_scan_button">Escanear ou importar folha de prática</string>
     <string name="camera_gallery_button">Escolher foto da galeria</string>
     <string name="camera_opening_scanner">Abrindo scanner…</string>
@@ -176,5 +176,52 @@
     <string name="template_premium_description">Extraia sua escrita pessoal de uma folha de prática fotografada.</string>
     <string name="template_delete_title">Excluir modelo?</string>
     <string name="template_delete_body">“%1$s” será removido permanentemente do seu dispositivo.</string>
-    <string name="result_tip_share">💡 Dica: Use Compartilhar ou PDF para salvar sua nota em outro aplicativo.</string>
+    <string name="result_tip_share">💡 Dica: use dois dedos para dar zoom na nota e toque duplo para redefinir.</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_menu">Abrir menu</string>
+    <string name="cd_back">Voltar</string>
+    <string name="cd_opens_external">Abre externamente</string>
+
+    <!-- Generic actions (new) -->
+    <string name="action_export">Exportar</string>
+    <string name="action_rename">Renomear</string>
+    <string name="action_retry">Escanear novamente</string>
+    <string name="action_open">Abrir</string>
+    <string name="action_create_note">Criar uma nota</string>
+
+    <!-- Template chooser -->
+    <string name="template_chooser_tagline">Digite um texto, obtenha caligrafia convincente.</string>
+
+    <!-- Render screen -->
+    <string name="render_text_supporting">Quebras de linha e pontuação são preservadas.</string>
+
+    <!-- Export sheet -->
+    <string name="result_export_sheet_title">Exportar</string>
+    <string name="result_export_png">Salvar como imagem</string>
+    <string name="result_export_png_desc">PNG na sua galeria</string>
+    <string name="result_export_pdf_desc">PDF de várias páginas em Downloads</string>
+    <string name="result_export_transparent">PNG transparente</string>
+    <string name="result_export_transparent_desc">Caligrafia sem o fundo de papel</string>
+
+    <!-- Camera screen -->
+    <string name="camera_title">Capturar escrita</string>
+    <string name="camera_share_sheet_title">Compartilhar folha de prática</string>
+    <string name="camera_share_sheet_subject">Folha de prática HandType</string>
+    <string name="camera_priming">Isso abre o scanner de documentos. Sua foto é processada no dispositivo e nunca o abandona.</string>
+
+    <!-- History screen (new) -->
+    <string name="history_empty_title">Nenhuma nota ainda</string>
+    <string name="history_rename_title">Renomear nota</string>
+    <string name="history_rename_label">Nome da nota</string>
+    <string name="history_saved_toast">Salvo em Imagens/HandType</string>
+
+    <!-- Privacy screen -->
+    <string name="privacy_title">Privacidade</string>
+    <string name="privacy_load_error">Não foi possível carregar a política de privacidade. Veja-a no GitHub.</string>
+    <string name="privacy_view_on_github">Ver no GitHub</string>
+
+    <!-- Drawer sections -->
+    <string name="drawer_section_create">Criar</string>
+    <string name="drawer_section_info">Informações</string>
 </resources>

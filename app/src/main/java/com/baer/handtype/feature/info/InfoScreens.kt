@@ -22,14 +22,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -39,6 +46,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,11 +62,6 @@ import androidx.compose.ui.unit.dp
 import com.baer.handtype.BuildConfig
 import com.baer.handtype.R
 
-private val PaperBg = Color(0xFFF5EFE4)
-private val Ink = Color(0xFF1A1410)
-private val Teal = Color(0xFF23443A)
-private val Amber = Color(0xFF7C4D11)
-
 const val GITHUB_REPO_URL = "https://github.com/IT-BAER/HandType"
 const val GITHUB_PRIVACY_URL = "https://github.com/IT-BAER/HandType/blob/main/PRIVACY.md"
 
@@ -70,17 +73,20 @@ private fun InfoScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
-        containerColor = PaperBg,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(title, color = Ink) },
+                title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Text("\u2630", color = Ink, style = MaterialTheme.typography.titleLarge)
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = stringResource(R.string.cd_menu),
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = PaperBg,
+                    containerColor = MaterialTheme.colorScheme.background,
                 ),
             )
         },
@@ -88,23 +94,28 @@ private fun InfoScaffold(
 }
 
 @Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.SemiBold,
-        color = Ink,
-        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
-    )
-}
-
-@Composable
-private fun Body(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyLarge,
-        color = Ink,
-    )
+private fun HelpCard(title: String, body: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 @Composable
@@ -116,17 +127,13 @@ fun HelpScreen(onOpenDrawer: () -> Unit) {
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionTitle(stringResource(R.string.help_s1_title))
-            Body(stringResource(R.string.help_s1_body))
-            SectionTitle(stringResource(R.string.help_s2_title))
-            Body(stringResource(R.string.help_s2_body))
-            SectionTitle(stringResource(R.string.help_s3_title))
-            Body(stringResource(R.string.help_s3_body))
-            SectionTitle(stringResource(R.string.help_s4_title))
-            Body(stringResource(R.string.help_s4_body))
-            SectionTitle(stringResource(R.string.help_s5_title))
-            Body(stringResource(R.string.help_s5_body))
+            HelpCard(stringResource(R.string.help_s1_title), stringResource(R.string.help_s1_body))
+            HelpCard(stringResource(R.string.help_s2_title), stringResource(R.string.help_s2_body))
+            HelpCard(stringResource(R.string.help_s3_title), stringResource(R.string.help_s3_body))
+            HelpCard(stringResource(R.string.help_s4_title), stringResource(R.string.help_s4_body))
+            HelpCard(stringResource(R.string.help_s5_title), stringResource(R.string.help_s5_body))
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -164,7 +171,7 @@ fun FaqScreen(onOpenDrawer: () -> Unit) {
 private fun FaqItem(question: String, answer: String, initiallyOpen: Boolean) {
     var open by rememberSaveable(question) { mutableStateOf(initiallyOpen) }
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF9F2)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -176,13 +183,13 @@ private fun FaqItem(question: String, answer: String, initiallyOpen: Boolean) {
                     text = question,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = Ink,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
-                Text(
-                    text = if (open) "\u25B4" else "\u25BE",
-                    color = Teal,
-                    style = MaterialTheme.typography.titleMedium,
+                Icon(
+                    imageVector = if (open) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             AnimatedVisibility(
@@ -195,7 +202,7 @@ private fun FaqItem(question: String, answer: String, initiallyOpen: Boolean) {
                     Text(
                         text = answer,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Ink,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -225,17 +232,22 @@ fun AboutScreen(onOpenDrawer: () -> Unit) {
                     .background(Color.White),
             )
             Spacer(Modifier.height(12.dp))
-            Text("HandType", style = MaterialTheme.typography.headlineSmall, color = Ink, fontWeight = FontWeight.Bold)
             Text(
-                text = stringResource(R.string.about_version, BuildConfig.VERSION_NAME),
+                "HandType",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = stringResource(R.string.about_version, BuildConfig.VERSION_NAME.substringBefore("-")),
                 style = MaterialTheme.typography.bodyMedium,
-                color = Ink.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(24.dp))
             Text(
                 text = stringResource(R.string.about_description),
                 style = MaterialTheme.typography.bodyLarge,
-                color = Ink,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(24.dp))
             OutlinedButton(
@@ -243,13 +255,68 @@ fun AboutScreen(onOpenDrawer: () -> Unit) {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_REPO_URL)))
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text(stringResource(R.string.about_github_button)) }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = stringResource(R.string.cd_opens_external),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.about_github_button))
+            }
             Spacer(Modifier.height(24.dp))
             Text(
                 text = stringResource(R.string.about_copyright),
                 style = MaterialTheme.typography.bodySmall,
-                color = Ink.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun PrivacyScreen(onOpenDrawer: () -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val policy = remember {
+        runCatching {
+            context.assets.open("privacy.md").bufferedReader().use { it.readText() }
+        }.getOrNull()
+    }
+    InfoScaffold(title = stringResource(R.string.privacy_title), onOpenDrawer = onOpenDrawer) { padding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+        ) {
+            if (policy != null) {
+                Text(
+                    text = policy,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.privacy_load_error),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            Spacer(Modifier.height(24.dp))
+            OutlinedButton(
+                onClick = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PRIVACY_URL)))
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = stringResource(R.string.cd_opens_external),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.privacy_view_on_github))
+            }
             Spacer(Modifier.height(24.dp))
         }
     }

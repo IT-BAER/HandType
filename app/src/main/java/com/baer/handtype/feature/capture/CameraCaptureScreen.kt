@@ -21,14 +21,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.R
 import com.baer.handtype.testing.HandTypeDebugHooks
@@ -57,15 +66,21 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
  * perspective correction, and auto-rotation internally. Returns an upright, perspective-
  * corrected [Bitmap] ready for [SheetSampleProcessor].
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraCaptureScreen(
     onImageCaptured: (Bitmap) -> Unit,
     onCaptureError: (Throwable) -> Unit,
+    onBack: () -> Unit = {},
     modifier: Modifier = Modifier,
     instructionText: String = "Print the practice sheet, fill every cell with your handwriting, then tap Scan to photograph the whole page.",
     isProcessing: Boolean = false,
 ) {
     val context = LocalContext.current
+    val cameraTitle = stringResource(R.string.camera_title)
+    val backDescription = stringResource(R.string.cd_back)
+    val primingText = stringResource(R.string.camera_priming)
+    val retryText = stringResource(R.string.action_retry)
     val sectionTitle = stringResource(R.string.camera_section_title)
     val guideTitle = stringResource(R.string.camera_pre_scan_title)
     val guideSteps = listOf(
@@ -143,6 +158,22 @@ fun CameraCaptureScreen(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(cameraTitle) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = backDescription,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -212,16 +243,34 @@ fun CameraCaptureScreen(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                     ),
                 ) {
-                    Text(
-                        text = errorMessage!!,
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = errorMessage!!,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        TextButton(onClick = { launchScanner() }) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = retryText)
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = primingText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             Button(
                 onClick = { launchScanner() },
@@ -278,10 +327,10 @@ private fun Context.shareTemplateSheet() {
     val sendIntent = Intent(Intent.ACTION_SEND).apply {
         type = "image/png"
         putExtra(Intent.EXTRA_STREAM, uri)
-        putExtra(Intent.EXTRA_SUBJECT, "HandType practice sheet")
+        putExtra(Intent.EXTRA_SUBJECT, getString(R.string.camera_share_sheet_subject))
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    val chooser = Intent.createChooser(sendIntent, "Send practice sheet").apply {
+    val chooser = Intent.createChooser(sendIntent, getString(R.string.camera_share_sheet_title)).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     startActivity(chooser)

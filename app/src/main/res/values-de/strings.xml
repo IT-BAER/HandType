@@ -60,7 +60,7 @@
     <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld und setze es auf die Führungslinie.</string>
     <string name="camera_pre_scan_step_3">Erfasse die ganze Seite und halte alle vier schwarzen Quadrate vollständig sichtbar.</string>
     <string name="camera_pre_scan_step_4">Nutze gleichmäßiges Licht und vermeide Unschärfe, Spiegelungen und harte Schatten.</string>
-    <string name="camera_sheet_button">Übungsblatt holen (PNG)</string>
+    <string name="camera_sheet_button">Übungsblatt teilen oder drucken</string>
     <string name="camera_scan_button">Übungsblatt scannen oder importieren</string>
     <string name="camera_gallery_button">Foto aus der Galerie wählen</string>
     <string name="camera_opening_scanner">Scanner wird geöffnet…</string>
@@ -175,5 +175,35 @@
     <string name="template_premium_description">Extrahiere deine persönliche Handschrift aus einem fotografierten Übungsblatt.</string>
     <string name="template_delete_title">Vorlage löschen?</string>
     <string name="template_delete_body">„%1$s“ wird dauerhaft von deinem Gerät entfernt.</string>
-    <string name="result_tip_share">💡 Tipp: Verwende \'Teilen\' oder \'PDF\', um deine Notiz in einer anderen App zu speichern.</string>
+    <string name="result_tip_share">💡 Tipp: Mit zwei Fingern zoomen, doppeltippen setzt zurück.</string>
+
+    <string name="cd_menu">Menü öffnen</string>
+    <string name="cd_back">Zurück</string>
+    <string name="cd_opens_external">Öffnet extern</string>
+    <string name="action_export">Exportieren</string>
+    <string name="action_rename">Umbenennen</string>
+    <string name="action_retry">Erneut scannen</string>
+    <string name="action_open">Öffnen</string>
+    <string name="action_create_note">Notiz erstellen</string>
+    <string name="template_chooser_tagline">Tippe Text, erhalte glaubwürdige Handschrift.</string>
+    <string name="render_text_supporting">Zeilenumbrüche und Satzzeichen bleiben erhalten.</string>
+    <string name="result_export_sheet_title">Exportieren</string>
+    <string name="result_export_png">Als Bild speichern</string>
+    <string name="result_export_png_desc">PNG in deine Galerie</string>
+    <string name="result_export_pdf_desc">Mehrseitiges PDF in Downloads</string>
+    <string name="result_export_transparent">Transparentes PNG</string>
+    <string name="result_export_transparent_desc">Handschrift ohne Papierhintergrund</string>
+    <string name="camera_title">Handschrift aufnehmen</string>
+    <string name="camera_share_sheet_title">Übungsblatt teilen</string>
+    <string name="camera_share_sheet_subject">HandType Übungsblatt</string>
+    <string name="camera_priming">Öffnet den Dokumentenscanner. Dein Foto wird auf deinem Gerät verarbeitet und verlässt es nie.</string>
+    <string name="history_empty_title">Noch keine Notizen</string>
+    <string name="history_rename_title">Notiz umbenennen</string>
+    <string name="history_rename_label">Notizname</string>
+    <string name="history_saved_toast">In Bilder/HandType gespeichert</string>
+    <string name="privacy_title">Datenschutz</string>
+    <string name="privacy_load_error">Datenschutzerklärung konnte nicht geladen werden. Auf GitHub ansehen.</string>
+    <string name="privacy_view_on_github">Auf GitHub ansehen</string>
+    <string name="drawer_section_create">Erstellen</string>
+    <string name="drawer_section_info">Info</string>
 </resources>
