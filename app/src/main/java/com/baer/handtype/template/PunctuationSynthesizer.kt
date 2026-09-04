@@ -34,6 +34,8 @@ internal object PunctuationSynthesizer {
         val strokeWidthPx: Float,
         /** ARGB ink colour — alpha < 255 because GlyphPostProcessor emits anti-aliased ink. */
         val argb: Int,
+        /** Canvas row where this writer's x-height letters start; marks hang from it. */
+        val xHeightTop: Int = X_HEIGHT_TOP,
     ) {
         companion object {
             val DEFAULT = InkStyle(strokeWidthPx = 3f, argb = 0xB0222222.toInt())
@@ -123,6 +125,7 @@ internal object PunctuationSynthesizer {
         }
         val cx = width / 2f
         val dotR = strokePx * 1.0f
+        val xTop = inkStyle.xHeightTop.toFloat()
         when (c) {
             '.' -> canvas.drawCircle(cx, BASELINE - dotR, dotR, fill)
             ',' -> drawComma(canvas, cx, fill, stroke, dotR)
@@ -137,28 +140,28 @@ internal object PunctuationSynthesizer {
                     moveTo(cx - hookRadius, hookCenterY + 4f)
                     quadTo(cx - hookRadius, hookCenterY - hookRadius, cx, hookCenterY - hookRadius)
                     quadTo(cx + hookRadius, hookCenterY - hookRadius, cx + hookRadius, hookCenterY)
-                    quadTo(cx + hookRadius, X_HEIGHT_TOP + 22f, cx, BASELINE - 26f)
+                    quadTo(cx + hookRadius, xTop + 22f, cx, BASELINE - 26f)
                 }
                 canvas.drawPath(path, stroke)
                 canvas.drawCircle(cx, BASELINE - dotR, dotR, fill)
             }
             ':' -> {
-                canvas.drawCircle(cx, X_HEIGHT_TOP + 14f, dotR, fill)
+                canvas.drawCircle(cx, xTop + dotR, dotR, fill)
                 canvas.drawCircle(cx, BASELINE - dotR, dotR, fill)
             }
             ';' -> {
-                canvas.drawCircle(cx, X_HEIGHT_TOP + 14f, dotR, fill)
+                canvas.drawCircle(cx, xTop + dotR, dotR, fill)
                 drawComma(canvas, cx, fill, stroke, dotR)
             }
             '\'' -> {
-                canvas.drawLine(cx + 2, ASCENDER_TOP + 18f, cx - 3, X_HEIGHT_TOP + 6f, stroke)
+                canvas.drawLine(cx + 2, xTop - 22f, cx - 3, xTop - 4f, stroke)
             }
             '"' -> {
-                canvas.drawLine(cx - 10 + 2, ASCENDER_TOP + 18f, cx - 10 - 3, X_HEIGHT_TOP + 6f, stroke)
-                canvas.drawLine(cx + 10 + 2, ASCENDER_TOP + 18f, cx + 10 - 3, X_HEIGHT_TOP + 6f, stroke)
+                canvas.drawLine(cx - 10 + 2, xTop - 22f, cx - 10 - 3, xTop - 4f, stroke)
+                canvas.drawLine(cx + 10 + 2, xTop - 22f, cx + 10 - 3, xTop - 4f, stroke)
             }
             '-' -> {
-                val y = (X_HEIGHT_TOP + GUIDE_HEIGHT / 2).toFloat()
+                val y = (xTop + BASELINE) / 2f
                 canvas.drawLine(cx - 20f, y, cx + 20f, y, stroke)
             }
         }

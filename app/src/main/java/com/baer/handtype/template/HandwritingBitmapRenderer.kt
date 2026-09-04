@@ -230,15 +230,21 @@ object HandwritingBitmapRenderer {
         }
     }
 
-    private fun leadingPullPx(
+    /** Median ink top of the x-height letters; the guide-band top when none are present. */
+    internal fun xHeightTopRow(tops: List<Int>): Int =
+        tops.sorted().getOrElse(tops.size / 2) { PunctuationSynthesizer.InkStyle.DEFAULT.xHeightTop }
+
+    /** Narrow letters slide under a tucked bar; after a round letter they would land on its ink. */
+    internal fun leadingPullPx(
         character: Char,
         lineHeightPx: Int,
         normalizedUserCanvas: Boolean,
+        previousTucked: Boolean,
     ): Int {
         if (!normalizedUserCanvas) return 0
         return when {
             character.lowercaseChar() in setOf('i', 'j', 'l') || character in setOf('I', '1') -> {
-                (lineHeightPx * 0.03f).toInt().coerceAtLeast(2)
+                if (previousTucked) (lineHeightPx * 0.03f).toInt().coerceAtLeast(2) else 0
             }
             character.lowercaseChar() in setOf('f', 't', 'r') -> {
                 (lineHeightPx * 0.015f).toInt().coerceAtLeast(1)
@@ -255,7 +261,7 @@ object HandwritingBitmapRenderer {
         normalizedUserCanvas: Boolean,
     ): Int {
         val rawAdvance = if (normalizedUserCanvas) {
-            (glyph.advanceWidth * scaleX * 0.95f).toInt() + when {
+            (glyph.advanceWidth * scaleX).toInt() + when {
                 character in punctuationChars -> 0
                 character.lowercaseChar() in setOf('i', 'l') || character in setOf('I', '1') -> 0
                 character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W') -> 3
@@ -599,8 +605,11 @@ object HandwritingBitmapRenderer {
         val preparedGlyphs = HashMap<Bitmap, PreparedGlyph>(allGlyphs.size)
         val synthesizedGlyphCache = HashMap<Char, Bitmap?>()
         val synthesizedInkStyle by lazy {
-            if (isUserTemplate) PunctuationSynthesizer.InkStyle.estimate(allGlyphs)
-            else PunctuationSynthesizer.InkStyle.DEFAULT
+            if (!isUserTemplate) return@lazy PunctuationSynthesizer.InkStyle.DEFAULT
+            val xTops = "aceimnorsuvwxz".mapNotNull { c ->
+                template.glyphs[c]?.firstOrNull()?.let { rawBounds[it]?.top }
+            }
+            PunctuationSynthesizer.InkStyle.estimate(allGlyphs).copy(xHeightTop = xHeightTopRow(xTops))
         }
         fun preparedGlyph(character: Char, bitmap: Bitmap): PreparedGlyph {
             return preparedGlyphs.getOrPut(bitmap) {
@@ -746,6 +755,7 @@ object HandwritingBitmapRenderer {
                     }
                 }
 
+                var previousTucked = false
                 for (character in word) {
                     val variants = template.glyphs[character]
                         ?: template.glyphs[character.lowercaseChar()]
@@ -830,7 +840,9 @@ object HandwritingBitmapRenderer {
                         character = character,
                         lineHeightPx = lineHeightPx,
                         normalizedUserCanvas = prepared.normalizedUserCanvas,
+                        previousTucked = previousTucked,
                     )
+                    previousTucked = prepared.advanceWidth < prepared.bitmap.width
 
                     placements += GlyphPlacement(
                         bitmap = prepared.bitmap,

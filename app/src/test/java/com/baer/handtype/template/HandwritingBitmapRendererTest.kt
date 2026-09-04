@@ -73,3 +73,19 @@ class HandwritingBitmapRendererTest {
         assertTrue(tall > regular)
     }
 }
+
+class LeadingPullTest {
+    @Test
+    fun narrowLettersPullOnlyUnderATuckedNeighbour() {
+        val afterTucked = HandwritingBitmapRenderer.leadingPullPx('l', 200, true, previousTucked = true)
+        val afterRound = HandwritingBitmapRenderer.leadingPullPx('l', 200, true, previousTucked = false)
+        assertTrue(afterTucked > 0)
+        assertEquals(0, afterRound)
+    }
+
+    @Test
+    fun xHeightTopIsTheMedianOfLowercaseTops() {
+        assertEquals(120, HandwritingBitmapRenderer.xHeightTopRow(listOf(130, 110, 120)))
+        assertEquals(PunctuationSynthesizer.InkStyle.DEFAULT.xHeightTop, HandwritingBitmapRenderer.xHeightTopRow(emptyList()))
+    }
+}
