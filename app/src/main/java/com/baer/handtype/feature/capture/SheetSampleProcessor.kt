@@ -34,6 +34,20 @@ object SheetSampleProcessor {
     private const val RECTIFIED_WIDTH = 1240
     private const val RECTIFIED_HEIGHT = 1754
 
+    // Printed cell labels are light grey (~luma 177 on white). User ink is far darker. Pixels at or
+    // above this luma inside the label corner are treated as label/paper and cleared; darker pixels
+    // are kept so the label mask never deletes a real stroke reaching into the corner.
+    private const val LABEL_LUMA_MIN = 150
+
+    // Paper at or above this luma is already effectively white; normalizing it would only
+    // amplify sensor noise.
+    private const val WHITE_POINT_MIN = 245
+
+    // Guides print lighter than ink but clearly darker than paper; after white-point
+    // normalization they measure ~200 against paper at ~253.
+    private const val GUIDE_LUMA_MAX = 215
+    private const val GUIDE_SEARCH_RADIUS = 20
+
     data class SheetExtractionResult(
         val glyphs: Map<Char, Bitmap>,
         val missing: Set<Char>,
@@ -158,25 +172,14 @@ object SheetSampleProcessor {
                 cropRight - cropLeft,
                 cropBottom - cropTop,
             )
-            val sanitizedCellCrop = suppressPrintedCellLabel(cell.character, cellCrop)
-            val guideSuppressedCellCrop = if (cell.character.lowercaseChar() in setOf('i', 'j')) {
-                suppressCenteredGuideTicks(
-                    cellCrop = sanitizedCellCrop,
-                    topInset = topInset,
-                    cellHeightPx = cellHeightPx,
-                    guideRatios = floatArrayOf(0.55f),
-                )
-            } else {
-                sanitizedCellCrop
-            }
-            // Note: pixel-level guide erasure was removed. Guide ticks are isolated horizontal
-            // marks that GlyphPostProcessor.shouldKeepComponent() already rejects via aspect-ratio
-            // and area checks. Pixel erasure severed letter strokes (e.g. 'H' crossbar at 55%)
-            // turning connected components into isolated noise that was then also rejected.
-            val edgeCleanCellCrop = suppressCellEdgeResidue(guideSuppressedCellCrop)
-            // Use only the top guide and baseline for normalization. The middle guide is a
-            // handwriting aid for the user, not a signal for glyph height reconstruction.
-            // Dots on i/j can sit above the middle guide and must remain valid ink.
+            val sanitizedCellCrop =
+                suppressPrintedCellLabel(cell.character, normalizeWhitePoint(cellCrop))
+            // Guides are full-width dashed lines light enough (luma 198) that per-cell Otsu keeps
+            // them on the paper side. No pixel-level guide erasure: it severed strokes like the
+            // 'H' crossbar into isolated components that the component filter then also rejected.
+            val edgeCleanCellCrop = suppressCellEdgeResidue(sanitizedCellCrop)
+            // The x-height guide and the baseline are the only two lines on the sheet, and both
+            // are needed here to reconstruct glyph height.
             val guideRatios = floatArrayOf(
                 PracticeSheetGenerator.GUIDE_UPPER_RATIO,
                 PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
@@ -184,6 +187,7 @@ object SheetSampleProcessor {
             val guideYsInCrop = guideRatios
                 .map { ratio -> (cellHeightPx * ratio).toInt() - topInset }
                 .filter { it >= 0 && it < edgeCleanCellCrop.height }
+                .map { snapGuideRow(edgeCleanCellCrop, it) }
                 .toIntArray()
             val cleaned = GlyphPostProcessor.cleanGlyph(
                 edgeCleanCellCrop,
@@ -211,6 +215,87 @@ object SheetSampleProcessor {
         )
     }
 
+    /**
+     * Snaps a nominal guide row onto the printed line actually present in [crop]. The four-point
+     * rectification leaves a few pixels of bow on a photographed sheet, so a guide can sit up to
+     * [GUIDE_SEARCH_RADIUS] rows away from where the grid geometry puts it. Returns [nominalY]
+     * unchanged when no row in range looks like a printed line.
+     */
+    private fun snapGuideRow(crop: Bitmap, nominalY: Int): Int {
+        val width = crop.width
+        val from = (nominalY - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)
+        val to = (nominalY + GUIDE_SEARCH_RADIUS).coerceAtMost(crop.height - 1)
+        if (from > to || width <= 0) return nominalY
+
+        val row = IntArray(width)
+        var bestY = nominalY
+        var bestCount = 0
+        for (y in from..to) {
+            crop.getPixels(row, 0, width, 0, y, width, 1)
+            var count = 0
+            for (p in row) {
+                val luma = (
+                    ((p shr 16) and 0xFF) * 299 + ((p shr 8) and 0xFF) * 587 + (p and 0xFF) * 114
+                    ) / 1000
+                if (luma <= GUIDE_LUMA_MAX) count++
+            }
+            if (count > bestCount) {
+                bestCount = count
+                bestY = y
+            }
+        }
+        // The guides are dashed, so a real one darkens roughly a quarter of the row. Below that
+        // the search only found paper and the nominal position is the better guess.
+        return if (bestCount >= width / 4) bestY else nominalY
+    }
+
+    /**
+     * Rescales [cellCrop] so its own paper level maps to luma 255. A photographed sheet has an
+     * arbitrary white point (a real scan measured paper at 178), while every ink threshold from
+     * here on is calibrated against the generated sheet's white paper.
+     */
+    private fun normalizeWhitePoint(cellCrop: Bitmap): Bitmap {
+        val width = cellCrop.width
+        val height = cellCrop.height
+        val pixels = IntArray(width * height)
+        cellCrop.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        val histogram = IntArray(256)
+        for (p in pixels) {
+            val luma = (
+                ((p shr 16) and 0xFF) * 299 + ((p shr 8) and 0xFF) * 587 + (p and 0xFF) * 114
+                ) / 1000
+            histogram[luma]++
+        }
+        // A cell is mostly paper, so the 90th percentile sits above the printed label and guides
+        // but below any specular highlight.
+        val target = (pixels.size * 0.90f).toInt()
+        var seen = 0
+        var paperLuma = 255
+        for (l in 0..255) {
+            seen += histogram[l]
+            if (seen >= target) {
+                paperLuma = l
+                break
+            }
+        }
+        if (paperLuma >= WHITE_POINT_MIN) return cellCrop
+
+        val gain = 255f / paperLuma.coerceAtLeast(1)
+        val lut = IntArray(256) { (it * gain).toInt().coerceAtMost(255) }
+        for (i in pixels.indices) {
+            val p = pixels[i]
+            pixels[i] = (p.toLong() and 0xFF000000L).toInt() or
+                (lut[(p shr 16) and 0xFF] shl 16) or
+                (lut[(p shr 8) and 0xFF] shl 8) or
+                lut[p and 0xFF]
+        }
+        val normalized = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        normalized.setPixels(pixels, 0, width, 0, 0, width, height)
+        Log.i(TAG, "White point normalized: paper luma $paperLuma -> 255")
+        return normalized
+    }
+
     private fun suppressPrintedCellLabel(character: Char, cellCrop: Bitmap): Bitmap {
         val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
         val isDottedLowercase = character.lowercaseChar() in setOf('i', 'j')
@@ -220,11 +305,21 @@ object SheetSampleProcessor {
         val labelMaskHeight = (
             masked.height * if (isDottedLowercase) 0.18f else 0.24f
         ).toInt().coerceAtLeast(if (isDottedLowercase) 16 else 20).coerceAtMost(masked.height)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
+        // Luma-gated erase: only clear faint printed-label pixels (the label is light grey,
+        // ~luma 177 on white paper). Dark user ink that legitimately reaches this corner (tall
+        // ascenders, large hands) is BELOW the threshold and preserved, so the mask no longer
+        // deletes real strokes.
+        val pixels = IntArray(labelMaskWidth * labelMaskHeight)
+        masked.getPixels(pixels, 0, labelMaskWidth, 0, 0, labelMaskWidth, labelMaskHeight)
+        for (i in pixels.indices) {
+            val c = pixels[i]
+            val r = (c shr 16) and 0xFF
+            val g = (c shr 8) and 0xFF
+            val b = c and 0xFF
+            val luma = (r * 299 + g * 587 + b * 114) / 1000
+            if (luma >= LABEL_LUMA_MIN) pixels[i] = Color.WHITE
         }
-        Canvas(masked).drawRect(0f, 0f, labelMaskWidth.toFloat(), labelMaskHeight.toFloat(), paint)
+        masked.setPixels(pixels, 0, labelMaskWidth, 0, 0, labelMaskWidth, labelMaskHeight)
         return masked
     }
 
@@ -247,37 +342,6 @@ object SheetSampleProcessor {
         canvas.drawRect(masked.width - insetX, 0f, masked.width.toFloat(), masked.height.toFloat(), paint)
         canvas.drawRect(0f, 0f, masked.width.toFloat(), insetY, paint)
         canvas.drawRect(0f, masked.height - insetY, masked.width.toFloat(), masked.height.toFloat(), paint)
-        return masked
-    }
-
-    /**
-     * Removes only the centered printed tick segments for known guide lines. This is used
-     * sparingly for dotted stem letters where a fused guide tick dramatically inflates width.
-     */
-    private fun suppressCenteredGuideTicks(
-        cellCrop: Bitmap,
-        topInset: Int,
-        cellHeightPx: Int,
-        guideRatios: FloatArray,
-    ): Bitmap {
-        val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-        }
-        val canvas = Canvas(masked)
-        val centerX = masked.width / 2f
-        val halfSegment = 13f
-        val xLeft = (centerX - halfSegment).coerceAtLeast(0f)
-        val xRight = (centerX + halfSegment).coerceAtMost(masked.width.toFloat())
-        guideRatios.forEach { ratio ->
-            val guideCellY = (cellHeightPx * ratio).toInt()
-            val guideCropY = guideCellY - topInset
-            if (guideCropY !in 0 until masked.height) return@forEach
-            val top = (guideCropY - 3).coerceAtLeast(0).toFloat()
-            val bottom = (guideCropY + 3).coerceAtMost(masked.height - 1).toFloat()
-            canvas.drawRect(xLeft, top, xRight, bottom, paint)
-        }
         return masked
     }
 

@@ -143,9 +143,13 @@ object GlyphPostProcessor {
             }
         }
         val components = extractInkComponents(inkMask, width, height)
-        if (components.isEmpty()) return crop
+            .filterNot { isPrintedRule(it, width) }
+        if (components.isEmpty()) {
+            return Bitmap.createBitmap(TARGET_CANVAS, TARGET_CANVAS, Bitmap.Config.ARGB_8888)
+        }
         val primary = components.maxByOrNull { it.area } ?: return crop
-        val keptComponents = components.filter { shouldKeepComponent(it, primary, guideYsInCrop) }
+        val keptComponents = components
+            .filter { shouldKeepComponent(it, primary, guideYsInCrop, expectsDiacritic) }
             .toMutableList()
         // Char-aware diacritic safety net: i/j and accented vowels can have small dots/accents
         // that the strict shouldKeepComponent rules reject. Only for characters we KNOW carry a
@@ -437,10 +441,23 @@ object GlyphPostProcessor {
         return components
     }
 
+    /**
+     * Printed sheet furniture — guide lines and the cell border — spans nearly the full crop width
+     * at a few pixels tall. A cell holds one alphanumeric character, so no handwritten stroke has
+     * that shape. Rejecting these before the primary component is picked stops a printed rule from
+     * becoming the glyph and pushing the real ink out through the proximity rules.
+     */
+    private fun isPrintedRule(component: InkComponent, cropWidth: Int): Boolean {
+        val width = component.right - component.left + 1
+        val height = component.bottom - component.top + 1
+        return height <= 8 && width >= cropWidth * 0.7f
+    }
+
     private fun shouldKeepComponent(
         component: InkComponent,
         primary: InkComponent,
         guideYsInCrop: IntArray = intArrayOf(),
+        expectsDiacritic: Boolean = true,
     ): Boolean {
         if (component == primary) return true
 
@@ -456,6 +473,7 @@ object GlyphPostProcessor {
             primaryBottom = primary.bottom,
             primaryArea = primary.area,
             guideYsInCrop = guideYsInCrop,
+            expectsDiacritic = expectsDiacritic,
         )
     }
 
@@ -471,6 +489,7 @@ object GlyphPostProcessor {
         primaryBottom: Int,
         primaryArea: Int,
         guideYsInCrop: IntArray = intArrayOf(),
+        expectsDiacritic: Boolean = true,
     ): Boolean {
         val componentWidth = componentRight - componentLeft + 1
         val componentHeight = componentBottom - componentTop + 1
@@ -512,7 +531,9 @@ object GlyphPostProcessor {
         // After centered pixel blanking, any surviving guide remnant is partial (≤13px wide)
         // and thin (≤3px), so area ≤ ~40px². Letter arms at this position are ≥50px wide
         // and ≥3px tall, so area ≥ 150px². Upper bound of 80 gives safe separation.
-        val guideBandHalf = 4
+        // A printed guide measures ~5 rows after a photographed sheet is rectified, so the band
+        // has to be wider than the line itself to contain a dash completely.
+        val guideBandHalf = 6
         if (componentArea < 80 && guideYsInCrop.any { gy ->
                 componentTop >= gy - guideBandHalf && componentBottom <= gy + guideBandHalf
             }) {
@@ -525,7 +546,8 @@ object GlyphPostProcessor {
             // body. They can have a large vertical gap (dot at 32% zone, body at 78%) and may
             // be slightly shifted horizontally from the body centre in the user's handwriting.
             // Allow a 3× larger vertical gap AND a relaxed horizontal alignment for such marks.
-            val isDiacritic = componentArea < maxOf(primaryArea / 5, 30)
+            val isDiacritic = expectsDiacritic
+                && componentArea < maxOf(primaryArea / 5, 30)
                 && componentWidth <= maxOf(primaryWidth + 6, 20)
                 && componentAspectRatio >= 0.3f  // tall narrow lines are residue, not diacritics
             val maxGap = if (isDiacritic) maxOf(primaryHeight * 3, 60) else maxOf(primaryHeight / 2, 24)
