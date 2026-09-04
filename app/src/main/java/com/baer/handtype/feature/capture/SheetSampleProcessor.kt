@@ -427,22 +427,7 @@ object SheetSampleProcessor {
                 threshold = t
             }
         }
-        // Find the brightest dominant peak in the histogram — that's the paper. Use it as the
-        // anchor for the page-detection cutoff so wood-grain (a noticeably darker peak) is
-        // rejected even when Otsu sits low. Falls back to (otsu+60) if no clear bright peak.
-        var brightPeak = -1
-        var brightPeakCount = 0
-        for (t in 200..255) {
-            if (histogram[t] > brightPeakCount) {
-                brightPeakCount = histogram[t]
-                brightPeak = t
-            }
-        }
-        val brightCutoff = if (brightPeak >= 0 && brightPeakCount > total / 200) {
-            (brightPeak - 60).coerceAtLeast(threshold + 30).coerceAtMost(245)
-        } else {
-            (threshold + 30).coerceAtMost(245)
-        }
+        val (brightCutoff, brightPeak) = pageBrightCutoff(histogram, threshold)
         Log.i(TAG, "Page-detection bright cutoff: $brightCutoff (otsu=$threshold, brightPeak=$brightPeak)")
 
         // Build a "bright" mask and find the largest connected bright component on a 4-connected
@@ -512,8 +497,9 @@ object SheetSampleProcessor {
             return PageInfo(PageRect(0, 0, width - 1, height - 1), null)
         }
 
-        // Build the actual paper mask = the largest bright connected component (NOT just its AABB).
-        val paperMask = BooleanArray(luma.size) { componentId[it] == bestId }
+        // Paper mask = the largest bright component plus everything it encloses, so fiducials
+        // and ink on the page are thresholded instead of dropped with the background.
+        val paperMask = fillEnclosedHoles(BooleanArray(luma.size) { componentId[it] == bestId }, width, height)
 
         // Tiny inward margin so we don't include the page edge halo when thresholding.
         val margin = (minOf(width, height) * 0.005f).toInt().coerceAtLeast(1)
@@ -525,6 +511,41 @@ object SheetSampleProcessor {
         )
         Log.i(TAG, "Largest bright region size=$bestSize, rect=$pageRect")
         return PageInfo(pageRect, paperMask)
+    }
+
+    /**
+     * Cutoff above which a pixel counts as paper, plus the paper peak it was derived from.
+     * Halfway between Otsu and the paper peak: a dim or shadowed sheet stays one component
+     * while wood grain, which sits below Otsu, stays out.
+     */
+    internal fun pageBrightCutoff(histogram: IntArray, otsu: Int): Pair<Int, Int> {
+        var brightPeak = otsu + 1
+        for (t in (otsu + 1)..255) if (histogram[t] > histogram[brightPeak]) brightPeak = t
+        val cutoff = ((otsu + brightPeak) / 2).coerceAtLeast(otsu + 10).coerceAtMost(245)
+        return cutoff to brightPeak
+    }
+
+    /** Returns [mask] with every false region not connected to the frame border set to true. */
+    internal fun fillEnclosedHoles(mask: BooleanArray, width: Int, height: Int): BooleanArray {
+        val outside = BooleanArray(mask.size)
+        val queue = IntArray(mask.size)
+        var tail = 0
+        fun seed(idx: Int) {
+            if (!mask[idx] && !outside[idx]) { outside[idx] = true; queue[tail++] = idx }
+        }
+        for (x in 0 until width) { seed(x); seed((height - 1) * width + x) }
+        for (y in 0 until height) { seed(y * width); seed(y * width + width - 1) }
+        var head = 0
+        while (head < tail) {
+            val idx = queue[head++]
+            val x = idx % width
+            val y = idx / width
+            if (x > 0) seed(idx - 1)
+            if (x < width - 1) seed(idx + 1)
+            if (y > 0) seed(idx - width)
+            if (y < height - 1) seed(idx + width)
+        }
+        return BooleanArray(mask.size) { !outside[it] }
     }
 
     /**
@@ -571,12 +592,14 @@ object SheetSampleProcessor {
         }
         Log.i(TAG, "In-page Otsu threshold: $threshold over $pixelCount pixels")
 
+        // The paper mask only gates the histogram: a fiducial at a shadowed page edge is not
+        // enclosed by bright paper, so the mask is applied to the whole page rectangle and the
+        // fiducial shape tiers reject what lies beyond the page.
         val mask = BooleanArray(luma.size)
         for (y in pageRect.top..pageRect.bottom) {
             val rowOffset = y * width
             for (x in pageRect.left..pageRect.right) {
                 val idx = rowOffset + x
-                if (paperMask != null && !paperMask[idx]) continue
                 mask[idx] = luma[idx] <= threshold
             }
         }

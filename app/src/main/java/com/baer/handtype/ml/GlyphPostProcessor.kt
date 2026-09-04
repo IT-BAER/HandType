@@ -42,6 +42,8 @@ object GlyphPostProcessor {
         val centerX: Float get() = (left + right) / 2f
     }
 
+    private const val CLOSE_RADIUS = 1
+
     private const val TARGET_CANVAS = 220
     private const val TARGET_GLYPH_HEIGHT = 199
     private const val TARGET_BASELINE_Y = (TARGET_CANVAS * 0.74f).toInt()
@@ -94,7 +96,8 @@ object GlyphPostProcessor {
         // area and proximity checks. Background paper is typically luma ≥ 225 so the cap of
         // 210 keeps a comfortable margin.
         val permissiveThreshold = (threshold * 1.2f).toInt().coerceAtMost(210)
-        val inkMask = BooleanArray(pixels.size) { index -> luma[index] <= permissiveThreshold }
+        // Thin pens leave strokes that Otsu breaks into dashes; the close bridges short gaps.
+        val inkMask = closeGaps(BooleanArray(pixels.size) { index -> luma[index] <= permissiveThreshold }, width, height)
 
         // Secondary diacritic scan: search the top 30% of the crop for small connected groups
         // of pixels that are darker than paper (luma < 220) but lighter than the Otsu threshold.
@@ -653,6 +656,24 @@ object GlyphPostProcessor {
         }
         canvas.drawBitmap(glyph, src, dst, paint)
         return canvasBmp
+    }
+
+    /** Morphological close (dilate, then erode) with a (2r+1)-square window; bridges gaps up to 2r px. */
+    internal fun closeGaps(mask: BooleanArray, width: Int, height: Int, r: Int = CLOSE_RADIUS): BooleanArray {
+        fun apply(src: BooleanArray, any: Boolean): BooleanArray = BooleanArray(src.size) { idx ->
+            val cx = idx % width
+            val cy = idx / width
+            var hit = !any
+            for (dy in -r..r) for (dx in -r..r) {
+                val nx = cx + dx
+                val ny = cy + dy
+                val v = if (nx in 0 until width && ny in 0 until height) src[ny * width + nx] else false
+                if (any && v) hit = true
+                if (!any && !v) hit = false
+            }
+            hit
+        }
+        return apply(apply(mask, any = true), any = false)
     }
 
     internal fun normalizedCanvasSize(): Int = TARGET_CANVAS

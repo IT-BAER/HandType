@@ -160,3 +160,20 @@ class GlyphPostProcessorTest {
         )
     }
 }
+
+class GlyphPostProcessorCloseGapsTest {
+
+    @Test
+    fun closeGapsBridgesShortBreaksInAThinStroke() {
+        val width = 12
+        val height = 5
+        // One-pixel stroke on row 2 with a two-pixel break at x = 5..6.
+        val mask = BooleanArray(width * height) { i -> i / width == 2 && (i % width) !in 5..6 }
+
+        val closed = GlyphPostProcessor.closeGaps(mask, width, height)
+
+        assertTrue("break bridged", closed[2 * width + 5] && closed[2 * width + 6])
+        assertFalse("stroke not thickened", closed[1 * width + 3] || closed[3 * width + 3])
+        assertFalse("empty rows stay empty", closed[0])
+    }
+}

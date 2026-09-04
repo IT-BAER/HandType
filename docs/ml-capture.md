@@ -182,14 +182,14 @@ Key constants: `MAX_WORKING_DIM = 900`, `RECTIFIED_WIDTH = 1240`, `RECTIFIED_HEI
 When `skipPageDetection = true` (production, scanner output is already cropped), `pageRect` = full working bounds and `paperMask = null`. The page-detection path runs only on the retry or when called with detection enabled:
 
 1. Global Otsu over the whole image.
-2. Bright cutoff anchored to the brightest histogram peak in `200..255` (if that peak count > total/200): `brightCutoff = (peak - 60)` clamped to `[otsu+30, 245]`; else `(otsu + 30)` capped at 245. This rejects darker backgrounds (for example wood grain) even when Otsu sits low.
+2. Bright cutoff (`pageBrightCutoff`): the paper peak is the histogram mode above Otsu; `brightCutoff = (otsu + peak) / 2` clamped to `[otsu+10, 245]`. A dim or shadowed sheet (paper at luma ~160-180 on a phone photo) stays one component while wood grain, which sits below Otsu, stays out.
 3. Build a "bright" mask (`luma >= brightCutoff`), 4-connected flood-fill, keep the largest bright component as the paper.
 4. If the largest bright region is under 10% of total pixels, fall back to the full frame with a null mask.
-5. Otherwise return the component's AABB shrunk inward by `min(w,h)*0.005` (min 1) plus the actual component mask (`paperMask`).
+5. Otherwise return the component's AABB shrunk inward by `min(w,h)*0.005` (min 1) plus the component mask with its enclosed holes filled (`fillEnclosedHoles`), so fiducials and ink count as paper.
 
 ### 3c. Ink threshold (`thresholdMaskInRect`)
 
-Runs Otsu **only** over pixels inside `pageRect` (and inside `paperMask` when present), then sets `mask[idx] = luma <= threshold` (true = ink). Pixels outside the rect/mask never participate, so background clutter cannot create false components.
+Runs Otsu **only** over pixels inside `pageRect` (and inside `paperMask` when present), then sets `mask[idx] = luma <= threshold` (true = ink) for every pixel in `pageRect`. The mask gates the histogram only: a fiducial at a shadowed page edge is not enclosed by bright paper, so it would be lost if the mask also gated the output. Background clutter inside the rect is rejected by the fiducial shape tiers.
 
 ### 3d. Fiducial detection (`findFiducials`)
 
@@ -276,7 +276,7 @@ Constants:
 Pipeline:
 
 1. Rec. 601 luma. If `lumaMax - lumaMin < 30`, return a blank transparent 220x220 canvas (so `hasInk` returns false).
-2. Otsu threshold, then a **permissive** ink mask: `luma <= min(otsu * 1.2, 210)`. The cap of 210 keeps a margin below paper (typically luma >= 225) so lightly written strokes count as ink.
+2. Otsu threshold, then a **permissive** ink mask: `luma <= min(otsu * 1.2, 210)`. The cap of 210 keeps a margin below paper (typically luma >= 225) so lightly written strokes count as ink. A 3x3 morphological close (`closeGaps`, `CLOSE_RADIUS = 1`) then bridges gaps up to 2 px in thin strokes; radius 2 was tried and split the fixture `j` into extra components.
 3. Diacritic recovery (two passes, scoped to the upper zone, `diacriticZoneEnd` = the guide baseline Y if a band exists, else 40% of crop height):
    - Pass 1 (always): recover connected groups area `3..149` with `luma < 240` (clearly faint dots without paper grain).
    - Pass 2 (only when `expectsDiacritic`): recover the single most-compact upper blob area `1..149` with `luma < 250` (barely visible i/j dots).
