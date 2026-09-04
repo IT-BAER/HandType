@@ -143,7 +143,7 @@ object GlyphPostProcessor {
             }
         }
         val components = extractInkComponents(inkMask, width, height)
-            .filterNot { isPrintedRule(it, width) }
+            .filterNot { isPrintedRule(it, width, height) }
         if (components.isEmpty()) {
             return Bitmap.createBitmap(TARGET_CANVAS, TARGET_CANVAS, Bitmap.Config.ARGB_8888)
         }
@@ -442,15 +442,24 @@ object GlyphPostProcessor {
     }
 
     /**
-     * Printed sheet furniture — guide lines and the cell border — spans nearly the full crop width
-     * at a few pixels tall. A cell holds one alphanumeric character, so no handwritten stroke has
-     * that shape. Rejecting these before the primary component is picked stops a printed rule from
-     * becoming the glyph and pushing the real ink out through the proximity rules.
+     * Printed sheet furniture — the guide lines and the cell border — spans nearly the full crop
+     * on one axis at a few pixels on the other. A cell holds one alphanumeric character, so no
+     * handwritten stroke has that shape. Rejecting these before the primary component is picked
+     * stops a printed rule from becoming the glyph and pushing the real ink out through the
+     * proximity rules.
      */
-    private fun isPrintedRule(component: InkComponent, cropWidth: Int): Boolean {
+    private fun isPrintedRule(component: InkComponent, cropWidth: Int, cropHeight: Int): Boolean {
         val width = component.right - component.left + 1
         val height = component.bottom - component.top + 1
-        return height <= 8 && width >= cropWidth * 0.7f
+        val horizontalRule = height <= RULE_MAX_THICKNESS && width >= cropWidth * RULE_MIN_SPAN
+        val verticalRule = width <= RULE_MAX_THICKNESS && height >= cropHeight * RULE_MIN_SPAN
+        // The four cell borders meet at the corners, so they reach the component labeller as one
+        // hollow rectangle that spans the crop yet encloses almost nothing. Left alone it is the
+        // largest component and is picked as the glyph.
+        val cellBorderFrame = width >= cropWidth * RULE_MIN_SPAN &&
+            height >= cropHeight * RULE_MIN_SPAN &&
+            component.area < width.toLong() * height * FRAME_MAX_FILL
+        return horizontalRule || verticalRule || cellBorderFrame
     }
 
     private fun shouldKeepComponent(
@@ -567,6 +576,9 @@ object GlyphPostProcessor {
             // residue (a single stroke of the printed cell label). Reject them outright — even if
             // horizontally aligned — unless they look like a diacritic.
             if (!isDiacritic && componentAspectRatio < 0.25f) return false
+            // Paper grain and print residue land above the letter as a speck far smaller than any
+            // real letter part. Characters that carry a dot reach this point as isDiacritic.
+            if (!isDiacritic && componentArea < maxOf(primaryArea / 10, 24)) return false
             return alignOk && verticalGap <= maxGap && componentArea <= maxArea
         }
 
@@ -680,4 +692,13 @@ object GlyphPostProcessor {
     }
 
     private const val MIN_CONTRAST = 30
+
+    // A printed rule measures ~2 px across after rectification; the thickest pen stroke on a
+    // scanned sheet measures ~8. Spanning 70% of the crop separates a border from a letter.
+    private const val RULE_MAX_THICKNESS = 8
+    private const val RULE_MIN_SPAN = 0.7f
+
+    // A cell border encloses its own bounding box at ~3% fill. The most open letter that spans
+    // this much of a cell still fills over a quarter of its box, so the gap is wide.
+    private const val FRAME_MAX_FILL = 0.15f
 }
