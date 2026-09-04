@@ -160,17 +160,20 @@ object GlyphPostProcessor {
         // calc when the dot is relocated below for visual proximity to the body).
         val diacriticSourceMap = HashMap<Int, Int>()
         if (expectsDiacritic) {
-            val primaryHeight = primary.bottom - primary.top + 1
-            val primaryWidth = primary.right - primary.left + 1
+            // The letter body is the lowest substantial kept piece: an i dot can outweigh its
+            // stem, so the largest component is not always the body.
+            val body = keptComponents.filter { it.area >= primary.area / 2 }.maxBy { it.bottom }
+            val primaryHeight = body.bottom - body.top + 1
+            val primaryWidth = body.right - body.left + 1
             val diacriticReach = maxOf(primaryHeight * 3, 60)
             // True dots/accents always sit in the upper portion of the cell, above the body.
             // Pick the TOP-MOST candidate (smallest .top) in the upper half of the canvas that
-            // is centered roughly above the primary. Selecting by area was unreliable when stray
+            // is centered roughly above the body. Selecting by area was unreliable when stray
             // ink fragments between dot and body had similar pixel counts to the real dot.
             val matchesDiacritic: (InkComponent) -> Boolean = { c ->
-                c !== primary &&
+                c !== body &&
                     c.area in 2..200 &&
-                    c.bottom < primary.top &&
+                    c.bottom < body.top &&
                     c.top < height / 2 &&
                     run {
                         val w = c.right - c.left + 1
@@ -180,7 +183,7 @@ object GlyphPostProcessor {
                         // accents like acute/grave are slanted lines (AR ~0.4..2.5). Be permissive.
                         ar in 0.3f..5.0f
                     } &&
-                    (primary.top - c.bottom - 1) <= diacriticReach
+                    (body.top - c.bottom - 1) <= diacriticReach
                 // No horizontal alignment check: the cell contains a single letter, so any
                 // small mark in the upper portion of the cell that matches dot/accent shape
                 // belongs to this letter. Users routinely place i/j dots slightly off-center
@@ -196,20 +199,27 @@ object GlyphPostProcessor {
                 keptComponents += safetyNet
                 safetyNet.pixels.forEach { diacriticPixelMask[it] = true }
             }
+            // Marks above the body: the dot, plus whatever printed label or guide residue
+            // survived. Keep marks near the nearest one (umlaut dots sit level), drop the rest.
+            val above = keptComponents.filter { it !== body && it.bottom < body.top }
+            if (above.size > 1) {
+                val nearestGap = body.top - above.maxOf { it.bottom }
+                keptComponents.removeAll { it in above && body.top - it.bottom > nearestGap * 2 + 4 }
+            }
 
             // 2) Relocate ANY kept component that looks like a dot/accent so it sits close to
-            //    the body AND horizontally centered above the primary's body. The user may have
+            //    the body AND horizontally centered above the body's body. The user may have
             //    drawn it far above (near the cell top) or off to the side (j dots especially);
             //    after normalization that places it well outside the ascender zone or visually
             //    detached from the letter.
-            //    Target gap = 18% of primary height (e.g. ~14px for an ~80px-tall i stem).
+            //    Target gap = 18% of body height (e.g. ~14px for an ~80px-tall i stem).
             val targetGap = maxOf(2, (primaryHeight * 0.18f).toInt())
-            val primaryCenterX = (primary.left + primary.right) / 2
+            val primaryCenterX = (body.left + body.right) / 2
             val toRemove = mutableListOf<InkComponent>()
             val toAdd = mutableListOf<InkComponent>()
             for (dot in keptComponents) {
                 if (!matchesDiacritic(dot)) continue
-                val currentGap = primary.top - dot.bottom - 1
+                val currentGap = body.top - dot.bottom - 1
                 val dotCenterX = (dot.left + dot.right) / 2
                 val shiftY = (currentGap - targetGap).coerceAtLeast(0)
                 val shiftX = primaryCenterX - dotCenterX

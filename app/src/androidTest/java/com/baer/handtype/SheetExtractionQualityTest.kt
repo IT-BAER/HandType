@@ -25,6 +25,7 @@ class SheetExtractionQualityTest {
             ?: error("could not decode androidTest asset $FIXTURE")
 
         val glyphs = SheetSampleProcessor.process(captured, skipPageDetection = true).glyphs
+        if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(glyphs)
         assertTrue("no glyphs extracted from $FIXTURE", glyphs.size >= EXPECTED_GLYPHS)
 
         val medianWidth = glyphs.values.map { it.width }.sorted()[glyphs.size / 2]
@@ -34,7 +35,12 @@ class SheetExtractionQualityTest {
                 failures += "'$char' is ${bitmap.width}px wide, over " +
                     "${MAX_WIDTH_FACTOR}x the median $medianWidth"
             }
-            inkComponents(bitmap).forEach { (w, h) ->
+            val components = inkComponents(bitmap)
+            // Dotted letters are body + dot in this hand; a third piece is the printed cell label.
+            if (char in DOTTED && components.size != 2) {
+                failures += "'$char' has ${components.size} ink components, expected body + dot"
+            }
+            components.forEach { (w, h) ->
                 val aspect = w.toFloat() / h
                 val spansCanvas = h > bitmap.height * SPAN_MIN || w > bitmap.width * SPAN_MIN
                 if (spansCanvas && (aspect < MIN_ASPECT || aspect > 1f / MIN_ASPECT)) {
@@ -43,6 +49,16 @@ class SheetExtractionQualityTest {
             }
         }
         assertTrue(failures.joinToString("\n", prefix = "\n"), failures.isEmpty())
+    }
+
+    /** Writes every glyph as u%04X.png under the app's external files dir for visual diffing. */
+    private fun dump(glyphs: Map<Char, Bitmap>) {
+        val dir = InstrumentationRegistry.getInstrumentation().targetContext
+            .getExternalFilesDir(null)!!.resolve("handtype_test/out").apply { mkdirs() }
+        glyphs.forEach { (char, bitmap) ->
+            dir.resolve("u%04X.png".format(char.code)).outputStream()
+                .use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
     }
 
     /** Bounding-box sizes of 8-connected components of opaque pixels. */
@@ -97,5 +113,6 @@ class SheetExtractionQualityTest {
         const val MAX_WIDTH_FACTOR = 2
         const val SPAN_MIN = 0.6f
         const val MIN_ASPECT = 0.1f
+        val DOTTED = setOf('i', 'j')
     }
 }
