@@ -220,22 +220,21 @@ Because destination = fiducial centres, the rectified grid spans only the fiduci
 
 For each non-space `normalizedCells` entry:
 
-1. Convert the cell's 0..1 coords into rectified px via the fiducial-centre grid bounds (`gridLeftPx=100`, `gridTopPx=100`, width `1040`, height `1554`), clamped into `[0, RECTIFIED_*]`.
+1. Convert the cell's 0..1 coords into rectified px via the fiducial-centre grid bounds (`gridLeftPx=100`, `gridTopPx=100`, width `1040`, height `1554`), clamped into `[0, RECTIFIED_*]`. Then snap each of the four edges onto the printed border: `snapBorderRow` / `snapBorderColumn` pick the darkest full-span row/column within `+/-GUIDE_SEARCH_RADIUS` (20 px) of the nominal edge. A photographed sheet measured 15 px of vertical bow near the bottom rows, so the nominal geometry alone leaves the border inside the crop.
 2. Insets to skip only the printed 2 px border (the label is cleared separately):
    - `topInset = max(3, cellHeightPx * 0.03)`
    - `sideInset = max(3, min(cellW, cellH) * 0.03)`
    - The top inset was previously 8% (~13 px), which cut the tops of tall letters (A, T); it was reduced to 3%.
 3. `Bitmap.createBitmap` the cell crop.
 
-### 3g. Tick / label / edge suppression
+### 3g. Furniture erase
 
-Applied in order before cleanup:
+`eraseSheetFurniture` whites out the printed furniture the crop still contains, from geometry rather than pixel luma:
 
-1. `suppressPrintedCellLabel`: paints a white rectangle over the top-left printed label.
-   - i/j: 14% width (min 12) x 18% height (min 16).
-   - other chars: 22% width (min 16) x 24% height (min 20).
-2. `suppressCenteredGuideTicks` (lowercase **i/j only**): whites out a `+/-13 px` wide, `+/-3 px` tall band at the 0.55 guide ratio. This is targeted: a fused guide tick on a narrow stem dramatically inflated the glyph width.
-3. `suppressCellEdgeResidue`: paints a white 2 px frame on all four crop edges (inset clamped to width/4, height/4). Real handwriting should never touch the crop edges; page-shadow and border ink do.
+1. The cell label box from `PracticeSheetGenerator.labelBounds(char)` (the generator's own `getTextBounds` at its label position, shifted into crop coordinates), grown by `FURNITURE_MARGIN` (3 px).
+2. A `FURNITURE_MARGIN` frame along all four crop edges for border bleed left after the snap and inset.
+
+The earlier luma-gated label erase kept any pixel darker than luma 150, and a printed label core measured 116..118 on a real scan, so its stem survived as a stray component above `i`/`j`.
 
 Important: **blanket pixel-level guide erasure was removed.** Erasing guide pixels across the whole cell severed letter strokes (for example the H crossbar at the 55% line), turning one connected component into isolated noise that was then also rejected. Guide ticks are now rejected by `GlyphPostProcessor.shouldKeepComponent` (aspect-ratio + area checks) instead.
 

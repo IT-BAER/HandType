@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.core.content.FileProvider
@@ -131,6 +132,20 @@ object PracticeSheetGenerator {
     }
 
     /** Builds an in-memory [Bitmap] of the practice sheet. */
+    private const val LABEL_X = 8f
+    private const val LABEL_BASELINE_Y = 32f
+    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = LABEL_COLOR
+        textSize = 28f
+        typeface = Typeface.DEFAULT
+    }
+
+    /** Ink box of the printed cell label for [character], in pixels relative to the cell's top-left. */
+    fun labelBounds(character: Char): Rect = Rect().also {
+        labelPaint.getTextBounds(character.toString(), 0, 1, it)
+        it.offset(LABEL_X.toInt(), LABEL_BASELINE_Y.toInt())
+    }
+
     fun renderBitmap(): Bitmap {
         val bitmap = Bitmap.createBitmap(PAGE_WIDTH, PAGE_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -180,11 +195,6 @@ object PracticeSheetGenerator {
         val gridWidthPx = gridRightPx - gridLeftPx
         val gridHeightPx = gridBottomPx - gridTopPx
 
-        val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = LABEL_COLOR
-            textSize = 28f
-            typeface = Typeface.DEFAULT
-        }
         val gridLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = GRID_COLOR
             style = Paint.Style.STROKE
@@ -209,8 +219,8 @@ object PracticeSheetGenerator {
             if (cell.character != ' ') {
                 canvas.drawText(
                     cell.character.toString(),
-                    rect.left + 8f,
-                    rect.top + 32f,
+                    rect.left + LABEL_X,
+                    rect.top + LABEL_BASELINE_Y,
                     labelPaint,
                 )
             }

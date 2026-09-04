@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Rect
 import android.util.Log
 import com.baer.handtype.ml.GlyphPostProcessor
 import java.io.File
@@ -34,10 +35,9 @@ object SheetSampleProcessor {
     private const val RECTIFIED_WIDTH = 1240
     private const val RECTIFIED_HEIGHT = 1754
 
-    // Printed cell labels are light grey (~luma 177 on white). User ink is far darker. Pixels at or
-    // above this luma inside the label corner are treated as label/paper and cleared; darker pixels
-    // are kept so the label mask never deletes a real stroke reaching into the corner.
-    private const val LABEL_LUMA_MIN = 150
+    // Printed furniture (cell border, label) is erased with this margin around its known geometry
+    // to absorb the residual bow the four-point rectification leaves inside a cell.
+    private const val FURNITURE_MARGIN = 3
 
     // Paper at or above this luma is already effectively white; normalizing it would only
     // amplify sensor noise.
@@ -144,19 +144,24 @@ object SheetSampleProcessor {
         val gridWidthPx = gridRightPx - gridLeftPx
         val gridHeightPx = gridBottomPx - gridTopPx
 
+        val rectifiedLuma = computeLuma(rectified)
         PracticeSheetGenerator.normalizedCells.forEachIndexed { index, cell ->
             if (cell.character == ' ') return@forEachIndexed
-            val cellLeft = (gridLeftPx + cell.left * gridWidthPx).toInt().coerceIn(0, RECTIFIED_WIDTH - 2)
-            val cellTop = (gridTopPx + cell.top * gridHeightPx).toInt().coerceIn(0, RECTIFIED_HEIGHT - 2)
-            val cellRight = (gridLeftPx + cell.right * gridWidthPx).toInt().coerceIn(cellLeft + 1, RECTIFIED_WIDTH)
-            val cellBottom = (gridTopPx + cell.bottom * gridHeightPx).toInt().coerceIn(cellTop + 1, RECTIFIED_HEIGHT)
+            // The nominal cell from the grid geometry, then snapped onto the printed borders:
+            // rectification bow moves a border by up to ~15 px near the bottom of the page.
+            val nominalLeft = (gridLeftPx + cell.left * gridWidthPx).toInt().coerceIn(0, RECTIFIED_WIDTH - 2)
+            val nominalTop = (gridTopPx + cell.top * gridHeightPx).toInt().coerceIn(0, RECTIFIED_HEIGHT - 2)
+            val nominalRight = (gridLeftPx + cell.right * gridWidthPx).toInt().coerceIn(nominalLeft + 1, RECTIFIED_WIDTH)
+            val nominalBottom = (gridTopPx + cell.bottom * gridHeightPx).toInt().coerceIn(nominalTop + 1, RECTIFIED_HEIGHT)
+            val cellTop = snapBorderRow(rectifiedLuma, nominalTop, nominalLeft, nominalRight)
+            val cellBottom = snapBorderRow(rectifiedLuma, nominalBottom, nominalLeft, nominalRight)
+            val cellLeft = snapBorderColumn(rectifiedLuma, nominalLeft, cellTop, cellBottom)
+            val cellRight = snapBorderColumn(rectifiedLuma, nominalRight, cellTop, cellBottom)
 
             val cellWidthPx = cellRight - cellLeft
             val cellHeightPx = cellBottom - cellTop
-            // Inset to skip the printed grid border line only. suppressPrintedCellLabel()
-            // blanks the printed character label in the top-left corner independently, so
-            // the top inset only needs to clear the 2px border line — same as sides.
-            // Previously 8% (13 px) which was cutting the tops of tall letters (A, T, etc.).
+            // Inset to skip the printed grid border line only; eraseSheetFurniture() clears the
+            // printed label and any border bleed that is left inside the crop.
             val topInset = (cellHeightPx * 0.03f).toInt().coerceAtLeast(3)
             val sideInset = (minOf(cellWidthPx, cellHeightPx) * 0.03f).toInt().coerceAtLeast(3)
 
@@ -172,12 +177,13 @@ object SheetSampleProcessor {
                 cropRight - cropLeft,
                 cropBottom - cropTop,
             )
-            val sanitizedCellCrop =
-                suppressPrintedCellLabel(cell.character, normalizeWhitePoint(cellCrop))
             // Guides are full-width dashed lines light enough (luma 198) that per-cell Otsu keeps
             // them on the paper side. No pixel-level guide erasure: it severed strokes like the
             // 'H' crossbar into isolated components that the component filter then also rejected.
-            val edgeCleanCellCrop = suppressCellEdgeResidue(sanitizedCellCrop)
+            val edgeCleanCellCrop = eraseSheetFurniture(
+                normalizeWhitePoint(cellCrop),
+                PracticeSheetGenerator.labelBounds(cell.character).apply { offset(-sideInset, -topInset) },
+            )
             // The x-height guide and the baseline are the only two lines on the sheet, and both
             // are needed here to reconstruct glyph height.
             val guideRatios = floatArrayOf(
@@ -296,52 +302,61 @@ object SheetSampleProcessor {
         return normalized
     }
 
-    private fun suppressPrintedCellLabel(character: Char, cellCrop: Bitmap): Bitmap {
-        val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
-        val isDottedLowercase = character.lowercaseChar() in setOf('i', 'j')
-        val labelMaskWidth = (
-            masked.width * if (isDottedLowercase) 0.14f else 0.22f
-        ).toInt().coerceAtLeast(if (isDottedLowercase) 12 else 16).coerceAtMost(masked.width)
-        val labelMaskHeight = (
-            masked.height * if (isDottedLowercase) 0.18f else 0.24f
-        ).toInt().coerceAtLeast(if (isDottedLowercase) 16 else 20).coerceAtMost(masked.height)
-        // Luma-gated erase: only clear faint printed-label pixels (the label is light grey,
-        // ~luma 177 on white paper). Dark user ink that legitimately reaches this corner (tall
-        // ascenders, large hands) is BELOW the threshold and preserved, so the mask no longer
-        // deletes real strokes.
-        val pixels = IntArray(labelMaskWidth * labelMaskHeight)
-        masked.getPixels(pixels, 0, labelMaskWidth, 0, 0, labelMaskWidth, labelMaskHeight)
-        for (i in pixels.indices) {
-            val c = pixels[i]
-            val r = (c shr 16) and 0xFF
-            val g = (c shr 8) and 0xFF
-            val b = c and 0xFF
-            val luma = (r * 299 + g * 587 + b * 114) / 1000
-            if (luma >= LABEL_LUMA_MIN) pixels[i] = Color.WHITE
+    /** Darkest row within [GUIDE_SEARCH_RADIUS] of [nominalY] across [x0, x1): the printed border. */
+    private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int {
+        var bestY = nominalY
+        var bestSum = Int.MAX_VALUE
+        val from = (nominalY - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)
+        val to = (nominalY + GUIDE_SEARCH_RADIUS).coerceAtMost(RECTIFIED_HEIGHT - 1)
+        for (y in from..to) {
+            var sum = 0
+            for (x in x0 until x1) sum += luma[y * RECTIFIED_WIDTH + x]
+            if (sum < bestSum) {
+                bestSum = sum
+                bestY = y
+            }
         }
-        masked.setPixels(pixels, 0, labelMaskWidth, 0, 0, labelMaskWidth, labelMaskHeight)
-        return masked
+        // A border darkens the whole span; a lighter average is paper plus some ink.
+        return if (bestSum / (x1 - x0).coerceAtLeast(1) <= GUIDE_LUMA_MAX) bestY else nominalY
+    }
+
+    private fun snapBorderColumn(luma: IntArray, nominalX: Int, y0: Int, y1: Int): Int {
+        var bestX = nominalX
+        var bestSum = Int.MAX_VALUE
+        val from = (nominalX - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)
+        val to = (nominalX + GUIDE_SEARCH_RADIUS).coerceAtMost(RECTIFIED_WIDTH - 1)
+        for (x in from..to) {
+            var sum = 0
+            for (y in y0 until y1) sum += luma[y * RECTIFIED_WIDTH + x]
+            if (sum < bestSum) {
+                bestSum = sum
+                bestX = x
+            }
+        }
+        return if (bestSum / (y1 - y0).coerceAtLeast(1) <= GUIDE_LUMA_MAX) bestX else nominalX
     }
 
     /**
-     * Drops the tiny residual frame that can remain after rectification and cell insetting.
-     * Real handwriting should never touch the crop edges here, but page-shadow and border ink do.
+     * Whites out the printed furniture the crop still contains: the cell label at [labelBox]
+     * (crop coordinates) and the border bleed along the crop edges, each grown by
+     * [FURNITURE_MARGIN]. The geometry comes from the sheet generator, not from pixel luma, so a
+     * dark label core can no longer survive as a stray component.
      */
-    private fun suppressCellEdgeResidue(cellCrop: Bitmap): Bitmap {
+    private fun eraseSheetFurniture(cellCrop: Bitmap, labelBox: Rect): Bitmap {
         val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
-        val insetX = 2f.coerceAtMost((masked.width / 4f).coerceAtLeast(0f))
-        val insetY = 2f.coerceAtMost((masked.height / 4f).coerceAtLeast(0f))
-        if (insetX <= 0f || insetY <= 0f) return masked
-
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val paint = Paint().apply {
             color = Color.WHITE
             style = Paint.Style.FILL
         }
         val canvas = Canvas(masked)
-        canvas.drawRect(0f, 0f, insetX, masked.height.toFloat(), paint)
-        canvas.drawRect(masked.width - insetX, 0f, masked.width.toFloat(), masked.height.toFloat(), paint)
-        canvas.drawRect(0f, 0f, masked.width.toFloat(), insetY, paint)
-        canvas.drawRect(0f, masked.height - insetY, masked.width.toFloat(), masked.height.toFloat(), paint)
+        val w = masked.width.toFloat()
+        val h = masked.height.toFloat()
+        val m = FURNITURE_MARGIN.toFloat()
+        canvas.drawRect(0f, 0f, m, h, paint)
+        canvas.drawRect(w - m, 0f, w, h, paint)
+        canvas.drawRect(0f, 0f, w, m, paint)
+        canvas.drawRect(0f, h - m, w, h, paint)
+        canvas.drawRect(labelBox.left - m, labelBox.top - m, labelBox.right + m, labelBox.bottom + m, paint)
         return masked
     }
 
