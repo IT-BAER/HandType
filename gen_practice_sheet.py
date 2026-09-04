@@ -10,6 +10,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+PRINT_DPI = 150  # 1240x1754 px / 150 DPI = 210x297 mm (A4)
 PAGE_WIDTH = 1240
 PAGE_HEIGHT = 1754
 OUTER_MARGIN = 60
@@ -18,11 +19,9 @@ GRID_COLS = 8
 GRID_ROWS = 8
 LABEL_COLOR = (0xB7, 0xB0, 0xA3)
 GRID_COLOR = (0xCC, 0xC4, 0xB4)
-GUIDE_COLOR = (0xD8, 0xD1, 0xC3)
-GUIDE_SEGMENT_LENGTH = 26
+GUIDE_COLOR = (0xCE, 0xC6, 0xB4)
 GUIDE_UPPER_RATIO = 0.32
 GUIDE_BASELINE_RATIO = 0.78
-GUIDE_MIDDLE_RATIO = (GUIDE_UPPER_RATIO + GUIDE_BASELINE_RATIO) / 2
 INK_COLOR = (0x1A, 0x14, 0x10)
 
 
@@ -91,7 +90,7 @@ def render() -> Image.Image:
     draw.text((OUTER_MARGIN, OUTER_MARGIN - 50), "HandType practice sheet", fill=INK_COLOR, font=title_font)
     draw.text(
         (OUTER_MARGIN, PAGE_HEIGHT - OUTER_MARGIN + 10),
-        "Write each character inside its cell. Keep the four black squares visible.",
+        "Write each letter resting on the lower guide line, filling up to the upper line. Keep the four black squares visible.",
         fill=INK_COLOR,
         font=body_font,
     )
@@ -115,25 +114,25 @@ def render() -> Image.Image:
             grid_top_px + bottom * grid_h,
         )
         draw.rectangle(rect, outline=GRID_COLOR, width=2)
-        draw_guide_ticks(draw, rect)
+        draw_guide_lines(draw, rect)
         if char != " ":
             draw.text((rect[0] + 8, rect[1] + 4), char, fill=LABEL_COLOR, font=label_font)
 
     return img
 
 
-def draw_guide_ticks(draw: ImageDraw.ImageDraw, rect):
+def draw_guide_lines(draw: ImageDraw.ImageDraw, rect):
     left, top, right, bottom = rect
     height = bottom - top
-    upper_guide_y = top + height * GUIDE_UPPER_RATIO
-    middle_guide_y = top + height * GUIDE_MIDDLE_RATIO
-    baseline_y = top + height * GUIDE_BASELINE_RATIO
-    center_x = (left + right) / 2
-    half_segment = GUIDE_SEGMENT_LENGTH / 2
+    for y in (top + height * GUIDE_UPPER_RATIO, top + height * GUIDE_BASELINE_RATIO):
+        _dashed_line(draw, left, right, y)
 
-    draw.line((center_x - half_segment, upper_guide_y, center_x + half_segment, upper_guide_y), fill=GUIDE_COLOR, width=2)
-    draw.line((center_x - half_segment, middle_guide_y, center_x + half_segment, middle_guide_y), fill=GUIDE_COLOR, width=2)
-    draw.line((center_x - half_segment, baseline_y, center_x + half_segment, baseline_y), fill=GUIDE_COLOR, width=2)
+
+def _dashed_line(draw: ImageDraw.ImageDraw, x0, x1, y, dash=7, gap=5):
+    x = x0
+    while x < x1:
+        draw.line((x, y, min(x + dash, x1), y), fill=GUIDE_COLOR, width=1)
+        x += dash + gap
 
 
 def main():
@@ -142,8 +141,9 @@ def main():
     out_path = out_dir / "handtype_practice_sheet.png"
     pdf_path = out_dir / "handtype_practice_sheet.pdf"
     img = render()
-    img.save(out_path, "PNG", optimize=True, dpi=(300, 300))
-    img.save(pdf_path, "PDF", resolution=300.0)
+    # 1240x1754 is A4 at 150 DPI. Tagging it 300 made the PDF page A6, so it printed at half size.
+    img.save(out_path, "PNG", optimize=True, dpi=(PRINT_DPI, PRINT_DPI))
+    img.save(pdf_path, "PDF", resolution=float(PRINT_DPI))
     print(f"Wrote {out_path} ({img.size[0]}x{img.size[1]})")
     print(f"Wrote {pdf_path}")
 

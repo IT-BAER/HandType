@@ -7,6 +7,12 @@
     <string name="template_chooser_use_template">Usar plantilla</string>
     <string name="template_chooser_premium_badge">Premium</string>
     <string name="template_chooser_premium_button">Captura premium</string>
+    <string name="template_card_captured_count">Capturado el %1$s · %2$d caracteres</string>
+    <string name="template_card_captured">Capturado el %1$s</string>
+
+    <string name="onboarding_title">Bienvenido a HandType</string>
+    <string name="onboarding_body">Escribe cualquier texto y HandType lo convierte en una escritura que parece hecha a mano. Los estilos integrados funcionan sin conexión. Con Premium puedes capturar tu propia letra a partir de una foto de una hoja de práctica.</string>
+    <string name="onboarding_cta">Empezar</string>
 
     <string name="render_instruction">Escribe tu mensaje abajo y toca Generar para crear una nota manuscrita única.</string>
     <string name="render_text_label">Tu mensaje</string>
@@ -45,7 +51,6 @@
     <string name="result_new_note_button">Nueva nota</string>
     <string name="result_saved">Guardado en Imágenes/HandType</string>
     <string name="result_saved_transparent">PNG transparente guardado en Imágenes/HandType</string>
-    <string name="result_save_transparent_button">Guardar sin fondo (PNG transparente)</string>
     <string name="result_save_failed">Error al guardar: %1$s</string>
     <string name="result_share_failed">Error al compartir: %1$s</string>
     <string name="result_pdf_saved">PDF guardado en Descargas/HandType</string>
@@ -224,4 +229,14 @@
     <!-- Drawer sections -->
     <string name="drawer_section_create">Crear</string>
     <string name="drawer_section_info">Información</string>
+    <string name="drawer_nav_settings">Configuración</string>
+    <string name="settings_title">Configuración</string>
+    <string name="settings_appearance_title">Apariencia</string>
+    <string name="settings_appearance_body">Elige si HandType sigue a tu dispositivo o usa un tema fijo.</string>
+    <string name="settings_theme_system">Predeterminado del sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_body">Elige el idioma de la app. Predeterminado del sistema sigue el idioma de tu dispositivo.</string>
+    <string name="settings_language_system">Predeterminado del sistema</string>
 </resources>

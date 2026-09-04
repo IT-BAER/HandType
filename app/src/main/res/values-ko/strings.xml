@@ -7,6 +7,12 @@
     <string name="template_chooser_use_template">템플릿 사용</string>
     <string name="template_chooser_premium_badge">프리미엄</string>
     <string name="template_chooser_premium_button">프리미엄 캡처</string>
+    <string name="template_card_captured_count">%1$s 캡처됨 · %2$d자</string>
+    <string name="template_card_captured">%1$s 캡처됨</string>
+
+    <string name="onboarding_title">HandType에 오신 것을 환영합니다</string>
+    <string name="onboarding_body">무엇이든 입력하면 HandType이 손으로 쓴 것처럼 보이는 손글씨로 바꿔줍니다. 기본 제공 스타일은 오프라인에서도 작동합니다. 프리미엄을 사용하면 연습 시트 사진으로 나만의 손글씨를 캡처할 수 있습니다.</string>
+    <string name="onboarding_cta">시작하기</string>
 
     <string name="render_instruction">아래에 메시지를 입력한 후 생성을 탭하여 고유한 손글씨 노트를 만드세요.</string>
     <string name="render_text_label">메시지</string>
@@ -45,7 +51,6 @@
     <string name="result_new_note_button">새 노트</string>
     <string name="result_saved">Pictures/HandType에 저장됨</string>
     <string name="result_saved_transparent">투명 PNG가 Pictures/HandType에 저장됨</string>
-    <string name="result_save_transparent_button">배경 없이 저장 (투명 PNG)</string>
     <string name="result_save_failed">저장 실패: %1$s</string>
     <string name="result_share_failed">공유 실패: %1$s</string>
     <string name="result_pdf_saved">Download/HandType에 PDF 저장됨</string>
@@ -224,4 +229,14 @@
     <!-- Drawer sections -->
     <string name="drawer_section_create">만들기</string>
     <string name="drawer_section_info">정보</string>
+    <string name="drawer_nav_settings">설정</string>
+    <string name="settings_title">설정</string>
+    <string name="settings_appearance_title">화면 모드</string>
+    <string name="settings_appearance_body">HandType이 기기 설정을 따를지 고정 테마를 사용할지 선택하세요.</string>
+    <string name="settings_theme_system">시스템 기본값</string>
+    <string name="settings_theme_light">밝게</string>
+    <string name="settings_theme_dark">어둡게</string>
+    <string name="settings_language_title">언어</string>
+    <string name="settings_language_body">앱 언어를 선택하세요. 시스템 기본값은 기기 언어를 따릅니다.</string>
+    <string name="settings_language_system">시스템 기본값</string>
 </resources>

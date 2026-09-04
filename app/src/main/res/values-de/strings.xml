@@ -8,8 +8,14 @@
     <string name="template_chooser_new_badge">Neu</string>
     <string name="template_chooser_premium_badge">Premium</string>
     <string name="template_chooser_premium_button">Handschrift aufnehmen</string>
+    <string name="template_card_captured_count">Aufgenommen am %1$s · %2$d Zeichen</string>
+    <string name="template_card_captured">Aufgenommen am %1$s</string>
 
-    <string name="render_instruction">Gib unten deine Nachricht ein und tippe auf „Erstellen", um eine einzigartige handgeschriebene Notiz zu erzeugen.</string>
+    <string name="onboarding_title">Willkommen bei HandType</string>
+    <string name="onboarding_body">Tippe einfach los, und HandType verwandelt deinen Text in eine Handschrift, die aussieht, als hättest du sie selbst geschrieben. Die integrierten Stile funktionieren offline. Mit Premium kannst du deine eigene Handschrift von einem Foto einer Übungsvorlage aufnehmen.</string>
+    <string name="onboarding_cta">Loslegen</string>
+
+    <string name="render_instruction">Gib unten deine Nachricht ein und tippe auf „Erstellen“, um eine einzigartige handgeschriebene Notiz zu erzeugen.</string>
     <string name="render_text_label">Deine Nachricht</string>
     <string name="render_text_placeholder">Hallo, Welt!</string>
     <string name="render_background_title">Papier</string>
@@ -46,7 +52,6 @@
     <string name="result_new_note_button">Neue Notiz</string>
     <string name="result_saved">In Bilder/HandType gespeichert</string>
     <string name="result_saved_transparent">Transparentes PNG in Bilder/HandType gespeichert</string>
-    <string name="result_save_transparent_button">Ohne Hintergrund speichern (transparentes PNG)</string>
     <string name="result_save_failed">Speichern fehlgeschlagen: %1$s</string>
     <string name="result_share_failed">Teilen fehlgeschlagen: %1$s</string>
     <string name="result_pdf_saved">PDF in Download/HandType gespeichert</string>
@@ -57,7 +62,7 @@
     <string name="camera_tip">Tipp: Verwende gleichmäßige Beleuchtung und halte alle Buchstabenreihen sichtbar.</string>
     <string name="camera_pre_scan_title">Vor dem Scan</string>
     <string name="camera_pre_scan_step_1">Drucke das Übungsblatt.</string>
-    <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld und setze es auf die Führungslinie.</string>
+    <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld, auf der unteren Hilfslinie stehend und bis zur oberen reichend.</string>
     <string name="camera_pre_scan_step_3">Erfasse die ganze Seite und halte alle vier schwarzen Quadrate vollständig sichtbar.</string>
     <string name="camera_pre_scan_step_4">Nutze gleichmäßiges Licht und vermeide Unschärfe, Spiegelungen und harte Schatten.</string>
     <string name="camera_sheet_button">Übungsblatt teilen oder drucken</string>
@@ -206,4 +211,14 @@
     <string name="privacy_view_on_github">Auf GitHub ansehen</string>
     <string name="drawer_section_create">Erstellen</string>
     <string name="drawer_section_info">Info</string>
+    <string name="drawer_nav_settings">Einstellungen</string>
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_appearance_title">Darstellung</string>
+    <string name="settings_appearance_body">Lege fest, ob HandType deinem Gerät folgt oder ein festes Design verwendet.</string>
+    <string name="settings_theme_system">Systemstandard</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_dark">Dunkel</string>
+    <string name="settings_language_title">Sprache</string>
+    <string name="settings_language_body">Wähle die App-Sprache. Systemstandard folgt der Sprache deines Geräts.</string>
+    <string name="settings_language_system">Systemstandard</string>
 </resources>

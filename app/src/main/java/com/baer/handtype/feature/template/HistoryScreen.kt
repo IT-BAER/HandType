@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import android.text.format.DateFormat as AndroidDateFormat
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -72,12 +73,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.os.ConfigurationCompat
 import com.baer.handtype.R
 import com.baer.handtype.ui.animation.staggeredItemAnimation
 import com.baer.handtype.template.OutputExporter
@@ -100,9 +103,17 @@ data class HistoryEntry(
     val createdAtMillis: Long,
     val sourceText: String?,
 ) {
-    fun displayDate(): String =
-        SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(Date(createdAtMillis))
+    /** [locale] comes from the composition, so it follows the in-app language override. */
+    fun displayDate(locale: Locale): String {
+        val pattern = AndroidDateFormat.getBestDateTimePattern(locale, "MMMdHm")
+        return SimpleDateFormat(pattern, locale).format(Date(createdAtMillis))
+    }
 }
+
+/** App locale from the composition, so dates follow the in-app language override. */
+@Composable
+private fun currentLocale(): Locale =
+    ConfigurationCompat.getLocales(LocalConfiguration.current)[0] ?: Locale.getDefault()
 
 object HistoryStore {
     private val PARSER = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
@@ -432,7 +443,7 @@ private fun HistoryThumbnail(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = entry.displayDate(),
+                        text = entry.displayDate(currentLocale()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -523,7 +534,7 @@ private fun HistoryDetailDialog(
                     )
                 }
                 Text(
-                    text = entry.displayDate(),
+                    text = entry.displayDate(currentLocale()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -551,6 +562,7 @@ private fun HistoryDetailDialog(
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
                         ),
                     ) { Text(stringResource(R.string.action_share)) }
                 }

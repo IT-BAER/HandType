@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.core.os.ConfigurationCompat
+import com.baer.handtype.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -39,7 +41,7 @@ class UserTemplateRepository(private val context: Context) {
             .map { folder -> folder to readMeta(folder) }
             .sortedByDescending { (_, meta) -> meta.createdAt }
             .map { (folder, meta) ->
-                meta.toDescriptor(folder.name)
+                meta.toDescriptor(context, folder.name)
             }
     }
 
@@ -105,7 +107,7 @@ class UserTemplateRepository(private val context: Context) {
     fun getTemplateDescriptor(templateId: String): TemplateDescriptor? {
         val templateDir = templateDirectoryOrNull(templateId) ?: return null
         if (!templateDir.isDirectory) return null
-        return readMeta(templateDir).toDescriptor(templateDir.name)
+        return readMeta(templateDir).toDescriptor(context, templateDir.name)
     }
 
     /** Permanently deletes a previously saved user template. Returns true if the directory was removed. */
@@ -135,7 +137,7 @@ class UserTemplateRepository(private val context: Context) {
         check(glyphs.isNotEmpty()) { "User template '$templateId' has no glyph assets." }
 
         HandwritingTemplate(
-            descriptor = meta.toDescriptor(folderName),
+            descriptor = meta.toDescriptor(context, folderName),
             glyphs = glyphs,
         )
     }
@@ -259,13 +261,13 @@ private data class UserTemplateMeta(
     val createdAt: Long,
     val glyphCount: Int = 0,
 ) {
-    fun toDescriptor(folderName: String): TemplateDescriptor {
-        val dateStr = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
-            .format(Date(createdAt))
+    fun toDescriptor(context: Context, folderName: String): TemplateDescriptor {
+        val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
+        val dateStr = SimpleDateFormat("MMM d, yyyy", locale).format(Date(createdAt))
         val description = if (glyphCount > 0) {
-            "Captured $dateStr · $glyphCount characters"
+            context.getString(R.string.template_card_captured_count, dateStr, glyphCount)
         } else {
-            "Captured $dateStr"
+            context.getString(R.string.template_card_captured, dateStr)
         }
         return TemplateDescriptor(
             id = UserTemplateRepository.USER_ID_PREFIX + folderName,

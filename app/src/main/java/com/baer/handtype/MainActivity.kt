@@ -1,6 +1,7 @@
 package com.baer.handtype
 
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
@@ -10,13 +11,32 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,14 +45,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.core.os.ConfigurationCompat
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import com.baer.handtype.feature.capture.SheetSampleProcessor
 import com.baer.handtype.feature.info.AboutScreen
 import com.baer.handtype.feature.info.FaqScreen
 import com.baer.handtype.feature.info.HelpScreen
 import com.baer.handtype.feature.info.PrivacyScreen
+import com.baer.handtype.feature.settings.AppSettings
+import com.baer.handtype.feature.settings.AppSettingsStore
+import com.baer.handtype.feature.settings.SettingsScreen
+import com.baer.handtype.feature.settings.ThemePreference
+import com.baer.handtype.feature.settings.localizedFor
 import com.baer.handtype.feature.shell.AppDrawerContent
 import com.baer.handtype.feature.shell.DrawerDestination
 import com.baer.handtype.feature.template.HandwritingRenderScreen
@@ -45,34 +74,75 @@ import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.template.HandwritingTemplate
 import com.baer.handtype.ui.theme.HandTypeTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            HandTypeTheme {
-                HandTypeRoot()
-            }
+            HandTypeApp()
         }
     }
 }
 
 @Composable
-private fun HandTypeRoot() {
+private fun HandTypeApp() {
+    val baseContext = LocalContext.current
+    val settingsStore = remember(baseContext) { AppSettingsStore(baseContext.applicationContext) }
+    var settings by remember { mutableStateOf(settingsStore.read()) }
+    val localizedContext = remember(baseContext, settings.languagePreference) {
+        baseContext.localizedFor(settings.languagePreference)
+    }
+    val localizedConfiguration = remember(localizedContext) {
+        Configuration(localizedContext.resources.configuration)
+    }
+    val systemDarkTheme = isSystemInDarkTheme()
+    val darkTheme = when (settings.themePreference) {
+        ThemePreference.System -> systemDarkTheme
+        ThemePreference.Light -> false
+        ThemePreference.Dark -> true
+    }
+
+    CompositionLocalProvider(
+        LocalContext provides localizedContext,
+        LocalConfiguration provides localizedConfiguration,
+    ) {
+        HandTypeTheme(darkTheme = darkTheme) {
+            HandTypeRoot(
+                settings = settings,
+                onSettingsChanged = { updated ->
+                    settings = updated
+                    settingsStore.write(updated)
+                },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HandTypeRoot(
+    settings: AppSettings,
+    onSettingsChanged: (AppSettings) -> Unit,
+) {
     val context = LocalContext.current
     val repository = remember(context) { BundledTemplateRepository(context) }
-    val builtInTemplates = remember { repository.listBuiltInTemplates() }
-    val premiumTemplate = remember { repository.premiumTemplate() }
-    var route by rememberSaveable { mutableStateOf(RootRoute.TemplateChooser.name) }
+    val builtInTemplates = remember(repository) { repository.listBuiltInTemplates() }
+    val premiumTemplate = remember(repository) { repository.premiumTemplate() }
+    // Plain remember, not rememberSaveable: a fresh process (cold start) reopens on home; the route
+    // still survives recomposition and backgrounding within a session. Portrait-only, so there is no
+    // rotation recreation to worry about.
+    var route by remember { mutableStateOf(RootRoute.TemplateChooser.name) }
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateName by rememberSaveable { mutableStateOf<String?>(null) }
-    var userTemplates by remember { mutableStateOf(repository.listUserTemplates()) }
+    var userTemplates by remember(repository) { mutableStateOf(repository.listUserTemplates()) }
 
     fun refreshUserTemplates() {
         userTemplates = repository.listUserTemplates()
@@ -104,6 +174,7 @@ private fun HandTypeRoot() {
             DrawerDestination.Faq -> RootRoute.Faq.name
             DrawerDestination.About -> RootRoute.About.name
             DrawerDestination.Privacy -> RootRoute.Privacy.name
+            DrawerDestination.Settings -> RootRoute.Settings.name
         }
         scope.launch { drawerState.close() }
     }
@@ -112,6 +183,9 @@ private fun HandTypeRoot() {
 
     AnimatedContent(
         targetState = route,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         transitionSpec = { routeTransitionSpec() },
         label = "rootNav",
     ) { currentRoute ->
@@ -150,6 +224,7 @@ private fun HandTypeRoot() {
                 RootRoute.Faq.name -> DrawerDestination.Faq
                 RootRoute.About.name -> DrawerDestination.About
                 RootRoute.Privacy.name -> DrawerDestination.Privacy
+                RootRoute.Settings.name -> DrawerDestination.Settings
                 else -> DrawerDestination.Templates
             }
             ModalNavigationDrawer(
@@ -188,6 +263,11 @@ private fun HandTypeRoot() {
                     RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
                     RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
                     RootRoute.Privacy.name -> PrivacyScreen(onOpenDrawer = openDrawer)
+                    RootRoute.Settings.name -> SettingsScreen(
+                        settings = settings,
+                        onSettingsChanged = onSettingsChanged,
+                        onOpenDrawer = openDrawer,
+                    )
                 }
             }
 
@@ -213,33 +293,138 @@ private fun HandTypeRoot() {
                     )
                 }
             }
+
+            if (!settings.onboardingComplete && currentRoute == RootRoute.TemplateChooser.name) {
+                val onboardingSheetState = rememberModalBottomSheetState()
+                ModalBottomSheet(
+                    onDismissRequest = { onSettingsChanged(settings.copy(onboardingComplete = true)) },
+                    sheetState = onboardingSheetState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.onboarding_title),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Text(
+                            text = stringResource(R.string.onboarding_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Button(
+                            onClick = { onSettingsChanged(settings.copy(onboardingComplete = true)) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(text = stringResource(R.string.onboarding_cta))
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 private fun AnimatedContentTransitionScope<String>.routeTransitionSpec(): ContentTransform {
-    val anim = tween<androidx.compose.ui.unit.IntOffset>(260, easing = FastOutSlowInEasing)
     return when {
         targetState == RootRoute.PremiumCapture.name ->
-            slideIntoContainer(SlideDirection.Up, anim)
-                .togetherWith(slideOutOfContainer(SlideDirection.Up, anim))
+            directionalRouteTransition(SlideDirection.Up)
 
         initialState == RootRoute.PremiumCapture.name ->
-            slideIntoContainer(SlideDirection.Down, anim)
-                .togetherWith(slideOutOfContainer(SlideDirection.Down, anim))
+            directionalRouteTransition(SlideDirection.Down)
 
-        targetState == RootRoute.RenderTemplate.name ->
-            slideIntoContainer(SlideDirection.Start, anim)
-                .togetherWith(slideOutOfContainer(SlideDirection.Start, anim))
-
-        initialState == RootRoute.RenderTemplate.name ->
-            slideIntoContainer(SlideDirection.End, anim)
-                .togetherWith(slideOutOfContainer(SlideDirection.End, anim))
+        targetState == RootRoute.RenderTemplate.name ||
+            initialState == RootRoute.RenderTemplate.name ->
+            directionalRouteTransition(
+                direction = if (targetState == RootRoute.RenderTemplate.name) {
+                    SlideDirection.Start
+                } else {
+                    SlideDirection.End
+                },
+            )
 
         else ->
-            slideIntoContainer(SlideDirection.Start, anim)
-                .togetherWith(slideOutOfContainer(SlideDirection.Start, anim))
+            replaceRouteTransition()
     }
+}
+
+private val RouteEnterEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
+private val RouteExitEasing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
+
+private fun AnimatedContentTransitionScope<String>.directionalRouteTransition(
+    direction: SlideDirection,
+): ContentTransform {
+    val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(
+        durationMillis = 300,
+        easing = RouteEnterEasing,
+    )
+    val enter = slideIntoContainer(
+        towards = direction,
+        animationSpec = slideSpec,
+        initialOffset = { fullDistance -> fullDistance / 8 },
+    ) +
+        fadeIn(
+            animationSpec = tween(
+                durationMillis = 180,
+                easing = RouteEnterEasing,
+            ),
+        ) +
+        scaleIn(
+            animationSpec = tween(
+                durationMillis = 300,
+                easing = RouteEnterEasing,
+            ),
+            initialScale = 0.985f,
+        )
+    val exit = slideOutOfContainer(
+        towards = direction,
+        animationSpec = tween(
+            durationMillis = 220,
+            easing = RouteExitEasing,
+        ),
+        targetOffset = { fullDistance -> fullDistance / 18 },
+    ) +
+        scaleOut(
+            animationSpec = tween(
+                durationMillis = 220,
+                easing = RouteExitEasing,
+            ),
+            targetScale = 0.995f,
+        )
+    return enter.togetherWith(exit)
+}
+
+private fun replaceRouteTransition(): ContentTransform {
+    val enter = fadeIn(
+        animationSpec = tween(
+            durationMillis = 160,
+            easing = RouteEnterEasing,
+        ),
+    ) +
+        scaleIn(
+            animationSpec = tween(
+                durationMillis = 220,
+                easing = RouteEnterEasing,
+            ),
+            initialScale = 0.99f,
+        )
+    val exit = fadeOut(
+        animationSpec = tween(
+            durationMillis = 120,
+            easing = RouteExitEasing,
+        ),
+    ) +
+        scaleOut(
+            animationSpec = tween(
+                durationMillis = 120,
+                easing = RouteExitEasing,
+            ),
+            targetScale = 0.995f,
+        )
+    return enter.togetherWith(exit)
 }
 
 @Composable
@@ -254,11 +439,10 @@ private fun TemplateRenderRoute(
             repository.loadTemplate(templateId)
         }
     }
+    var showLoading by remember(templateId) { mutableStateOf(false) }
 
-    var showLoading by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(400L)
+    LaunchedEffect(templateId) {
+        delay(350L)
         showLoading = true
     }
 
@@ -272,6 +456,12 @@ private fun TemplateRenderRoute(
         LoadingTemplateScreen(
             title = stringResource(R.string.loading_template_title),
             body = stringResource(R.string.loading_template_body),
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
         )
     }
 }
@@ -358,7 +548,10 @@ private fun PremiumCaptureRoute(
 }
 
 private fun createDefaultTemplateName(context: Context): String {
-    val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+    // Locale from the context, not Locale.getDefault(), so the in-app language override applies.
+    val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
+        ?: Locale.getDefault()
+    val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, locale)
     return context.getString(
         R.string.rename_handwriting_default_name,
         context.getString(R.string.premium_default_template_name),
@@ -375,4 +568,5 @@ private enum class RootRoute {
     Faq,
     About,
     Privacy,
+    Settings,
 }

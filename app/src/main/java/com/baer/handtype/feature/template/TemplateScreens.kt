@@ -157,6 +157,7 @@ import com.baer.handtype.template.OutputExporter
 import com.baer.handtype.template.TemplateDescriptor
 import com.baer.handtype.template.UserTemplateRepository
 import com.baer.handtype.testing.HandTypeTestTags
+import com.baer.handtype.ui.theme.BrandColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -511,17 +512,11 @@ fun HandwritingRenderScreen(
             fun generate() {
                 phase = RenderPhase.Generating.name
                 scope.launch {
-                    val inputText = text.ifBlank {
-                        "The quick brown fox jumps over the lazy dog. " +
-                        "Every morning she would sit by the window, watching " +
-                        "the rain trace patterns on the glass. It was a quiet " +
-                        "kind of beauty, the sort that only patience could reveal."
-                    }
                     val seed = System.nanoTime()
-                    val result = renderNote(inputText, selectedBackgroundId, seed)
+                    val result = renderNote(text, selectedBackgroundId, seed)
                     resultBitmap = result.bitmap
                     missingChars = result.missingCharacters
-                    lastRenderedText = inputText
+                    lastRenderedText = text
                     lastRenderSeed = seed
                     phase = RenderPhase.Result.name
                     // Auto-archive into history (best effort, non-blocking).
@@ -530,7 +525,7 @@ fun HandwritingRenderScreen(
                             context = context,
                             bitmap = result.bitmap,
                             templateName = template.descriptor.displayName,
-                            sourceText = inputText,
+                            sourceText = text,
                         )
                     }
                 }
@@ -692,7 +687,19 @@ private fun ComposePhaseContent(
                     .testTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
                     .fillMaxSize(),
                 maxLines = 20,
+                // The field is drawn over PaperPreviewSurface, which is light paper in both
+                // themes, so content must stay ink-dark instead of following onSurface.
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = BrandColors.Ink,
+                    unfocusedTextColor = BrandColors.Ink,
+                    disabledTextColor = BrandColors.Ink.copy(alpha = 0.38f),
+                    cursorColor = BrandColors.Ink,
+                    focusedPlaceholderColor = BrandColors.Ink.copy(alpha = 0.62f),
+                    unfocusedPlaceholderColor = BrandColors.Ink.copy(alpha = 0.62f),
+                    focusedLabelColor = BrandColors.Green,
+                    unfocusedLabelColor = BrandColors.Ink.copy(alpha = 0.65f),
+                    focusedBorderColor = BrandColors.Green,
+                    unfocusedBorderColor = BrandColors.Ink.copy(alpha = 0.28f),
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
@@ -722,6 +729,7 @@ private fun ComposePhaseContent(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onGenerate()
             },
+            enabled = text.isNotBlank(),
             modifier = Modifier
                 .testTag(HandTypeTestTags.RENDER_GENERATE_BUTTON)
                 .fillMaxWidth()
@@ -1460,6 +1468,9 @@ private fun TemplateOptionCard(
     }
     val templateFontFamily: FontFamily? = remember(descriptor.id) {
         when (descriptor.id) {
+            // ponytail: assets/fonts/Inkfree.ttf is not shipped, so this always yields null and the
+            // sample falls back to the theme sans — the card previews the style as plain text.
+            // Upgrade path: bundle a handwriting TTF, or pre-render a sample PNG from the glyph set.
             "classic_script" -> runCatching {
                 FontFamily(AndroidTypeface.createFromAsset(context.assets, "fonts/Inkfree.ttf"))
             }.getOrNull()

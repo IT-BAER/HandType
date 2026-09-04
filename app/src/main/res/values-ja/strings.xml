@@ -7,6 +7,12 @@
     <string name="template_chooser_use_template">テンプレートを使用</string>
     <string name="template_chooser_premium_badge">プレミアム</string>
     <string name="template_chooser_premium_button">プレミアムキャプチャ</string>
+    <string name="template_card_captured_count">%1$s にキャプチャ · %2$d文字</string>
+    <string name="template_card_captured">%1$s にキャプチャ</string>
+
+    <string name="onboarding_title">HandTypeへようこそ</string>
+    <string name="onboarding_body">文字を入力するだけで、HandTypeが手書きのような文字に変換します。組み込みスタイルはオフラインで動作します。プレミアムでは、練習シートの写真から自分の手書き文字をキャプチャできます。</string>
+    <string name="onboarding_cta">始める</string>
 
     <string name="render_instruction">以下にメッセージを入力し、「生成」をタップして独自の手書きノートを作成してください。</string>
     <string name="render_text_label">メッセージ</string>
@@ -45,7 +51,6 @@
     <string name="result_new_note_button">新規ノート</string>
     <string name="result_saved">Pictures/HandTypeに保存しました</string>
     <string name="result_saved_transparent">透過PNGをPictures/HandTypeに保存しました</string>
-    <string name="result_save_transparent_button">背景なしで保存（透過PNG）</string>
     <string name="result_save_failed">保存失敗：%1$s</string>
     <string name="result_share_failed">共有失敗：%1$s</string>
     <string name="result_pdf_saved">Download/HandTypeにPDFを保存しました</string>
@@ -222,4 +227,14 @@
     <!-- Drawer sections -->
     <string name="drawer_section_create">作成</string>
     <string name="drawer_section_info">情報</string>
+    <string name="drawer_nav_settings">設定</string>
+    <string name="settings_title">設定</string>
+    <string name="settings_appearance_title">表示</string>
+    <string name="settings_appearance_body">HandTypeが端末の設定に従うか固定テーマを使うか選択します。</string>
+    <string name="settings_theme_system">システム標準</string>
+    <string name="settings_theme_light">ライト</string>
+    <string name="settings_theme_dark">ダーク</string>
+    <string name="settings_language_title">言語</string>
+    <string name="settings_language_body">アプリの言語を選択します。システム標準では端末の言語に従います。</string>
+    <string name="settings_language_system">システム標準</string>
 </resources>

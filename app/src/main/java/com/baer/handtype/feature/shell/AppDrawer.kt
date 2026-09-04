@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,6 +55,7 @@ enum class DrawerDestination(val titleResId: Int, val icon: ImageVector) {
     Faq(R.string.drawer_nav_faq, Icons.AutoMirrored.Filled.HelpCenter),
     About(R.string.drawer_nav_about, Icons.Default.Info),
     Privacy(R.string.drawer_nav_privacy, Icons.Default.Shield),
+    Settings(R.string.drawer_nav_settings, Icons.Default.Settings),
 }
 
 @Composable
@@ -125,6 +127,7 @@ fun AppDrawerContent(
             DrawerDestination.Faq,
             DrawerDestination.About,
             DrawerDestination.Privacy,
+            DrawerDestination.Settings,
         ).forEachIndexed { offset, dest ->
             DrawerItem(dest = dest, current = current, onSelect = onSelect, index = offset + 2, colors = drawerItemColors)
         }

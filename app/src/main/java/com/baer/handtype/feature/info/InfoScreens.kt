@@ -58,6 +58,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.BuildConfig
 import com.baer.handtype.R
@@ -291,11 +297,7 @@ fun PrivacyScreen(onOpenDrawer: () -> Unit, modifier: Modifier = Modifier) {
                 .padding(horizontal = 24.dp, vertical = 16.dp),
         ) {
             if (policy != null) {
-                Text(
-                    text = policy,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                MarkdownText(policy)
             } else {
                 Text(
                     text = stringResource(R.string.privacy_load_error),
@@ -320,4 +322,70 @@ fun PrivacyScreen(onOpenDrawer: () -> Unit, modifier: Modifier = Modifier) {
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+/**
+ * Renders the subset of Markdown used by `assets/privacy.md`: `#`/`##` headings, `-` bullets,
+ * `**bold**`, `_italic_` and `` `code` ``. Anything else is shown as plain text.
+ */
+@Composable
+private fun MarkdownText(source: String) {
+    val blocks = remember(source) { source.replace("\r\n", "\n").split("\n") }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        blocks.forEach { raw ->
+            val line = raw.trimEnd()
+            when {
+                line.isBlank() -> Spacer(Modifier.height(6.dp))
+                line.startsWith("## ") -> Text(
+                    text = inlineMarkdown(line.removePrefix("## ")),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 10.dp),
+                )
+                line.startsWith("# ") -> Text(
+                    text = inlineMarkdown(line.removePrefix("# ")),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                line.startsWith("- ") -> Row(modifier = Modifier.padding(start = 4.dp)) {
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = inlineMarkdown(line.removePrefix("- ")),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                else -> Text(
+                    text = inlineMarkdown(line),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+}
+
+/** Applies `**bold**`, `_italic_` and `` `code` `` spans, consuming the delimiters. */
+private fun inlineMarkdown(text: String): AnnotatedString = buildAnnotatedString {
+    val pattern = Regex("""\*\*(.+?)\*\*|_(.+?)_|`(.+?)`""")
+    var cursor = 0
+    pattern.findAll(text).forEach { match ->
+        append(text.substring(cursor, match.range.first))
+        val bold = match.groupValues[1]
+        val italic = match.groupValues[2]
+        val code = match.groupValues[3]
+        when {
+            bold.isNotEmpty() -> withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(bold) }
+            italic.isNotEmpty() -> withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(italic) }
+            else -> withStyle(SpanStyle(fontFamily = FontFamily.Monospace)) { append(code) }
+        }
+        cursor = match.range.last + 1
+    }
+    append(text.substring(cursor))
 }

@@ -9,6 +9,13 @@
     <string name="template_chooser_new_badge">New</string>
     <string name="template_chooser_premium_badge">Premium</string>
     <string name="template_chooser_premium_button">Capture handwriting</string>
+    <string name="template_card_captured_count">Captured %1$s · %2$d characters</string>
+    <string name="template_card_captured">Captured %1$s</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to HandType</string>
+    <string name="onboarding_body">Type anything and HandType turns it into handwriting that looks written by hand. The built-in styles work offline. With Premium you can capture your own handwriting from a photo of a practice sheet.</string>
+    <string name="onboarding_cta">Get started</string>
 
     <!-- Render screen: compose phase -->
     <string name="render_instruction">Type your message below, then tap Generate to create a unique handwritten note.</string>
@@ -52,7 +59,6 @@
     <string name="result_new_note_button">New Note</string>
     <string name="result_saved">Saved to Pictures/HandType</string>
     <string name="result_saved_transparent">Saved transparent PNG to Pictures/HandType</string>
-    <string name="result_save_transparent_button">Save without background (transparent PNG)</string>
     <string name="result_save_failed">Save failed: %1$s</string>
     <string name="result_share_failed">Share failed: %1$s</string>
     <string name="result_pdf_saved">PDF saved to Download/HandType</string>
@@ -64,7 +70,7 @@
     <string name="camera_tip">Tip: use even lighting and keep all rows of letters visible.</string>
     <string name="camera_pre_scan_title">Before you scan</string>
     <string name="camera_pre_scan_step_1">Print the practice sheet.</string>
-    <string name="camera_pre_scan_step_2">Write the matching character in each box and keep it sitting on the guide line.</string>
+    <string name="camera_pre_scan_step_2">Write the matching character in each box, resting on the lower guide line and filling up to the upper one.</string>
     <string name="camera_pre_scan_step_3">Capture the whole page and keep all four black squares fully visible.</string>
     <string name="camera_pre_scan_step_4">Use even light and avoid blur, glare, and hard shadows.</string>
     <string name="camera_sheet_button">Share or print practice sheet</string>
@@ -118,7 +124,7 @@
 
     <!-- Template delete dialog -->
     <string name="template_delete_title">Delete template?</string>
-    <string name="template_delete_body">"%1$s" will be permanently removed from your device.</string>
+    <string name="template_delete_body">“%1$s” will be permanently removed from your device.</string>
 
     <string name="rename_handwriting_title">Name your handwriting</string>
     <string name="rename_handwriting_body">Choose how this saved handwriting should appear in your template list.</string>
@@ -134,6 +140,18 @@
     <string name="drawer_nav_faq">FAQ</string>
     <string name="drawer_nav_about">About</string>
     <string name="drawer_nav_privacy">Privacy</string>
+    <string name="drawer_nav_settings">Settings</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_appearance_body">Choose whether HandType follows your device or stays in a fixed theme.</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_body">Choose the app language. System default follows your device language.</string>
+    <string name="settings_language_system">System default</string>
 
     <!-- Generic actions -->
     <string name="action_save">Save</string>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
@@ -35,11 +36,11 @@ object PracticeSheetGenerator {
     private const val GRID_ROWS = 8
     private const val LABEL_COLOR = 0xFFB7B0A3.toInt()
     private const val GRID_COLOR = 0xFFCCC4B4.toInt()
-    private const val GUIDE_COLOR = 0xFFD8D1C3.toInt()
-    private const val GUIDE_SEGMENT_LENGTH = 26f
+    // Faint full-width dashed guide lines: light enough that per-cell Otsu thresholding discards
+    // them as paper, so a line running under the letter aids writing without contaminating ink.
+    private const val GUIDE_COLOR = 0xFFCEC6B4.toInt()
     internal const val GUIDE_UPPER_RATIO = 0.32f
     internal const val GUIDE_BASELINE_RATIO = 0.78f
-    private const val GUIDE_MIDDLE_RATIO = (GUIDE_UPPER_RATIO + GUIDE_BASELINE_RATIO) / 2f
 
     /** Characters laid out left-to-right, top-to-bottom into the 8×8 grid. */
     val cellCharacters: List<Char> = buildList {
@@ -152,7 +153,7 @@ object PracticeSheetGenerator {
         paint.textSize = 22f
         paint.typeface = Typeface.DEFAULT
         canvas.drawText(
-            "Write each character inside its cell. Keep the four black squares visible.",
+            "Write each letter resting on the lower guide line, filling up to the upper line. Keep the four black squares visible.",
             OUTER_MARGIN.toFloat(),
             PAGE_HEIGHT - OUTER_MARGIN + 32f,
             paint,
@@ -193,6 +194,7 @@ object PracticeSheetGenerator {
             color = GUIDE_COLOR
             style = Paint.Style.STROKE
             strokeWidth = 1.5f
+            pathEffect = DashPathEffect(floatArrayOf(7f, 5f), 0f)
         }
 
         normalizedCells.forEach { cell ->
@@ -203,7 +205,7 @@ object PracticeSheetGenerator {
                 gridTopPx + cell.bottom * gridHeightPx,
             )
             canvas.drawRect(rect, gridLinePaint)
-            drawGuideTicks(canvas, rect, guidePaint)
+            drawGuideLines(canvas, rect, guidePaint)
             if (cell.character != ' ') {
                 canvas.drawText(
                     cell.character.toString(),
@@ -217,15 +219,10 @@ object PracticeSheetGenerator {
         return bitmap
     }
 
-    private fun drawGuideTicks(canvas: Canvas, rect: RectF, paint: Paint) {
-        val upperGuideY = rect.top + rect.height() * GUIDE_UPPER_RATIO
-        val middleGuideY = rect.top + rect.height() * GUIDE_MIDDLE_RATIO
+    private fun drawGuideLines(canvas: Canvas, rect: RectF, paint: Paint) {
+        val xHeightY = rect.top + rect.height() * GUIDE_UPPER_RATIO
         val baselineY = rect.top + rect.height() * GUIDE_BASELINE_RATIO
-        val centerX = rect.centerX()
-        val halfSegment = GUIDE_SEGMENT_LENGTH / 2f
-
-        canvas.drawLine(centerX - halfSegment, upperGuideY, centerX + halfSegment, upperGuideY, paint)
-        canvas.drawLine(centerX - halfSegment, middleGuideY, centerX + halfSegment, middleGuideY, paint)
-        canvas.drawLine(centerX - halfSegment, baselineY, centerX + halfSegment, baselineY, paint)
+        canvas.drawLine(rect.left, xHeightY, rect.right, xHeightY, paint)
+        canvas.drawLine(rect.left, baselineY, rect.right, baselineY, paint)
     }
 }

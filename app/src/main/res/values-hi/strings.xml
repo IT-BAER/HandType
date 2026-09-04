@@ -7,6 +7,12 @@
     <string name="template_chooser_use_template">टेम्पलेट उपयोग करें</string>
     <string name="template_chooser_premium_badge">प्रीमियम</string>
     <string name="template_chooser_premium_button">प्रीमियम कैप्चर</string>
+    <string name="template_card_captured_count">%1$s को कैप्चर किया गया · %2$d वर्ण</string>
+    <string name="template_card_captured">%1$s को कैप्चर किया गया</string>
+
+    <string name="onboarding_title">HandType में आपका स्वागत है</string>
+    <string name="onboarding_body">कुछ भी टाइप करें और HandType उसे हाथ से लिखी हुई दिखने वाली हस्तलिपि में बदल देता है। अंतर्निहित शैलियाँ ऑफ़लाइन काम करती हैं। प्रीमियम के साथ आप अभ्यास शीट की फ़ोटो से अपनी खुद की हस्तलिपि कैप्चर कर सकते हैं।</string>
+    <string name="onboarding_cta">शुरू करें</string>
 
     <string name="render_instruction">नीचे अपना संदेश टाइप करें, फिर एक अनूठी हस्तलिखित नोट बनाने के लिए जेनरेट पर टैप करें।</string>
     <string name="render_text_label">आपका संदेश</string>
@@ -29,7 +35,8 @@
     <string name="note_background_graph_sheet">ग्राफ कागज़</string>
     <string name="render_generate_button">जेनरेट करें</string>
     <string name="render_premium_button">प्रीमियम: मेरी हस्तलेखन उपयोग करें</string>
-    <string name="render_templates_button">टेम्पलेट</string>    <string name="render_back_button">वापस</string>
+    <string name="render_templates_button">टेम्पलेट</string>
+    <string name="render_back_button">वापस</string>
     <string name="render_generating_title">आपकी नोट जेनरेट हो रही है…</string>
     <string name="render_generating_subtitle">हर जेनरेशन अनोखी होती है</string>
 
@@ -43,7 +50,6 @@
     <string name="result_new_note_button">नई नोट</string>
     <string name="result_saved">Pictures/HandType में सहेजा गया</string>
     <string name="result_saved_transparent">पारदर्शी PNG Pictures/HandType में सहेजा गया</string>
-    <string name="result_save_transparent_button">बिना पृष्ठभूमि के सहेजें (पारदर्शी PNG)</string>
     <string name="result_save_failed">सहेजने में विफल: %1$s</string>
     <string name="result_share_failed">शेयर करने में विफल: %1$s</string>
     <string name="result_pdf_saved">Download/HandType में PDF सहेजा गया</string>
@@ -205,4 +211,14 @@
     <string name="privacy_view_on_github">GitHub पर देखें</string>
     <string name="drawer_section_create">बनाएं</string>
     <string name="drawer_section_info">जानकारी</string>
+    <string name="drawer_nav_settings">सेटिंग्स</string>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_appearance_title">रूप-रंग</string>
+    <string name="settings_appearance_body">चुनें कि HandType आपके डिवाइस का अनुसरण करे या एक निश्चित थीम का उपयोग करे।</string>
+    <string name="settings_theme_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="settings_theme_light">हल्का</string>
+    <string name="settings_theme_dark">गहरा</string>
+    <string name="settings_language_title">भाषा</string>
+    <string name="settings_language_body">ऐप की भाषा चुनें। सिस्टम डिफ़ॉल्ट आपके डिवाइस की भाषा का अनुसरण करता है।</string>
+    <string name="settings_language_system">सिस्टम डिफ़ॉल्ट</string>
 </resources>

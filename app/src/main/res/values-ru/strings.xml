@@ -7,6 +7,12 @@
     <string name="template_chooser_use_template">Использовать шаблон</string>
     <string name="template_chooser_premium_badge">Премиум</string>
     <string name="template_chooser_premium_button">Премиум-захват</string>
+    <string name="template_card_captured_count">Захвачено %1$s · %2$d знаков</string>
+    <string name="template_card_captured">Захвачено %1$s</string>
+
+    <string name="onboarding_title">Добро пожаловать в HandType</string>
+    <string name="onboarding_body">Введите любой текст, и HandType превратит его в почерк, похожий на настоящий рукописный. Встроенные стили работают офлайн. С премиум-версией вы можете захватить свой собственный почерк с фото тренировочного листа.</string>
+    <string name="onboarding_cta">Начать</string>
 
     <string name="render_instruction">Введите сообщение ниже и нажмите «Создать», чтобы сгенерировать уникальную рукописную заметку.</string>
     <string name="render_text_label">Ваше сообщение</string>
@@ -45,7 +51,6 @@
     <string name="result_new_note_button">Новая заметка</string>
     <string name="result_saved">Сохранено в Изображения/HandType</string>
     <string name="result_saved_transparent">Прозрачный PNG сохранён в Изображения/HandType</string>
-    <string name="result_save_transparent_button">Сохранить без фона (прозрачный PNG)</string>
     <string name="result_save_failed">Ошибка сохранения: %1$s</string>
     <string name="result_share_failed">Ошибка при отправке: %1$s</string>
     <string name="result_pdf_saved">PDF сохранён в Загрузки/HandType</string>
@@ -207,4 +212,14 @@
     <string name="privacy_view_on_github">Просмотреть на GitHub</string>
     <string name="drawer_section_create">Создать</string>
     <string name="drawer_section_info">Информация</string>
+    <string name="drawer_nav_settings">Настройки</string>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_appearance_title">Внешний вид</string>
+    <string name="settings_appearance_body">Выберите, будет ли HandType следовать настройкам устройства или использовать фиксированную тему.</string>
+    <string name="settings_theme_system">Системная</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Темная</string>
+    <string name="settings_language_title">Язык</string>
+    <string name="settings_language_body">Выберите язык приложения. Системная настройка следует языку устройства.</string>
+    <string name="settings_language_system">Системная</string>
 </resources>

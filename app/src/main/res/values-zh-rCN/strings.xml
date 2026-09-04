@@ -7,8 +7,14 @@
     <string name="template_chooser_use_template">使用模板</string>
     <string name="template_chooser_premium_badge">高级版</string>
     <string name="template_chooser_premium_button">高级捕捉</string>
+    <string name="template_card_captured_count">捕捉于 %1$s · %2$d 个字符</string>
+    <string name="template_card_captured">捕捉于 %1$s</string>
 
-    <string name="render_instruction">在下方输入您的消息，然后点击"生成"以创建独特的手写便条。</string>
+    <string name="onboarding_title">欢迎使用 HandType</string>
+    <string name="onboarding_body">输入任意文字，HandType 会将其转换为看起来像手写的字迹。内置样式可离线使用。使用高级版，您可以通过拍摄练习表来捕捉您自己的笔迹。</string>
+    <string name="onboarding_cta">开始使用</string>
+
+    <string name="render_instruction">在下方输入您的消息，然后点击“生成”以创建独特的手写便条。</string>
     <string name="render_text_label">您的消息</string>
     <string name="render_text_placeholder">你好，世界！</string>
     <string name="render_background_title">纸张</string>
@@ -43,8 +49,9 @@
     <string name="result_export_pdf_button">导出为 PDF</string>
     <string name="result_regenerate_button">重新生成</string>
     <string name="result_new_note_button">新建便条</string>
-    <string name="result_saved">已保存至图片/HandType</string>    <string name="result_saved_transparent">透明 PNG 已保存至图片/HandType</string>
-    <string name="result_save_transparent_button">无背景保存（透明 PNG）</string>    <string name="result_save_failed">保存失败：%1$s</string>
+    <string name="result_saved">已保存至图片/HandType</string>
+    <string name="result_saved_transparent">透明 PNG 已保存至图片/HandType</string>
+    <string name="result_save_failed">保存失败：%1$s</string>
     <string name="result_share_failed">分享失败：%1$s</string>
     <string name="result_pdf_saved">PDF 已保存至下载/HandType</string>
     <string name="result_pdf_failed">PDF 失败：%1$s</string>
@@ -166,7 +173,7 @@
     <string name="rename_handwriting_cancel">保留当前名称</string>
     <string name="rename_handwriting_error_blank">请输入名称。</string>
 
-    <string name="template_ink_script_name">墙迹手写体</string>
+    <string name="template_ink_script_name">墨迹手写体</string>
     <string name="template_ink_script_description">具有自然变化和手写质感的自然墙迹风格手写体。</string>
     <string name="template_flowing_cursive_name">流畅草体</string>
     <string name="template_flowing_cursive_description">字母相互连接、具有自然韵律感的光滑草体风格。</string>
@@ -222,4 +229,14 @@
     <!-- Drawer sections -->
     <string name="drawer_section_create">创建</string>
     <string name="drawer_section_info">信息</string>
+    <string name="drawer_nav_settings">设置</string>
+    <string name="settings_title">设置</string>
+    <string name="settings_appearance_title">外观</string>
+    <string name="settings_appearance_body">选择 HandType 是跟随设备还是使用固定主题。</string>
+    <string name="settings_theme_system">系统默认</string>
+    <string name="settings_theme_light">浅色</string>
+    <string name="settings_theme_dark">深色</string>
+    <string name="settings_language_title">语言</string>
+    <string name="settings_language_body">选择应用语言。系统默认会跟随设备语言。</string>
+    <string name="settings_language_system">系统默认</string>
 </resources>

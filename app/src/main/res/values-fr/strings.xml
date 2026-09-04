@@ -7,6 +7,12 @@
     <string name="template_chooser_use_template">Utiliser le modèle</string>
     <string name="template_chooser_premium_badge">Premium</string>
     <string name="template_chooser_premium_button">Capture premium</string>
+    <string name="template_card_captured_count">Capturé le %1$s · %2$d caractères</string>
+    <string name="template_card_captured">Capturé le %1$s</string>
+
+    <string name="onboarding_title">Bienvenue sur HandType</string>
+    <string name="onboarding_body">Tapez n\'importe quel texte et HandType le transforme en une écriture qui semble faite à la main. Les styles intégrés fonctionnent hors ligne. Avec Premium, vous pouvez capturer votre propre écriture à partir d\'une photo d\'une feuille d\'entraînement.</string>
+    <string name="onboarding_cta">Commencer</string>
 
     <string name="render_instruction">Tapez votre message ci-dessous, puis appuyez sur Générer pour créer une note manuscrite unique.</string>
     <string name="render_text_label">Votre message</string>
@@ -45,7 +51,6 @@
     <string name="result_new_note_button">Nouvelle note</string>
     <string name="result_saved">Enregistré dans Images/HandType</string>
     <string name="result_saved_transparent">PNG transparent enregistré dans Images/HandType</string>
-    <string name="result_save_transparent_button">Enregistrer sans fond (PNG transparent)</string>
     <string name="result_save_failed">Échec de l\'enregistrement : %1$s</string>
     <string name="result_share_failed">Échec du partage : %1$s</string>
     <string name="result_pdf_saved">PDF enregistré dans Téléchargements/HandType</string>
@@ -224,4 +229,14 @@
     <!-- Drawer sections -->
     <string name="drawer_section_create">Créer</string>
     <string name="drawer_section_info">Informations</string>
+    <string name="drawer_nav_settings">Paramètres</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_appearance_title">Apparence</string>
+    <string name="settings_appearance_body">Choisissez si HandType suit votre appareil ou utilise un thème fixe.</string>
+    <string name="settings_theme_system">Par défaut du système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_language_title">Langue</string>
+    <string name="settings_language_body">Choisissez la langue de l’application. Par défaut du système suit la langue de votre appareil.</string>
+    <string name="settings_language_system">Par défaut du système</string>
 </resources>

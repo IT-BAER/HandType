@@ -417,7 +417,9 @@ object NoteBackgroundCatalog {
 
     fun defaultPreset(): NoteBackgroundPreset = presetOrDefault(DEFAULT_ID)
 
+    /** [transparentPreset] is not selectable but must still resolve, or transparent export renders paper. */
     fun presetOrDefault(id: String?): NoteBackgroundPreset {
+        if (id == transparentPreset.id) return transparentPreset
         return selectablePresets.firstOrNull { it.id == id } ?: selectablePresets.first { it.id == DEFAULT_ID }
     }
 }
