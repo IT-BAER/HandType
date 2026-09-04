@@ -155,7 +155,7 @@ import com.baer.handtype.template.NoteBackgroundPreset
 import com.baer.handtype.template.NoteBackgroundPreviewPattern
 import com.baer.handtype.template.OutputExporter
 import com.baer.handtype.template.TemplateDescriptor
-import com.baer.handtype.template.UserTemplateRepository
+import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.testing.HandTypeTestTags
 import com.baer.handtype.ui.theme.BrandColors
 import kotlinx.coroutines.Dispatchers
@@ -1416,12 +1416,15 @@ private fun TemplateOptionCard(
 ) {
     val isUserTemplate = descriptor.id.startsWith("user_")
     val context = LocalContext.current
-    var userSampleBitmap by remember(descriptor.id) { mutableStateOf<Bitmap?>(null) }
-    if (isUserTemplate) {
+    // Templates with real glyph bitmaps preview as a rendered sample; the cursive template
+    // has no glyphs and previews as text in the system cursive font.
+    val hasGlyphPreview = isUserTemplate || descriptor.id == "classic_script"
+    var sampleBitmap by remember(descriptor.id) { mutableStateOf<Bitmap?>(null) }
+    if (hasGlyphPreview) {
         LaunchedEffect(descriptor.id) {
-            userSampleBitmap = withContext(Dispatchers.IO) {
+            sampleBitmap = withContext(Dispatchers.IO) {
                 runCatching {
-                    val repo = UserTemplateRepository(context)
+                    val repo = BundledTemplateRepository(context)
                     val template = repo.loadTemplate(descriptor.id)
                     val config = HandwritingRenderConfig(
                         maxWidthPx = 1200,
@@ -1468,12 +1471,6 @@ private fun TemplateOptionCard(
     }
     val templateFontFamily: FontFamily? = remember(descriptor.id) {
         when (descriptor.id) {
-            // ponytail: assets/fonts/Inkfree.ttf is not shipped, so this always yields null and the
-            // sample falls back to the theme sans — the card previews the style as plain text.
-            // Upgrade path: bundle a handwriting TTF, or pre-render a sample PNG from the glyph set.
-            "classic_script" -> runCatching {
-                FontFamily(AndroidTypeface.createFromAsset(context.assets, "fonts/Inkfree.ttf"))
-            }.getOrNull()
             "flowing_cursive" -> FontFamily(AndroidTypeface.create("cursive", AndroidTypeface.NORMAL))
             else -> null
         }
@@ -1536,8 +1533,8 @@ private fun TemplateOptionCard(
                     border = sampleBorder,
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
-                        if (isUserTemplate) {
-                            val bmp = userSampleBitmap
+                        if (hasGlyphPreview) {
+                            val bmp = sampleBitmap
                             if (bmp != null) {
                                 Image(
                                     bitmap = bmp.asImageBitmap(),
@@ -1553,7 +1550,11 @@ private fun TemplateOptionCard(
                                         .fillMaxWidth()
                                         .height(40.dp)
                                         .background(
-                                            Color(0xFFE7CE92).copy(alpha = 0.35f),
+                                            if (isUserTemplate) {
+                                                Color(0xFFE7CE92).copy(alpha = 0.35f)
+                                            } else {
+                                                accentColor.copy(alpha = 0.18f)
+                                            },
                                             RoundedCornerShape(8.dp),
                                         ),
                                 )
