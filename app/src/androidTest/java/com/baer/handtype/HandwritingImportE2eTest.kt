@@ -70,6 +70,7 @@ class HandwritingImportE2eTest {
         }
         composeRule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
             .assertIsDisplayed()
+            .performTextReplacement(EXPECTED_DEFAULT_NOTE_TEXT)
         composeRule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performClick()
 
         waitForResultImage(context)
