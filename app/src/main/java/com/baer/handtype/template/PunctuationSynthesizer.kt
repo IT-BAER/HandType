@@ -22,7 +22,8 @@ internal object PunctuationSynthesizer {
     private val BASELINE = GlyphPostProcessor.normalizedBaselineRow()     // 163
     private val GUIDE_HEIGHT = GlyphPostProcessor.normalizedGuideBandHeight() // 101
     private val X_HEIGHT_TOP = BASELINE - GUIDE_HEIGHT                    // 62
-    private const val ASCENDER_TOP = 30
+    // Tall marks (!, ?, quotes) start just under the cap guide so they match capital height.
+    private val ASCENDER_TOP = X_HEIGHT_TOP + 8
 
     /**
      * Style parameters sampled from the user's actual glyphs so synthesized punctuation

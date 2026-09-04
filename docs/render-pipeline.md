@@ -104,12 +104,13 @@ The renderer detects this with `hasNormalizedUserCanvas` (id starts with `user_`
    | jitter X / Y | `jitterX` / `jitterY` | each `.coerceAtMost(1)` |
    | baseline wave amp | `6f` (hardcoded) | `baselineWaveAmplitude.coerceAtMost(1.5f)` |
    | line drift | `lineDriftPx` | `.coerceAtMost(1.5f)` |
-   | line advance | full `lineHeightPx` | `lineHeightPx * 0.62` |
+   | line advance | full `lineHeightPx` | `lineHeightPx * 0.72` |
+   | size jitter | none | `±4%` per glyph instance |
    | rotation limit | `3.5°` | `1.8°` (any user template) |
    | mesh warp amp | `0.5 + rand*0.5` | `0.12` |
 
 4. **Glyph preparation (`prepareGlyph`, memoized per bitmap).** Crop to ink bounds, then decide where the baseline sits inside the crop:
-   - **Normalized user canvas (height 220):** crop a window around the canvas baseline (162). `ascenderReserve = 220*0.56 ≈ 123 px` above, `descenderReserve = 220*0.21 ≈ 46 px` below, but never above row 0 and never cropping into actual ink (honors `i`/`j` dots). `baselineRow` is recomputed relative to the crop. This trims the large empty margins of the raw 220-square so ink fills the line.
+   - **Normalized user canvas (height 220):** crop a window around the canvas baseline (162). `ascenderReserve = 220*0.56 ≈ 123 px` above, `descenderReserve = 220*0.21 ≈ 46 px` below, but never above row 0 and never cropping into actual ink (honors `i`/`j` dots). `baselineRow` is the ink bottom for glyphs without a descender (writers float letters above the printed guide by varying amounts) and the canvas baseline for `g j p q y`. The advance width ignores a top-right overhang on tall glyphs (`T`, `F`, `7`, `f`, `t`) so the next letter tucks under the bar, never by more than 40%. This trims the large empty margins of the raw 220-square so ink fills the line.
    - **Non-normalized:** lowercase descenders (`g j p q y`) get a fraction-based baseline (`g`/`j` = 0.50, `p`/`q`/`y` = 0.58 for user templates; bundled use `templateBaselineRow`). Every other glyph uses `bounds.bottom`. Uppercase `G/J/P/Q/Y` have no descender, so they use `bounds.bottom`.
 
 5. **Per-character scale (`targetInkHeightPx` + `UserGlyphWidthNormalizer.scales`).** Target ink height = `lineHeightPx * targetInkHeightRatio(char, isUser)` (or full `lineHeightPx` for normalized canvas). `scaleY = target / glyphHeight`; `scaleX = scaleY` normally. For user-template lowercase glyphs wider than a per-letter `maxAspect`, `scaleX` is reduced so width is clamped (`maxAspect`: `m,w` 1.02; `n,u,h` 0.88; `a,c,e,o,s,v,x,z` 0.78; else 0.84). `targetInkHeightRatio` fractions of line height:

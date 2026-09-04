@@ -51,6 +51,8 @@ object HandwritingBitmapRenderer {
         val top: Int,
         val right: Int,
         val bottom: Int,
+        /** Right edge of the ink below the top 35%: a T bar or f hook overhangs the next letter. */
+        val bodyRight: Int = right,
     ) {
         val width: Int get() = right - left + 1
         val height: Int get() = bottom - top + 1
@@ -60,6 +62,7 @@ object HandwritingBitmapRenderer {
         val bitmap: Bitmap,
         val baselineRow: Int,
         val normalizedUserCanvas: Boolean,
+        val advanceWidth: Int = bitmap.width,
     )
 
     private fun drawBackground(
@@ -110,7 +113,17 @@ object HandwritingBitmapRenderer {
         }
 
         return if (maxX >= minX && maxY >= minY) {
-            InkBounds(minX, minY, maxX, maxY)
+            var bodyRight = minX
+            for (y in (minY + (maxY - minY + 1) * 35 / 100)..maxY) {
+                val rowOffset = y * w
+                for (x in maxX downTo bodyRight + 1) {
+                    if ((pixels[rowOffset + x] ushr 24) > 20) {
+                        bodyRight = x
+                        break
+                    }
+                }
+            }
+            InkBounds(minX, minY, maxX, maxY, bodyRight)
         } else {
             InkBounds(0, 0, w - 1, h - 1)
         }
@@ -140,10 +153,20 @@ object HandwritingBitmapRenderer {
             val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
             val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
             val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
+            // Writers float letters above the printed guide by varying amounts, so the ink
+            // bottom is the baseline for everything that has no descender.
+            val baseline = if (character.lowercaseChar() in descenderChars) canvasBaseline else bounds.bottom
             return PreparedGlyph(
                 bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
-                baselineRow = (canvasBaseline - cropTop).coerceIn(0, cropH - 1),
+                baselineRow = (baseline - cropTop).coerceIn(0, cropH - 1),
                 normalizedUserCanvas = true,
+                // Tall glyphs (T, F, 7, f, t) carry a bar or hook the next letter tucks under.
+                // x-height letters keep their full width: an r arm or o tail is the letter.
+                advanceWidth = if (bounds.height >= GlyphPostProcessor.normalizedGuideBandHeight() * 6 / 10) {
+                    (bounds.bodyRight - bounds.left + 1).coerceAtLeast(bounds.width * 6 / 10)
+                } else {
+                    bounds.width
+                },
             )
         }
 
@@ -232,7 +255,7 @@ object HandwritingBitmapRenderer {
         normalizedUserCanvas: Boolean,
     ): Int {
         val rawAdvance = if (normalizedUserCanvas) {
-            (glyph.bitmap.width * scaleX * 0.95f).toInt() + when {
+            (glyph.advanceWidth * scaleX * 0.95f).toInt() + when {
                 character in punctuationChars -> 0
                 character.lowercaseChar() in setOf('i', 'l') || character in setOf('I', '1') -> 0
                 character.lowercaseChar() in setOf('m', 'w') || character in setOf('M', 'W') -> 3
@@ -642,10 +665,10 @@ object HandwritingBitmapRenderer {
         // For normalized user canvas glyphs, the 220x220 canvas has the body confined to ~46%
         // of the height with large transparent zones above (ascender) and below (descender).
         // Advancing cursorY by full lineHeight wastes that empty space and makes lines look
-        // sparse. Compress to ~78% so successive lines visually nestle without ascenders/
-        // descenders colliding.
+        // sparse. 72% leaves room for a tall ascender under a descender (both reach ~55% of
+        // the line height together) without the lines drifting apart.
         val lineAdvancePx = if (hasNormalizedUserCanvas) {
-            (lineHeightPx * 0.62f).toInt()
+            (lineHeightPx * 0.72f).toInt()
         } else {
             lineHeightPx
         }
@@ -760,13 +783,16 @@ object HandwritingBitmapRenderer {
                         isUserTemplate = isUserTemplate,
                         normalizedUserCanvas = prepared.normalizedUserCanvas,
                     )
+                    // User templates hold one sample per letter; vary its size a little so
+                    // repeated letters do not read as stamped copies.
+                    val sizeJitter = if (isUserTemplate) 1f + (rng.nextFloat() * 2f - 1f) * 0.04f else 1f
                     val (glyphScaleX, glyphScaleY) = UserGlyphWidthNormalizer.scales(
                         character = character,
                         templateId = template.descriptor.id,
                         glyphWidthPx = prepared.bitmap.width,
                         glyphHeightPx = prepared.bitmap.height,
                         targetInkHeightPx = targetInkHeight,
-                    )
+                    ).let { (x, y) -> x * sizeJitter to y * sizeJitter }
                     val scaledGlyphW = (prepared.bitmap.width * glyphScaleX).toInt().coerceAtLeast(1)
                     val scaledGlyphH = (prepared.bitmap.height * glyphScaleY).toInt().coerceAtLeast(1)
                     val advance = glyphAdvancePx(
