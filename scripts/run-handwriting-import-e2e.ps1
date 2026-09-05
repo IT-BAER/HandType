@@ -146,18 +146,7 @@ $sourceText | Set-Content -Path $localTextArtifact
 $templateName | Set-Content -Path $localNameArtifact
 Copy-Item $localArtifact $latestAlias -Force
 
-Write-Host "Cleaning device-side test artifacts..."
-# Pull sheet_debug cells before cleanup if present
-$cellsDir = Join-Path $repoRoot "artifacts\sheet_debug_pull\cells"
-New-Item -ItemType Directory -Force -Path $cellsDir | Out-Null
-& adb shell ls "/sdcard/Android/data/$packageName/cache/sheet_debug/cells/" 2>$null | ForEach-Object {
-    $file = $_.Trim()
-    if ($file -match '\.(png|jpg)$') {
-        & adb exec-out cat "/sdcard/Android/data/$packageName/cache/sheet_debug/cells/$file" > "$cellsDir/$file" 2>$null
-    }
-}
-& adb shell rm -r "/sdcard/Android/data/$packageName/cache/sheet_debug" 2>$null | Out-Null
-& adb shell run-as $packageName rm -r files/history files/user_templates cache 2>$null | Out-Null
+Write-Host "Device history and templates preserved."
 
 @(
     "Instrumentation log: $instrumentationLogPath"

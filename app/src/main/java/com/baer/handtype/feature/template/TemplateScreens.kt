@@ -6,6 +6,9 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedContent
@@ -228,7 +231,6 @@ fun TemplateChooserScreen(
                     ?: 0
             }
             val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { templates.size })
-            val pagerScope = rememberCoroutineScope()
             val haptic = LocalHapticFeedback.current
 
             LaunchedEffect(templates, initialTemplateId) {
@@ -245,7 +247,7 @@ fun TemplateChooserScreen(
                 modifier = Modifier
                     .testTag(HandTypeTestTags.TEMPLATE_PAGER)
                     .fillMaxWidth()
-                    .height(280.dp),
+                    .height(280.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)),
                 flingBehavior = PagerDefaults.flingBehavior(
                     state = pagerState,
                     snapAnimationSpec = spring(
@@ -258,27 +260,7 @@ fun TemplateChooserScreen(
                 val scale = lerp(0.95f, 1f, 1f - abs(pageOffset).coerceIn(0f, 1f))
                 Box(
                     modifier = Modifier
-                        .graphicsLayer { scaleX = scale; scaleY = scale }
-                        .pointerInput(page) {
-                            awaitEachGesture {
-                                awaitFirstDown(requireUnconsumed = false)
-                                val up = waitForUpOrCancellation()
-                                if (up != null) {
-                                    up.consume()
-                                    val descriptor = templates[page]
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    pagerScope.launch {
-                                        if (pagerState.currentPage != page) {
-                                            pagerState.animateScrollToPage(page)
-                                        }
-                                        if (descriptor.isNew) {
-                                            onTemplateOpened?.invoke(descriptor)
-                                        }
-                                        onTemplateSelected(descriptor)
-                                    }
-                                }
-                            }
-                        },
+                        .graphicsLayer { scaleX = scale; scaleY = scale },
                 ) {
                     val descriptor = templates[page]
                     TemplateOptionCard(
@@ -286,6 +268,10 @@ fun TemplateChooserScreen(
                         accentColor = MaterialTheme.colorScheme.primary,
                         buttonText = stringResource(R.string.template_chooser_use_template),
                         badgeText = if (descriptor.isNew) stringResource(R.string.template_chooser_new_badge) else null,
+                        onClick = {
+                            if (descriptor.isNew) onTemplateOpened?.invoke(descriptor)
+                            onTemplateSelected(descriptor)
+                        },
                         modifier = Modifier.fillMaxSize(),
                     )
                     // Delete button: only for user-captured templates
@@ -371,6 +357,7 @@ fun TemplateChooserScreen(
                     ) {
                         Text(
                             text = premiumTemplate.displayName,
+                            modifier = Modifier.weight(1f).padding(end = 12.dp),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -468,6 +455,14 @@ fun HandwritingRenderScreen(
     var lastRenderSeed by rememberSaveable { mutableStateOf<Long?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
+    fun backToCompose() {
+        resultBitmap = null
+        missingChars = emptySet()
+        phase = RenderPhase.Compose.name
+    }
+
+    BackHandler(enabled = phase == RenderPhase.Result.name) { backToCompose() }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
@@ -476,7 +471,9 @@ fun HandwritingRenderScreen(
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+                .imePadding(),
         ) {
             val density = LocalDensity.current
             val renderWidthPx = remember(maxWidth, density) {
@@ -605,11 +602,7 @@ fun HandwritingRenderScreen(
                             phase = RenderPhase.Compose.name
                         },
                         onRegenerate = ::generate,
-                        onBackToCompose = {
-                            resultBitmap = null
-                            missingChars = emptySet()
-                            phase = RenderPhase.Compose.name
-                        },
+                        onBackToCompose = ::backToCompose,
                         onBackToTemplates = onBackToTemplates,
                     )
                 }
@@ -888,7 +881,15 @@ private fun ResultPhaseContent(
         val bmp = bitmap ?: return
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         OutputExporter.exportPdf(context, bmp, templateName)
-            .onSuccess { toast(context.getString(R.string.result_pdf_saved)) }
+            .onSuccess { uri ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    toast(context.getString(R.string.result_pdf_saved))
+                } else {
+                    runCatching {
+                        context.startActivity(OutputExporter.buildShareIntent(uri, "application/pdf"))
+                    }.onFailure { toast(context.getString(R.string.result_pdf_failed, it.message ?: "unknown")) }
+                }
+            }
             .onFailure { toast(context.getString(R.string.result_pdf_failed, it.message ?: "unknown")) }
     }
 
@@ -1218,6 +1219,7 @@ private fun BackgroundPresetCard(
         Card(
             onClick = onClick,
             modifier = Modifier
+                .testTag(HandTypeTestTags.backgroundPresetCard(preset.id))
                 .width(58.dp)
                 .graphicsLayer {
                     scaleX = bounceScale
@@ -1412,6 +1414,7 @@ private fun TemplateOptionCard(
     accentColor: Color,
     buttonText: String,
     badgeText: String? = null,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isUserTemplate = descriptor.id.startsWith("user_")
@@ -1476,18 +1479,19 @@ private fun TemplateOptionCard(
         }
     }
     val cardShape = RoundedCornerShape(28.dp)
-    val cardContainerColor = if (isUserTemplate) Color(0xFFFFF8EC) else MaterialTheme.colorScheme.surface
+    val cardContainerColor = MaterialTheme.colorScheme.surface
     val cardBorder = if (isUserTemplate) {
-        BorderStroke(1.dp, Color(0xFFE5C57A).copy(alpha = 0.9f))
+        BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     } else {
         null
     }
-    val titleColor = if (isUserTemplate) Color(0xFF4F2F16) else MaterialTheme.colorScheme.onSurface
-    val sampleContainerColor = if (isUserTemplate) Color(0xFFFFF9EF).copy(alpha = 0.92f) else accentColor.copy(alpha = 0.08f)
-    val sampleBorder = if (isUserTemplate) BorderStroke(1.dp, Color(0xFFE7CE92).copy(alpha = 0.8f)) else null
-    val buttonColor = if (isUserTemplate) Color(0xFF8E5A21) else accentColor
+    val titleColor = MaterialTheme.colorScheme.onSurface
+    val sampleContainerColor = MaterialTheme.colorScheme.surfaceVariant
+    val sampleBorder = if (isUserTemplate) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null
+    val buttonColor = accentColor
 
     Card(
+        onClick = onClick,
         shape = cardShape,
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = if (isUserTemplate) 8.dp else 4.dp),
@@ -1576,15 +1580,17 @@ private fun TemplateOptionCard(
                     }
                 }
 
-                Box(
+                Button(
+                    onClick = onClick,
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
                     modifier = Modifier
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(buttonColor),
+                        .padding(end = if (isUserTemplate) 48.dp else 0.dp),
                 ) {
                     Text(
                         text = buttonText,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                        color = if (isUserTemplate) Color.White else MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isUserTemplate) FontWeight.Bold else FontWeight.Normal,
                     )

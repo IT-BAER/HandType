@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">저장된 파일은 어디에 있나요?</string>
-    <string name="faq_a1">PNG와 PDF는 갤러리의 사진/HandType에 저장됩니다. Android 9 이하에서는 처음에 저장소 권한이 필요합니다.</string>
+    <string name="faq_a1">PNG는 Pictures/HandType에 저장됩니다. Android 10 이상에서 PDF는 Download/HandType에 저장됩니다. 이전 Android 버전에서는 PDF를 공유하여 사본을 저장하세요. Android 9 이하에서 PNG를 저장하려면 저장소 권한이 필요합니다.</string>
     <string name="faq_q2">투명 PNG는 무엇에 사용하나요?</string>
     <string name="faq_a2">종이 배경이 없는 같은 필체로, 다른 이미지, 문서 또는 슬라이드에 메모를 올릴 때 유용합니다.</string>
     <string name="faq_q3">긴 메모가 여러 PDF 페이지에 걸칠 수 있나요?</string>

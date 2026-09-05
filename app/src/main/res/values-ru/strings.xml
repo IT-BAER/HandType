@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Где хранятся сохранённые файлы?</string>
-    <string name="faq_a1">PNG и PDF сохраняются в Изображения/HandType в вашей галерее. На Android 9 и старше приложению нужно разрешение на хранение в первый раз.</string>
+    <string name="faq_a1">PNG сохраняются в Pictures/HandType. PDF сохраняются в Download/HandType на Android 10 и новее. На более ранних версиях отправьте PDF в другое приложение, чтобы сохранить копию. Для сохранения PNG на Android 9 и более ранних версиях нужно разрешение на доступ к хранилищу.</string>
     <string name="faq_q2">Для чего прозрачный PNG?</string>
     <string name="faq_a2">Это тот же почерк без фона бумаги — полезно, если вы хотите наложить заметку на другое изображение, документ или слайд.</string>
     <string name="faq_q3">Может ли длинная заметка занимать несколько страниц PDF?</string>

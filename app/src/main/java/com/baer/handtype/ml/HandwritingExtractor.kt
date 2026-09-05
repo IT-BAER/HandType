@@ -91,7 +91,9 @@ class HandwritingExtractor(
 
         val glyphMap = LinkedHashMap<Char, Bitmap>()
         glyphs.forEach { glyph ->
-            glyphMap.putIfAbsent(glyph.character, glyph.bitmap)
+            if (!glyphMap.containsKey(glyph.character)) {
+                glyphMap[glyph.character] = glyph.bitmap
+            }
         }
 
         return ExtractionResult(

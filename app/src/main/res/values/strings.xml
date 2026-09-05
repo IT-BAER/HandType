@@ -188,7 +188,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Where are saved files stored?</string>
-    <string name="faq_a1">PNGs and PDFs go to Pictures/HandType in your gallery. On Android 9 and older the app needs storage permission the first time.</string>
+    <string name="faq_a1">PNGs are saved to Pictures/HandType. PDFs are saved to Download/HandType on Android 10 and newer. On older Android versions, share the PDF to save a copy. Saving PNGs on Android 9 and older requires storage permission.</string>
     <string name="faq_q2">What is the transparent PNG for?</string>
     <string name="faq_a2">It\'s the same handwriting without the paper background, useful when you want to drop the note onto another image, document or slide.</string>
     <string name="faq_q3">Can a long note span multiple PDF pages?</string>

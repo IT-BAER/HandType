@@ -1,7 +1,7 @@
 package com.baer.handtype
 
+import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
@@ -36,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +45,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -82,6 +80,11 @@ import java.util.Date
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
+    // Localizing the Activity itself keeps dialogs, sheets and toasts (own windows) in the app language.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase.localizedFor(AppSettingsStore(newBase).read().languagePreference))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -93,15 +96,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun HandTypeApp() {
-    val baseContext = LocalContext.current
-    val settingsStore = remember(baseContext) { AppSettingsStore(baseContext.applicationContext) }
+    val activity = LocalContext.current as Activity
+    val settingsStore = remember(activity) { AppSettingsStore(activity.applicationContext) }
     var settings by remember { mutableStateOf(settingsStore.read()) }
-    val localizedContext = remember(baseContext, settings.languagePreference) {
-        baseContext.localizedFor(settings.languagePreference)
-    }
-    val localizedConfiguration = remember(localizedContext) {
-        Configuration(localizedContext.resources.configuration)
-    }
     val systemDarkTheme = isSystemInDarkTheme()
     val darkTheme = when (settings.themePreference) {
         ThemePreference.System -> systemDarkTheme
@@ -109,19 +106,16 @@ private fun HandTypeApp() {
         ThemePreference.Dark -> true
     }
 
-    CompositionLocalProvider(
-        LocalContext provides localizedContext,
-        LocalConfiguration provides localizedConfiguration,
-    ) {
-        HandTypeTheme(darkTheme = darkTheme) {
-            HandTypeRoot(
-                settings = settings,
-                onSettingsChanged = { updated ->
-                    settings = updated
-                    settingsStore.write(updated)
-                },
-            )
-        }
+    HandTypeTheme(darkTheme = darkTheme) {
+        HandTypeRoot(
+            settings = settings,
+            onSettingsChanged = { updated ->
+                val languageChanged = updated.languagePreference != settings.languagePreference
+                settings = updated
+                settingsStore.write(updated)
+                if (languageChanged) activity.recreate()
+            },
+        )
     }
 }
 
@@ -135,10 +129,9 @@ private fun HandTypeRoot(
     val repository = remember(context) { BundledTemplateRepository(context) }
     val builtInTemplates = remember(repository) { repository.listBuiltInTemplates() }
     val premiumTemplate = remember(repository) { repository.premiumTemplate() }
-    // Plain remember, not rememberSaveable: a fresh process (cold start) reopens on home; the route
-    // still survives recomposition and backgrounding within a session. Portrait-only, so there is no
-    // rotation recreation to worry about.
-    var route by remember { mutableStateOf(RootRoute.TemplateChooser.name) }
+    // Saveable so a recreate (language switch, system theme or font-scale change) keeps the screen;
+    // a cold start has no saved state and still opens on home.
+    var route by rememberSaveable { mutableStateOf(RootRoute.TemplateChooser.name) }
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -499,7 +492,7 @@ private fun PremiumCaptureRoute(
                     withContext(Dispatchers.Default) {
                         SheetSampleProcessor.process(
                             bitmap,
-                            debugContext = context.applicationContext,
+                            debugContext = context.applicationContext.takeIf { BuildConfig.DEBUG },
                             skipPageDetection = true,
                         )
                     }
@@ -521,8 +514,7 @@ private fun PremiumCaptureRoute(
                         )
                     }.getOrElse { throwable ->
                         android.util.Log.e("PremiumCapture", "Failed to persist user template", throwable)
-                        instructionText = throwable.message
-                            ?: saveFailedInstruction
+                        instructionText = saveFailedInstruction
                         isProcessing = false
                         return@onSuccess
                     }
@@ -533,15 +525,14 @@ private fun PremiumCaptureRoute(
                     onTemplateSaved(savedId, defaultTemplateName)
                 }.onFailure { throwable ->
                     android.util.Log.e("PremiumCapture", "Sheet processing failed", throwable)
-                    instructionText = throwable.message
-                        ?: processFailedInstruction
+                    instructionText = processFailedInstruction
                     isProcessing = false
                 }
             }
         },
         onCaptureError = { throwable ->
             android.util.Log.e("PremiumCapture", "Camera capture failed", throwable)
-            instructionText = throwable.message ?: cameraFailedInstruction
+            instructionText = cameraFailedInstruction
             isProcessing = false
         },
     )

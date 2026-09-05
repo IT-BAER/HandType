@@ -1,6 +1,6 @@
 # Privacy Policy
 
-_Last updated: 2025_
+_Last updated: September 5, 2026_
 
 HandType is designed to be offline-first and tracker-free.
 
@@ -14,12 +14,13 @@ HandType is designed to be offline-first and tracker-free.
 ## Data stored on your device
 
 - **Generated notes (History)** are stored as PNG files (plus an optional `.txt` sidecar with the source text you typed) inside the app's private storage. They never leave your device automatically.
+- **Personal handwriting templates** are stored in the app's private storage. Private app data is excluded from Android cloud backup and device-to-device transfer. Export notes you want to keep before uninstalling or changing devices.
 - **Files you explicitly save or export** (PNG, transparent PNG, PDF) are written to the locations you choose (typically `Pictures/HandType` or your share target).
 - **Files you share** are placed temporarily in the app's cache directory and exposed through Android's `FileProvider` to the app you select.
 
 ## Premium handwriting capture
 
-The optional "use my handwriting" feature uses Google ML Kit on-device text recognition to extract glyph crops from a photo of your handwriting. The photo and the recognized characters are processed locally; nothing is uploaded.
+The optional "use my handwriting" feature opens Google's document scanner, where you can scan or select a practice-sheet photo. HandType extracts the characters from that sheet locally and saves a personal template. The app does not upload your photo or handwriting. Google Play services may need to download the scanner component before its first use.
 
 ## Permissions
 

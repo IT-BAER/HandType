@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
@@ -21,6 +22,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.baer.handtype.feature.capture.SheetSampleProcessor
+import com.baer.handtype.feature.settings.AppSettingsStore
+import com.baer.handtype.feature.settings.localizedFor
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.testing.HandTypeDebugHooks
 import com.baer.handtype.testing.HandTypeTestTags
@@ -43,7 +46,8 @@ class HandwritingImportE2eTest {
 
     @Test
     fun importsLastCameraImageRenamesTemplateAndGeneratesNote() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        val baseContext = ApplicationProvider.getApplicationContext<Context>()
+        val context = baseContext.localizedFor(AppSettingsStore(baseContext).read().languagePreference)
         val repo = BundledTemplateRepository(context).userRepository()
 
         swipeTemplatePagerUntilVisible(LEGACY_TEMPLATE_NAME)
@@ -71,7 +75,10 @@ class HandwritingImportE2eTest {
         composeRule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
             .assertIsDisplayed()
             .performTextReplacement(EXPECTED_DEFAULT_NOTE_TEXT)
-        composeRule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performClick()
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        composeRule.onNodeWithTag(HandTypeTestTags.backgroundPresetCard("ruled_sheet"))
+            .performScrollTo().performClick()
+        composeRule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performScrollTo().performClick()
 
         waitForResultImage(context)
         composeRule.mainClock.advanceTimeBy(1_000)
@@ -93,6 +100,10 @@ class HandwritingImportE2eTest {
         val displayName = File(latestHistoryImage.parentFile, "$historyBaseName.name").readText().trim()
         assertEquals(EXPECTED_DEFAULT_NOTE_TEXT, sourceText)
         assertEquals(NEW_TEMPLATE_NAME, displayName)
+        assertTrue("Existing templates must survive E2E tests",
+            repo.listUserTemplates().map { it.id }.containsAll(existingTemplateIds))
+        assertTrue("Existing history must survive E2E tests",
+            File(context.filesDir, "history").list().orEmpty().toSet().containsAll(existingHistoryFiles))
 
         Log.i(
             TAG,
@@ -158,8 +169,8 @@ class HandwritingImportE2eTest {
         private const val TAG = "HandwritingImportE2e"
         private const val TIMEOUT_MS = 25_000L
         private const val LAST_CAMERA_IMAGE_FILE_NAME = "last_camera_image.png"
-        private const val LEGACY_TEMPLATE_NAME = "Legacy Template"
-        private const val NEW_TEMPLATE_NAME = "Imported Test Script"
+        private val LEGACY_TEMPLATE_NAME = "E2E Legacy ${System.currentTimeMillis()}"
+        private val NEW_TEMPLATE_NAME = "E2E Script ${System.currentTimeMillis()}"
         private const val EXPECTED_DEFAULT_NOTE_TEXT =
             "The quick brown fox jumps over the lazy dog. " +
                 "Every morning she would sit by the window, watching " +
@@ -167,6 +178,8 @@ class HandwritingImportE2eTest {
                 "kind of beauty, the sort that only patience could reveal."
 
         private lateinit var legacyTemplateId: String
+        private var existingTemplateIds = emptySet<String>()
+        private var existingHistoryFiles = emptySet<String>()
 
         @JvmStatic
         @BeforeClass
@@ -175,10 +188,10 @@ class HandwritingImportE2eTest {
             val targetContext = ApplicationProvider.getApplicationContext<Context>()
             val fixtureFile = File(targetContext.cacheDir, LAST_CAMERA_IMAGE_FILE_NAME)
 
-            resetAppState(targetContext)
+            existingTemplateIds = BundledTemplateRepository(targetContext).listUserTemplates().map { it.id }.toSet()
+            existingHistoryFiles = File(targetContext.filesDir, "history").list().orEmpty().toSet()
             copyAssetToFile(instrumentationContext, LAST_CAMERA_IMAGE_FILE_NAME, fixtureFile)
             HandTypeDebugHooks.importedScanPath = fixtureFile.absolutePath
-            HandTypeDebugHooks.forcedBackgroundId = "ruled_sheet"
 
             val bitmap = BitmapFactory.decodeFile(fixtureFile.absolutePath)
                 ?: error("Could not decode scan fixture: ${fixtureFile.absolutePath}")
@@ -196,7 +209,7 @@ class HandwritingImportE2eTest {
                 repository.saveTemplate(
                     displayName = LEGACY_TEMPLATE_NAME,
                     glyphMap = glyphs,
-                    isNew = false,
+                    isNew = true,
                 )
             }
         }
@@ -205,11 +218,12 @@ class HandwritingImportE2eTest {
         @AfterClass
         fun tearDownClass() {
             HandTypeDebugHooks.clear()
-        }
-
-        private fun resetAppState(context: Context) {
-            File(context.filesDir, "history").deleteRecursively()
-            File(context.filesDir, "user_templates").deleteRecursively()
+            val targetContext = ApplicationProvider.getApplicationContext<Context>()
+            val repository = BundledTemplateRepository(targetContext).userRepository()
+            repository.listUserTemplates().map { it.id }.filterNot { it in existingTemplateIds }
+                .forEach { repository.deleteTemplate(it) }
+            File(targetContext.filesDir, "history").listFiles().orEmpty()
+                .filterNot { it.name in existingHistoryFiles }.forEach { it.delete() }
         }
 
         private fun copyAssetToFile(context: Context, assetName: String, targetFile: File) {

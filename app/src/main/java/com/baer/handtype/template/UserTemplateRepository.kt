@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -263,7 +264,7 @@ private data class UserTemplateMeta(
 ) {
     fun toDescriptor(context: Context, folderName: String): TemplateDescriptor {
         val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
-        val dateStr = SimpleDateFormat("MMM d, yyyy", locale).format(Date(createdAt))
+        val dateStr = DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(createdAt))
         val description = if (glyphCount > 0) {
             context.getString(R.string.template_card_captured_count, dateStr, glyphCount)
         } else {

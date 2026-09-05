@@ -10,6 +10,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -174,6 +177,51 @@ fun CameraCaptureScreen(
                 ),
             )
         },
+        bottomBar = {
+            Column(
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+            Text(
+                text = primingText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Button(
+                onClick = { launchScanner() },
+                enabled = !isLaunching && !isProcessing,
+                modifier = Modifier
+                    .testTag(HandTypeTestTags.CAMERA_SCAN_BUTTON)
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp),
+                shape = RoundedCornerShape(22.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            ) {
+                if (isLaunching || isProcessing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Text(
+                        text = if (isProcessing) processingText else openingText,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = scanButtonText,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                }
+            }
+            }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -262,44 +310,7 @@ fun CameraCaptureScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = primingText,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Button(
-                onClick = { launchScanner() },
-                enabled = !isLaunching && !isProcessing,
-                modifier = Modifier
-                    .testTag(HandTypeTestTags.CAMERA_SCAN_BUTTON)
-                    .fillMaxWidth()
-                    .height(72.dp),
-                shape = RoundedCornerShape(22.dp),
-            ) {
-                if (isLaunching || isProcessing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
-                    Spacer(modifier = Modifier.size(10.dp))
-                    Text(
-                        text = if (isProcessing) processingText else openingText,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = scanButtonText,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                }
-            }
         }
     }
 }

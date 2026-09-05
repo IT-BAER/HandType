@@ -143,7 +143,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">保存されたファイルはどこにありますか？</string>
-    <string name="faq_a1">PNGとPDFはギャラリーの画像/HandTypeに保存されます。Android 9以前では初回にストレージ許可が必要です。</string>
+    <string name="faq_a1">PNGはPictures/HandTypeに保存されます。Android 10以降ではPDFはDownload/HandTypeに保存されます。それ以前のAndroidではPDFを共有してコピーを保存してください。Android 9以前でPNGを保存するにはストレージへのアクセス許可が必要です。</string>
     <string name="faq_q2">透明PNGは何のためですか？</string>
     <string name="faq_a2">紙の背景なしの同じ筆跡で、他の画像・文書・スライドに重ねる際に便利です。</string>
     <string name="faq_q3">長いノートは複数のPDFページにまたがれますか？</string>

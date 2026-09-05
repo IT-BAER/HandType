@@ -500,17 +500,37 @@ object HandwritingBitmapRenderer {
                 newLine()
                 continue
             }
-            val words = line.split(' ')
+            // Split oversized words before allocating their bitmaps, allowing for glyph jitter.
+            val wordLimit = (safeWidth - config.marginPx * 2 - 24).coerceAtLeast(1).toFloat()
+            val words = line.split(' ').flatMap { word ->
+                val segments = mutableListOf<Pair<String, Boolean>>()
+                val chunk = StringBuilder()
+                var width = 0f
+                for (character in word) {
+                    val advance = measurePaint.measureText(character.toString()) * 1.08f + 1f
+                    if (chunk.isNotEmpty() && width + advance > wordLimit) {
+                        segments += chunk.toString() to segments.isNotEmpty()
+                        chunk.clear()
+                        width = 0f
+                    }
+                    chunk.append(character)
+                    width += advance
+                }
+                if (chunk.isNotEmpty()) segments += chunk.toString() to segments.isNotEmpty()
+                segments
+            }
             val totalCharsInLine = line.length.coerceAtLeast(1)
 
-            for ((wordIndex, word) in words.withIndex()) {
+            for ((wordIndex, segment) in words.withIndex()) {
+                val (word, continuation) = segment
                 if (word.isEmpty()) continue
+                if (continuation) newLine()
 
                 val wordSizeJitter = 1f + (rng.nextFloat() * 2f - 1f) * 0.02f  // ±2%
                 val wordCharSize = charSize * wordSizeJitter
                 val wordWidth = estimateWordWidth(word)
 
-                if (wordIndex > 0) {
+                if (wordIndex > 0 && !continuation) {
                     val neededSpace = spaceWidth + wordWidth
                     if (cursorX + neededSpace > safeWidth - config.marginPx && cursorX > config.marginPx + 1) {
                         newLine()

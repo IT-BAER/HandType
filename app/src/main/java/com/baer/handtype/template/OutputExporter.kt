@@ -15,6 +15,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 /**
  * Persists generated handwriting bitmaps to public storage and exposes them via
@@ -37,7 +38,7 @@ object OutputExporter {
     private fun fileName(template: String, ext: String): String {
         val safe = template.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), "_").trim('_')
         val tag = if (safe.isEmpty()) "note" else safe
-        return "HandType_${tag}_${timestamp()}.$ext"
+        return "HandType_${tag}_${timestamp()}_${UUID.randomUUID()}.$ext"
     }
 
     private fun safeTag(template: String): String {
@@ -59,18 +60,19 @@ object OutputExporter {
         val dir = File(context.filesDir, "history").apply { mkdirs() }
         val stamp = timestamp()
         val tag = safeTag(templateName)
-        val png = File(dir, "${stamp}__${tag}.png")
+        val baseName = "${stamp}__${tag}_${UUID.randomUUID()}"
+        val png = File(dir, "$baseName.png")
         FileOutputStream(png).use { out ->
             if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
                 error("Bitmap.compress failed")
             }
         }
         if (!sourceText.isNullOrBlank()) {
-            val meta = File(dir, "${stamp}__${tag}.txt")
+            val meta = File(dir, "$baseName.txt")
             meta.writeText(sourceText)
         }
         // Persist the human-readable display name so history can show it without decoding the tag.
-        File(dir, "${stamp}__${tag}.name").writeText(templateName)
+        File(dir, "$baseName.name").writeText(templateName)
         png
     }
 
@@ -259,7 +261,7 @@ object OutputExporter {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        return Intent.createChooser(send, "Share handwritten note")
+        return Intent.createChooser(send, null)
     }
 
     /**

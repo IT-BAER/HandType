@@ -143,7 +143,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">सहेजी गई फ़ाइलें कहां होती हैं?</string>
-    <string name="faq_a1">PNG और PDF आपकी गैलरी में Pictures/HandType में जाते हैं। Android 9 और पुराने पर ऐप को पहली बार स्टोरेज अनुमति चाहिए।</string>
+    <string name="faq_a1">PNG फ़ाइलें Pictures/HandType में सहेजी जाती हैं। Android 10 और नए संस्करणों में PDF फ़ाइलें Download/HandType में सहेजी जाती हैं। पुराने संस्करणों में PDF की कॉपी सहेजने के लिए उसे साझा करें। Android 9 और पुराने संस्करणों में PNG सहेजने के लिए स्टोरेज की अनुमति चाहिए।</string>
     <string name="faq_q2">ट्रांसपेरेंट PNG किसलिए है?</string>
     <string name="faq_a2">यह पेपर बैकग्राउंड के बिना वही लेखन है, उपयोगी जब आप नोट को किसी अन्य छवि, दस्तावेज़ या स्लाइड पर रखना चाहते हों।</string>
     <string name="faq_q3">क्या एक लंबा नोट कई PDF पृष्ठों में फैल सकता है?</string>

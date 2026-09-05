@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">保存的文件在哪里？</string>
-    <string name="faq_a1">PNG 和 PDF 保存到相册中的 Pictures/HandType。在 Android 9 及更低版本上，首次使用需要存储权限。</string>
+    <string name="faq_a1">PNG 保存到 Pictures/HandType。在 Android 10 及更高版本上，PDF 保存到 Download/HandType。在较早的 Android 版本上，请分享 PDF 以保存副本。在 Android 9 及更早版本上保存 PNG 需要存储权限。</string>
     <string name="faq_q2">透明 PNG 有什么用？</string>
     <string name="faq_a2">与普通版本相同的笔迹但无纸张背景，适合叠加到其他图片、文档或幻灯片上。</string>
     <string name="faq_q3">长笔记可以跨多个 PDF 页面吗？</string>

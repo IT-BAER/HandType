@@ -12,12 +12,12 @@ val localProperties = Properties().apply {
 
 android {
     namespace = "com.baer.handtype"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.baer.handtype"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -74,6 +74,13 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // All app languages must remain available when the user switches languages offline.
+    bundle {
+        language {
+            enableSplit = false
+        }
     }
 
     composeOptions {

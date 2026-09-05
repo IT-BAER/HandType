@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Où sont stockés les fichiers enregistrés ?</string>
-    <string name="faq_a1">Les PNG et PDF vont dans Images/HandType dans votre galerie. Sur Android 9 et antérieur, l\'app a besoin d\'une permission de stockage la première fois.</string>
+    <string name="faq_a1">Les PNG sont enregistrés dans Pictures/HandType. Les PDF sont enregistrés dans Download/HandType à partir d’Android 10. Sur les versions antérieures, partagez le PDF pour en conserver une copie. Les PNG nécessitent une autorisation de stockage sous Android 9 et antérieur.</string>
     <string name="faq_q2">À quoi sert le PNG transparent ?</string>
     <string name="faq_a2">C\'est la même écriture sans le fond papier, utile pour insérer la note dans une autre image, document ou diapositive.</string>
     <string name="faq_q3">Une longue note peut-elle s\'étendre sur plusieurs pages PDF ?</string>

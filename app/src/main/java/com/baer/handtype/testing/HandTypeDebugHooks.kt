@@ -13,9 +13,6 @@ object HandTypeDebugHooks {
     @Volatile
     var importedScanPath: String? = null
 
-    @Volatile
-    var forcedBackgroundId: String? = null
-
     fun loadImportedScanBitmap(): Bitmap? {
         if (!BuildConfig.DEBUG) return null
         val path = importedScanPath?.takeIf { it.isNotBlank() } ?: return null
@@ -26,6 +23,5 @@ object HandTypeDebugHooks {
 
     fun clear() {
         importedScanPath = null
-        forcedBackgroundId = null
     }
 }

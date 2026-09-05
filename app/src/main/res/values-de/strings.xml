@@ -153,7 +153,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Wo werden gespeicherte Dateien abgelegt?</string>
-    <string name="faq_a1">PNGs und PDFs gehen in Bilder/HandType in deiner Galerie. Auf Android 9 und älter benötigt die App beim ersten Mal eine Speicherberechtigung.</string>
+    <string name="faq_a1">PNGs werden in Pictures/HandType gespeichert. PDFs werden ab Android 10 in Download/HandType gespeichert. Auf älteren Android-Versionen teile das PDF, um eine Kopie zu speichern. PNGs benötigen bis Android 9 eine Speicherberechtigung.</string>
     <string name="faq_q2">Wofür ist das transparente PNG?</string>
     <string name="faq_a2">Es ist dieselbe Handschrift ohne Papierhintergrund, nützlich wenn du die Notiz auf ein anderes Bild, Dokument oder eine Folie legen möchtest.</string>
     <string name="faq_q3">Kann eine lange Notiz mehrere PDF-Seiten umfassen?</string>
