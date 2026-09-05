@@ -438,6 +438,10 @@ fun HandwritingRenderScreen(
     template: HandwritingTemplate,
     onBackToTemplates: () -> Unit,
     onPremiumSelected: () -> Unit,
+    premiumUnlocked: Boolean,
+    onLockedPresetTapped: (String) -> Unit,
+    externallySelectedBackgroundId: String? = null,
+    onExternalSelectionConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var text by rememberSaveable { mutableStateOf("") }
@@ -447,13 +451,24 @@ fun HandwritingRenderScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val backgroundPreferences = remember(context) { NoteBackgroundPreferences(context) }
-    val initialDefaultBackgroundId = remember(backgroundPreferences) { backgroundPreferences.getDefaultBackgroundId() }
+    // A stored default that has since become locked falls back to the free default preset.
+    val initialDefaultBackgroundId = remember(backgroundPreferences, premiumUnlocked) {
+        val stored = NoteBackgroundCatalog.presetOrDefault(backgroundPreferences.getDefaultBackgroundId())
+        if (stored.premium && !premiumUnlocked) NoteBackgroundCatalog.defaultPreset().id else stored.id
+    }
     val backgroundPresets = remember { NoteBackgroundCatalog.selectablePresets }
     var defaultBackgroundId by rememberSaveable { mutableStateOf(initialDefaultBackgroundId) }
     var selectedBackgroundId by rememberSaveable { mutableStateOf(initialDefaultBackgroundId) }
     var lastRenderedText by rememberSaveable { mutableStateOf("") }
     var lastRenderSeed by rememberSaveable { mutableStateOf<Long?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(externallySelectedBackgroundId) {
+        if (externallySelectedBackgroundId != null) {
+            selectedBackgroundId = externallySelectedBackgroundId
+            onExternalSelectionConsumed()
+        }
+    }
 
     fun backToCompose() {
         resultBitmap = null
@@ -544,7 +559,9 @@ fun HandwritingRenderScreen(
                         backgroundPresets = backgroundPresets,
                         selectedBackgroundId = selectedBackgroundId,
                         defaultBackgroundId = defaultBackgroundId,
+                        premiumUnlocked = premiumUnlocked,
                         onBackgroundSelected = { selectedBackgroundId = it },
+                        onLockedPresetTapped = onLockedPresetTapped,
                         onSetBackgroundDefault = {
                             backgroundPreferences.setDefaultBackgroundId(selectedBackgroundId)
                             defaultBackgroundId = selectedBackgroundId
@@ -619,7 +636,9 @@ private fun ComposePhaseContent(
     backgroundPresets: List<NoteBackgroundPreset>,
     selectedBackgroundId: String,
     defaultBackgroundId: String,
+    premiumUnlocked: Boolean,
     onBackgroundSelected: (String) -> Unit,
+    onLockedPresetTapped: (String) -> Unit,
     onSetBackgroundDefault: () -> Unit,
     onGenerate: () -> Unit,
     onBackToTemplates: () -> Unit,
@@ -711,7 +730,9 @@ private fun ComposePhaseContent(
             presets = backgroundPresets,
             selectedBackgroundId = selectedBackgroundId,
             defaultBackgroundId = defaultBackgroundId,
+            premiumUnlocked = premiumUnlocked,
             onBackgroundSelected = onBackgroundSelected,
+            onLockedPresetTapped = onLockedPresetTapped,
             onSetBackgroundDefault = onSetBackgroundDefault,
         )
 
@@ -1114,7 +1135,9 @@ private fun BackgroundPicker(
     presets: List<NoteBackgroundPreset>,
     selectedBackgroundId: String,
     defaultBackgroundId: String,
+    premiumUnlocked: Boolean,
     onBackgroundSelected: (String) -> Unit,
+    onLockedPresetTapped: (String) -> Unit,
     onSetBackgroundDefault: () -> Unit,
 ) {
     val isCurrentDefault = selectedBackgroundId == defaultBackgroundId
@@ -1194,7 +1217,13 @@ private fun BackgroundPicker(
                     preset = preset,
                     selected = preset.id == selectedBackgroundId,
                     isDefault = preset.id == defaultBackgroundId,
-                    onClick = { onBackgroundSelected(preset.id) },
+                    onClick = {
+                        if (preset.premium && !premiumUnlocked) {
+                            onLockedPresetTapped(preset.id)
+                        } else {
+                            onBackgroundSelected(preset.id)
+                        }
+                    },
                 )
             }
         }

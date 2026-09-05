@@ -43,6 +43,9 @@ fun SettingsScreen(
     settings: AppSettings,
     onSettingsChanged: (AppSettings) -> Unit,
     onOpenDrawer: () -> Unit,
+    premiumUnlocked: Boolean,
+    onUnlockPremium: () -> Unit,
+    onRestorePremium: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -108,6 +111,44 @@ fun SettingsScreen(
                     if (index != languagePreferences.lastIndex) {
                         HorizontalDivider()
                     }
+                }
+            }
+            PreferenceCard(
+                title = stringResource(R.string.settings_premium_title),
+                body = if (premiumUnlocked) {
+                    stringResource(R.string.settings_premium_unlocked)
+                } else {
+                    stringResource(R.string.premium_paywall_benefit_capture)
+                },
+            ) {
+                if (!premiumUnlocked) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onUnlockPremium)
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.template_chooser_premium_button),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    HorizontalDivider()
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onRestorePremium)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.premium_paywall_restore),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
             Spacer(Modifier.height(24.dp))

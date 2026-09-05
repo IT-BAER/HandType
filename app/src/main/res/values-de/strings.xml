@@ -221,4 +221,17 @@
     <string name="settings_language_title">Sprache</string>
     <string name="settings_language_body">Wähle die App-Sprache. Systemstandard folgt der Sprache deines Geräts.</string>
     <string name="settings_language_system">Systemstandard</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">Premium freischalten</string>
+    <string name="premium_paywall_benefit_capture">Erfasse deine eigene Handschrift von einem gedruckten Übungsblatt</string>
+    <string name="premium_paywall_benefit_papers">Fünf zusätzliche Papierstile: Pergament, Recyclingpapier, Kraftpapier, liniert und kariert</string>
+    <string name="premium_paywall_buy">Für %1$s freischalten</string>
+    <string name="premium_paywall_restore">Kauf wiederherstellen</string>
+    <string name="premium_paywall_pending">Dein Kauf wird noch verarbeitet. Das kann einen Moment dauern.</string>
+    <string name="premium_paywall_unavailable">Google Play Abrechnung ist gerade nicht verfügbar. Versuche es später erneut.</string>
+    <string name="premium_paywall_error">Etwas ist schiefgelaufen. Bitte versuche es erneut.</string>
+    <string name="premium_restore_success">Premium freigeschaltet.</string>
+    <string name="premium_restore_none">Kein vorheriger Kauf gefunden.</string>
+    <string name="settings_premium_title">Premium</string>
+    <string name="settings_premium_unlocked">Premium freigeschaltet</string>
 </resources>

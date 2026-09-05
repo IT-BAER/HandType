@@ -192,6 +192,7 @@ class HandwritingImportE2eTest {
             existingHistoryFiles = File(targetContext.filesDir, "history").list().orEmpty().toSet()
             copyAssetToFile(instrumentationContext, LAST_CAMERA_IMAGE_FILE_NAME, fixtureFile)
             HandTypeDebugHooks.importedScanPath = fixtureFile.absolutePath
+            HandTypeDebugHooks.premiumUnlocked = true
 
             val bitmap = BitmapFactory.decodeFile(fixtureFile.absolutePath)
                 ?: error("Could not decode scan fixture: ${fixtureFile.absolutePath}")

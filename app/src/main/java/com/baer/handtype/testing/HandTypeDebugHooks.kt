@@ -13,6 +13,10 @@ object HandTypeDebugHooks {
     @Volatile
     var importedScanPath: String? = null
 
+    /** Forces the fake billing entitlement when non-null; null defers to the persisted store value. */
+    @Volatile
+    var premiumUnlocked: Boolean? = null
+
     fun loadImportedScanBitmap(): Bitmap? {
         if (!BuildConfig.DEBUG) return null
         val path = importedScanPath?.takeIf { it.isNotBlank() } ?: return null
@@ -23,5 +27,6 @@ object HandTypeDebugHooks {
 
     fun clear() {
         importedScanPath = null
+        premiumUnlocked = null
     }
 }

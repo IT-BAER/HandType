@@ -13,6 +13,10 @@ object HandTypeTestTags {
 
     const val RENAME_HANDWRITING_INPUT = "rename_handwriting_input"
 
+    const val PREMIUM_PAYWALL_SHEET = "premium_paywall_sheet"
+    const val PREMIUM_BUY_BUTTON = "premium_buy_button"
+    const val PREMIUM_RESTORE_BUTTON = "premium_restore_button"
+
     fun templateDeleteButton(templateId: String): String = "template_delete_$templateId"
     fun backgroundPresetCard(id: String): String = "bg_preset_$id"
 }

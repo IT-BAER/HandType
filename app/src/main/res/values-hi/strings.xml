@@ -221,4 +221,17 @@
     <string name="settings_language_title">भाषा</string>
     <string name="settings_language_body">ऐप की भाषा चुनें। सिस्टम डिफ़ॉल्ट आपके डिवाइस की भाषा का अनुसरण करता है।</string>
     <string name="settings_language_system">सिस्टम डिफ़ॉल्ट</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">प्रीमियम अनलॉक करें</string>
+    <string name="premium_paywall_benefit_capture">प्रिंटेड प्रैक्टिस शीट से अपनी खुद की लिखावट कैप्चर करें</string>
+    <string name="premium_paywall_benefit_papers">पांच अतिरिक्त पेपर स्टाइल: पार्चमेंट, रीसाइक्ल्ड, क्राफ्ट, रूल्ड और ग्राफ</string>
+    <string name="premium_paywall_buy">%1$s में अनलॉक करें</string>
+    <string name="premium_paywall_restore">खरीद पुनर्स्थापित करें</string>
+    <string name="premium_paywall_pending">आपकी खरीद अभी भी प्रोसेस हो रही है। इसमें कुछ समय लग सकता है।</string>
+    <string name="premium_paywall_unavailable">Google Play बिलिंग अभी उपलब्ध नहीं है। बाद में पुनः प्रयास करें।</string>
+    <string name="premium_paywall_error">कुछ गलत हो गया। कृपया पुनः प्रयास करें।</string>
+    <string name="premium_restore_success">प्रीमियम अनलॉक हो गया।</string>
+    <string name="premium_restore_none">कोई पिछली खरीद नहीं मिली।</string>
+    <string name="settings_premium_title">प्रीमियम</string>
+    <string name="settings_premium_unlocked">प्रीमियम अनलॉक हो गया</string>
 </resources>

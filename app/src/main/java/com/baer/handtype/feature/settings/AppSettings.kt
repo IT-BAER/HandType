@@ -12,6 +12,7 @@ data class AppSettings(
     val themePreference: ThemePreference = ThemePreference.System,
     val languagePreference: LanguagePreference = LanguagePreference.System,
     val onboardingComplete: Boolean = false,
+    val premiumUnlocked: Boolean = false,
 )
 
 enum class ThemePreference {
@@ -46,6 +47,7 @@ class AppSettingsStore(context: Context) {
                 ?.let { stored -> LanguagePreference.values().firstOrNull { it.name == stored } }
                 ?: LanguagePreference.System,
             onboardingComplete = prefs.getBoolean(KEY_ONBOARDING, false),
+            premiumUnlocked = prefs.getBoolean(KEY_PREMIUM_UNLOCKED, false),
         )
     }
 
@@ -54,6 +56,7 @@ class AppSettingsStore(context: Context) {
             .putString(KEY_THEME, settings.themePreference.name)
             .putString(KEY_LANGUAGE, settings.languagePreference.name)
             .putBoolean(KEY_ONBOARDING, settings.onboardingComplete)
+            .putBoolean(KEY_PREMIUM_UNLOCKED, settings.premiumUnlocked)
             .apply()
     }
 
@@ -62,6 +65,7 @@ class AppSettingsStore(context: Context) {
         const val KEY_THEME = "theme_preference"
         const val KEY_LANGUAGE = "language_preference"
         const val KEY_ONBOARDING = "onboarding_complete"
+        const val KEY_PREMIUM_UNLOCKED = "premium_unlocked"
     }
 }
 

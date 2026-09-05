@@ -65,7 +65,13 @@ class ProductionReadinessTest {
         rule.setContent {
             HandTypeTheme {
                 BackHandler { leftEditor = true }
-                HandwritingRenderScreen(template, { leftEditor = true }, {})
+                HandwritingRenderScreen(
+                    template = template,
+                    onBackToTemplates = { leftEditor = true },
+                    onPremiumSelected = {},
+                    premiumUnlocked = true,
+                    onLockedPresetTapped = {},
+                )
             }
         }
         rule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).assertIsNotEnabled()

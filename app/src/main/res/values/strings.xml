@@ -152,6 +152,19 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_language_body">Choose the app language. System default follows your device language.</string>
     <string name="settings_language_system">System default</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">Unlock Premium</string>
+    <string name="premium_paywall_benefit_capture">Capture your own handwriting from a printed practice sheet</string>
+    <string name="premium_paywall_benefit_papers">Five extra paper styles: parchment, recycled, kraft, ruled and graph</string>
+    <string name="premium_paywall_buy">Unlock for %1$s</string>
+    <string name="premium_paywall_restore">Restore purchase</string>
+    <string name="premium_paywall_pending">Your purchase is still processing. This can take a moment.</string>
+    <string name="premium_paywall_unavailable">Google Play Billing isn’t available right now. Try again later.</string>
+    <string name="premium_paywall_error">Something went wrong. Please try again.</string>
+    <string name="premium_restore_success">Premium unlocked.</string>
+    <string name="premium_restore_none">No previous purchase found.</string>
+    <string name="settings_premium_title">Premium</string>
+    <string name="settings_premium_unlocked">Premium unlocked</string>
 
     <!-- Generic actions -->
     <string name="action_save">Save</string>

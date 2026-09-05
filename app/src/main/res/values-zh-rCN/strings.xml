@@ -239,4 +239,17 @@
     <string name="settings_language_title">语言</string>
     <string name="settings_language_body">选择应用语言。系统默认会跟随设备语言。</string>
     <string name="settings_language_system">系统默认</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">解锁高级版</string>
+    <string name="premium_paywall_benefit_capture">从打印的练习纸中捕获你自己的笔迹</string>
+    <string name="premium_paywall_benefit_papers">五种额外纸张样式：羊皮纸、再生纸、牛皮纸、横线和方格</string>
+    <string name="premium_paywall_buy">以 %1$s 解锁</string>
+    <string name="premium_paywall_restore">恢复购买</string>
+    <string name="premium_paywall_pending">您的购买仍在处理中。这可能需要一点时间。</string>
+    <string name="premium_paywall_unavailable">Google Play 结算当前不可用。请稍后重试。</string>
+    <string name="premium_paywall_error">出现问题，请重试。</string>
+    <string name="premium_restore_success">高级版已解锁。</string>
+    <string name="premium_restore_none">未找到以前的购买记录。</string>
+    <string name="settings_premium_title">高级版</string>
+    <string name="settings_premium_unlocked">高级版已解锁</string>
 </resources>

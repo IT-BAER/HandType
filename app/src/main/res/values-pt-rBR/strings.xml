@@ -239,4 +239,17 @@
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_body">Escolha o idioma do app. Padrão do sistema segue o idioma do seu dispositivo.</string>
     <string name="settings_language_system">Padrão do sistema</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">Desbloquear Premium</string>
+    <string name="premium_paywall_benefit_capture">Capture sua própria caligrafia a partir de uma folha de prática impressa</string>
+    <string name="premium_paywall_benefit_papers">Cinco estilos de papel extras: pergaminho, reciclado, kraft, pautado e quadriculado</string>
+    <string name="premium_paywall_buy">Desbloquear por %1$s</string>
+    <string name="premium_paywall_restore">Restaurar compra</string>
+    <string name="premium_paywall_pending">Sua compra ainda está sendo processada. Isso pode levar um momento.</string>
+    <string name="premium_paywall_unavailable">O faturamento do Google Play não está disponível agora. Tente novamente mais tarde.</string>
+    <string name="premium_paywall_error">Algo deu errado. Tente novamente.</string>
+    <string name="premium_restore_success">Premium desbloqueado.</string>
+    <string name="premium_restore_none">Nenhuma compra anterior encontrada.</string>
+    <string name="settings_premium_title">Premium</string>
+    <string name="settings_premium_unlocked">Premium desbloqueado</string>
 </resources>

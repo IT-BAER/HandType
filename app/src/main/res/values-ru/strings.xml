@@ -222,4 +222,17 @@
     <string name="settings_language_title">Язык</string>
     <string name="settings_language_body">Выберите язык приложения. Системная настройка следует языку устройства.</string>
     <string name="settings_language_system">Системная</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">Разблокировать Премиум</string>
+    <string name="premium_paywall_benefit_capture">Захватите свой собственный почерк с распечатанного тренировочного листа</string>
+    <string name="premium_paywall_benefit_papers">Пять дополнительных стилей бумаги: пергамент, переработанная, крафт, линованная и клетчатая</string>
+    <string name="premium_paywall_buy">Разблокировать за %1$s</string>
+    <string name="premium_paywall_restore">Восстановить покупку</string>
+    <string name="premium_paywall_pending">Ваша покупка ещё обрабатывается. Это может занять некоторое время.</string>
+    <string name="premium_paywall_unavailable">Оплата Google Play сейчас недоступна. Повторите попытку позже.</string>
+    <string name="premium_paywall_error">Что-то пошло не так. Попробуйте ещё раз.</string>
+    <string name="premium_restore_success">Премиум разблокирован.</string>
+    <string name="premium_restore_none">Предыдущая покупка не найдена.</string>
+    <string name="settings_premium_title">Премиум</string>
+    <string name="settings_premium_unlocked">Премиум разблокирован</string>
 </resources>

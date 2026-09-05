@@ -36,7 +36,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -49,6 +51,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.ConfigurationCompat
+import com.baer.handtype.billing.PremiumBilling
+import com.baer.handtype.billing.PremiumState
+import com.baer.handtype.feature.billing.PremiumPaywallSheet
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import com.baer.handtype.feature.capture.SheetSampleProcessor
 import com.baer.handtype.feature.info.AboutScreen
@@ -115,6 +120,7 @@ private fun HandTypeApp() {
                 settingsStore.write(updated)
                 if (languageChanged) activity.recreate()
             },
+            settingsStore = settingsStore,
         )
     }
 }
@@ -124,11 +130,25 @@ private fun HandTypeApp() {
 private fun HandTypeRoot(
     settings: AppSettings,
     onSettingsChanged: (AppSettings) -> Unit,
+    settingsStore: AppSettingsStore,
 ) {
     val context = LocalContext.current
+    val activity = context as Activity
     val repository = remember(context) { BundledTemplateRepository(context) }
     val builtInTemplates = remember(repository) { repository.listBuiltInTemplates() }
     val premiumTemplate = remember(repository) { repository.premiumTemplate() }
+
+    val billing = remember(activity) { PremiumBilling.create(activity, settingsStore) }
+    LaunchedEffect(billing) { billing.refresh() }
+    DisposableEffect(billing) { onDispose { billing.close() } }
+    val premiumState by billing.state.collectAsState()
+    val premiumUnlocked = premiumState == PremiumState.Unlocked
+    var paywallAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var pendingPresetSelection by remember { mutableStateOf<String?>(null) }
+
+    fun requirePremium(action: () -> Unit) {
+        if (premiumUnlocked) action() else paywallAction = action
+    }
     // Saveable so a recreate (language switch, system theme or font-scale change) keeps the screen;
     // a cold start has no saved state and still opens on home.
     var route by rememberSaveable { mutableStateOf(RootRoute.TemplateChooser.name) }
@@ -196,7 +216,13 @@ private fun HandTypeRoot(
                             templateId = templateId,
                             repository = repository,
                             onBackToTemplates = { route = RootRoute.TemplateChooser.name },
-                            onPremiumSelected = { route = RootRoute.PremiumCapture.name },
+                            onPremiumSelected = { requirePremium { route = RootRoute.PremiumCapture.name } },
+                            premiumUnlocked = premiumUnlocked,
+                            onLockedPresetTapped = { id ->
+                                requirePremium { pendingPresetSelection = id }
+                            },
+                            externallySelectedBackgroundId = pendingPresetSelection,
+                            onExternalSelectionConsumed = { pendingPresetSelection = null },
                         )
                     }
                 }
@@ -241,7 +267,7 @@ private fun HandTypeRoot(
                             selectedTemplateId = descriptor.id
                             route = RootRoute.RenderTemplate.name
                         },
-                        onPremiumSelected = { route = RootRoute.PremiumCapture.name },
+                        onPremiumSelected = { requirePremium { route = RootRoute.PremiumCapture.name } },
                         onOpenDrawer = openDrawer,
                         onDeleteTemplate = { descriptor ->
                             repository.deleteUserTemplate(descriptor.id)
@@ -260,6 +286,23 @@ private fun HandTypeRoot(
                         settings = settings,
                         onSettingsChanged = onSettingsChanged,
                         onOpenDrawer = openDrawer,
+                        premiumUnlocked = premiumUnlocked,
+                        onUnlockPremium = { requirePremium {} },
+                        onRestorePremium = {
+                            scope.launch {
+                                billing.refresh()
+                                val messageRes = when (billing.state.value) {
+                                    PremiumState.Unlocked -> R.string.premium_restore_success
+                                    PremiumState.Unavailable -> R.string.premium_paywall_unavailable
+                                    else -> R.string.premium_restore_none
+                                }
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(messageRes),
+                                    android.widget.Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        },
                     )
                 }
             }
@@ -318,6 +361,19 @@ private fun HandTypeRoot(
                 }
             }
         }
+    }
+
+    // Rendered outside AnimatedContent so the sheet survives the route change it triggers.
+    val currentPaywallAction = paywallAction
+    if (currentPaywallAction != null) {
+        PremiumPaywallSheet(
+            billing = billing,
+            onDismiss = { paywallAction = null },
+            onUnlocked = {
+                paywallAction = null
+                currentPaywallAction()
+            },
+        )
     }
 }
 
@@ -426,6 +482,10 @@ private fun TemplateRenderRoute(
     repository: BundledTemplateRepository,
     onBackToTemplates: () -> Unit,
     onPremiumSelected: () -> Unit,
+    premiumUnlocked: Boolean,
+    onLockedPresetTapped: (String) -> Unit,
+    externallySelectedBackgroundId: String?,
+    onExternalSelectionConsumed: () -> Unit,
 ) {
     val template by produceState<HandwritingTemplate?>(initialValue = null, templateId) {
         value = withContext(Dispatchers.IO) {
@@ -444,6 +504,10 @@ private fun TemplateRenderRoute(
             template = template!!,
             onBackToTemplates = onBackToTemplates,
             onPremiumSelected = onPremiumSelected,
+            premiumUnlocked = premiumUnlocked,
+            onLockedPresetTapped = onLockedPresetTapped,
+            externallySelectedBackgroundId = externallySelectedBackgroundId,
+            onExternalSelectionConsumed = onExternalSelectionConsumed,
         )
     } else if (showLoading) {
         LoadingTemplateScreen(
