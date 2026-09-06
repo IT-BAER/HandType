@@ -210,9 +210,11 @@ private class PlayPremiumBilling(
         client.endConnection()
     }
 
+    // A purchase whose Play signature does not verify is treated as never purchased (fake-billing tools).
     private fun Purchase.toPurchaseInfo(): PurchaseInfo = PurchaseInfo(
         products = products,
-        purchased = purchaseState == Purchase.PurchaseState.PURCHASED,
+        purchased = purchaseState == Purchase.PurchaseState.PURCHASED &&
+            PurchaseSignatureVerifier.verify(PurchaseSignatureVerifier.PLAY_LICENSE_KEY, originalJson, signature),
         pending = purchaseState == Purchase.PurchaseState.PENDING,
         acknowledged = isAcknowledged,
         token = purchaseToken,
