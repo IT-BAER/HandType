@@ -252,4 +252,16 @@
     <string name="premium_restore_none">이전 구매 내역을 찾을 수 없습니다.</string>
     <string name="settings_premium_title">프리미엄</string>
     <string name="settings_premium_unlocked">프리미엄 잠금 해제됨</string>
+    <string name="settings_support_title">HandType 응원하기</string>
+    <string name="settings_support_body">앱이 마음에 드시나요? 친구에게 알리거나 Google Play에 평점을 남겨 주세요.</string>
+    <string name="settings_share_app">HandType 공유</string>
+    <string name="settings_rate_app">HandType 평가</string>
+    <string name="share_app_message">HandType으로 입력한 텍스트를 진짜 손글씨처럼 바꾸고 있어요. 한번 써 보세요:</string>
+    <string name="onboarding_p2_title">스타일과 종이를 고르세요</string>
+    <string name="onboarding_p2_body">손글씨 스타일을 고른 다음 종이 프리셋 중 하나를 선택하세요. 실제 펜처럼 결과물마다 조금씩 달라집니다.</string>
+    <string name="onboarding_p3_title">저장, 공유, 내보내기</string>
+    <string name="onboarding_p3_body">노트를 갤러리에 저장하거나, 원하는 앱으로 공유하거나, 투명 PNG 또는 A4 PDF로 내보낼 수 있어요. 노트는 내 휴대폰에만 보관됩니다.</string>
+    <string name="onboarding_next">다음</string>
+    <string name="onboarding_skip">건너뛰기</string>
+    <string name="help_show_intro">소개 다시 보기</string>
 </resources>

@@ -235,4 +235,16 @@
     <string name="premium_restore_none">Предыдущая покупка не найдена.</string>
     <string name="settings_premium_title">Премиум</string>
     <string name="settings_premium_unlocked">Премиум разблокирован</string>
+    <string name="settings_support_title">Поддержать HandType</string>
+    <string name="settings_support_body">Нравится приложение? Расскажите другу или оставьте оценку в Google Play.</string>
+    <string name="settings_share_app">Поделиться HandType</string>
+    <string name="settings_rate_app">Оценить HandType</string>
+    <string name="share_app_message">Я превращаю набранный текст в реалистичный рукописный с помощью HandType. Попробуйте:</string>
+    <string name="onboarding_p2_title">Выберите стиль и бумагу</string>
+    <string name="onboarding_p2_body">Выберите стиль почерка, затем один из вариантов бумаги. Каждый результат немного отличается, как при письме настоящей ручкой.</string>
+    <string name="onboarding_p3_title">Сохраняйте, делитесь, экспортируйте</string>
+    <string name="onboarding_p3_body">Сохраните заметку в галерею, отправьте её в любое приложение или экспортируйте прозрачный PNG либо PDF формата A4. Ваши заметки остаются на телефоне.</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_skip">Пропустить</string>
+    <string name="help_show_intro">Показать вступление снова</string>
 </resources>

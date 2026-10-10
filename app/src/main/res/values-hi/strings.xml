@@ -234,4 +234,16 @@
     <string name="premium_restore_none">कोई पिछली खरीद नहीं मिली।</string>
     <string name="settings_premium_title">प्रीमियम</string>
     <string name="settings_premium_unlocked">प्रीमियम अनलॉक हो गया</string>
+    <string name="settings_support_title">HandType को सपोर्ट करें</string>
+    <string name="settings_support_body">ऐप पसंद आ रहा है? किसी दोस्त को बताएं या Google Play पर रेटिंग दें।</string>
+    <string name="settings_share_app">HandType शेयर करें</string>
+    <string name="settings_rate_app">HandType को रेट करें</string>
+    <string name="share_app_message">मैं HandType से टाइप किए हुए टेक्स्ट को असली जैसी हस्तलिखित लिखावट में बदलता हूँ। आप भी आज़माएं:</string>
+    <string name="onboarding_p2_title">एक स्टाइल और कागज़ चुनें</string>
+    <string name="onboarding_p2_body">एक हैंडराइटिंग स्टाइल चुनें, फिर कागज़ के प्रीसेट में से कोई एक चुनें। हर रेंडर थोड़ा अलग होता है, बिल्कुल असली पेन की तरह।</string>
+    <string name="onboarding_p3_title">सेव करें, शेयर करें या एक्सपोर्ट करें</string>
+    <string name="onboarding_p3_body">नोट को गैलरी में सेव करें, किसी भी ऐप पर शेयर करें, या पारदर्शी PNG या A4 PDF एक्सपोर्ट करें। आपके नोट आपके फ़ोन पर ही रहते हैं।</string>
+    <string name="onboarding_next">आगे</string>
+    <string name="onboarding_skip">छोड़ें</string>
+    <string name="help_show_intro">परिचय दोबारा दिखाएं</string>
 </resources>

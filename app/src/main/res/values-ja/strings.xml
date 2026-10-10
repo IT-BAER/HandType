@@ -250,4 +250,16 @@
     <string name="premium_restore_none">以前の購入が見つかりませんでした。</string>
     <string name="settings_premium_title">プレミアム</string>
     <string name="settings_premium_unlocked">プレミアム解除済み</string>
+    <string name="settings_support_title">HandType を応援する</string>
+    <string name="settings_support_body">アプリを気に入っていただけましたか？友だちに教えたり、Google Play で評価を付けたりしてみてください。</string>
+    <string name="settings_share_app">HandType を共有</string>
+    <string name="settings_rate_app">HandType を評価</string>
+    <string name="share_app_message">HandType で、入力したテキストを本物のような手書き文字に変換しています。試してみてください：</string>
+    <string name="onboarding_p2_title">スタイルと紙を選ぶ</string>
+    <string name="onboarding_p2_body">手書きスタイルを選び、用紙プリセットから 1 つ選びます。毎回の仕上がりは本物のペンのように少しずつ変わります。</string>
+    <string name="onboarding_p3_title">保存・共有・エクスポート</string>
+    <string name="onboarding_p3_body">ノートをギャラリーに保存したり、好きなアプリに共有したり、透過 PNG や A4 の PDF として書き出せます。ノートは端末内にだけ保存されます。</string>
+    <string name="onboarding_next">次へ</string>
+    <string name="onboarding_skip">スキップ</string>
+    <string name="help_show_intro">はじめの説明をもう一度表示</string>
 </resources>

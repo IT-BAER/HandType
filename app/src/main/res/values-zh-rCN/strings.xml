@@ -252,4 +252,16 @@
     <string name="premium_restore_none">未找到以前的购买记录。</string>
     <string name="settings_premium_title">高级版</string>
     <string name="settings_premium_unlocked">高级版已解锁</string>
+    <string name="settings_support_title">支持 HandType</string>
+    <string name="settings_support_body">喜欢这款应用吗？告诉朋友，或在 Google Play 上留下评分。</string>
+    <string name="settings_share_app">分享 HandType</string>
+    <string name="settings_rate_app">为 HandType 评分</string>
+    <string name="share_app_message">我用 HandType 把键入的文字变成逼真的手写字。快来试试：</string>
+    <string name="onboarding_p2_title">选择样式和纸张</string>
+    <string name="onboarding_p2_body">先选择一种手写样式，再选择一种纸张预设。每次生成的效果都会略有不同，就像真正的笔迹。</string>
+    <string name="onboarding_p3_title">保存、分享或导出</string>
+    <string name="onboarding_p3_body">可将笔记保存到相册，分享到任意应用，或导出透明 PNG 或 A4 PDF。你的笔记只保存在你的手机上。</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_skip">跳过</string>
+    <string name="help_show_intro">再次查看介绍</string>
 </resources>

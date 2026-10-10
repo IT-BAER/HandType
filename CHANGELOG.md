@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-10
+
+### Added
+- Settings: "Support HandType" card with Share and Rate rows (Google Play listing).
+- In-app review prompt after the third successful save, share or export (Play In-App Review API, shown once; never directly after a share).
+- Three-page onboarding walkthrough; Help has a "Show the intro again" button.
+- Strings for the new UI in all 10 locales.
+
+### Changed
+- Version bumped to 0.2.0 (versionCode 2).
+- Removed the unused `CAMERA` permission; capture goes through the ML Kit document scanner.
+
 ### Fixed
+- Premium purchase signature check works on Android 6.0-7.1 (API 23-25); `java.util.Base64` (API 26+) replaced by `kotlin.io.encoding.Base64`.
 - Personal handwriting capture now correctly detects filled cells ("no filled cells were detected" error resolved).
   - `GlyphPostProcessor.cleanGlyph()`: blank/low-contrast crops now return a transparent canvas instead of the opaque original, preventing blank cells from being counted as ink.
   - `SheetSampleProcessor.hasInk()`: replaced strict per-pixel α≥200 count with alpha-energy sum (`Σalpha > 50×255`), correctly detecting thin characters such as `i`, `l`, and `1`.

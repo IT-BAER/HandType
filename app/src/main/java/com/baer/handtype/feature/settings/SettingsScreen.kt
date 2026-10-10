@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -31,10 +33,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.R
+import com.baer.handtype.testing.HandTypeTestTags
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +51,8 @@ fun SettingsScreen(
     premiumUnlocked: Boolean,
     onUnlockPremium: () -> Unit,
     onRestorePremium: () -> Unit,
+    onShareApp: () -> Unit,
+    onRateApp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -151,8 +158,54 @@ fun SettingsScreen(
                     )
                 }
             }
+            PreferenceCard(
+                title = stringResource(R.string.settings_support_title),
+                body = stringResource(R.string.settings_support_body),
+            ) {
+                ActionRow(
+                    icon = Icons.Default.Share,
+                    label = stringResource(R.string.settings_share_app),
+                    onClick = onShareApp,
+                    modifier = Modifier.testTag(HandTypeTestTags.SETTINGS_SHARE_APP),
+                )
+                HorizontalDivider()
+                ActionRow(
+                    icon = Icons.Default.Star,
+                    label = stringResource(R.string.settings_rate_app),
+                    onClick = onRateApp,
+                    modifier = Modifier.testTag(HandTypeTestTags.SETTINGS_RATE_APP),
+                )
+            }
             Spacer(Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun ActionRow(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 

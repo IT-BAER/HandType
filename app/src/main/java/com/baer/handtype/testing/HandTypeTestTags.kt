@@ -17,6 +17,15 @@ object HandTypeTestTags {
     const val PREMIUM_BUY_BUTTON = "premium_buy_button"
     const val PREMIUM_RESTORE_BUTTON = "premium_restore_button"
 
+    const val SETTINGS_SHARE_APP = "settings_share_app"
+    const val SETTINGS_RATE_APP = "settings_rate_app"
+
+    const val ONBOARDING_SHEET = "onboarding_sheet"
+    const val ONBOARDING_NEXT = "onboarding_next"
+    const val ONBOARDING_SKIP = "onboarding_skip"
+
+    const val HELP_SHOW_INTRO = "help_show_intro"
+
     fun templateDeleteButton(templateId: String): String = "template_delete_$templateId"
     fun backgroundPresetCard(id: String): String = "bg_preset_$id"
 }

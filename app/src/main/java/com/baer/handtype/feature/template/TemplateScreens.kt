@@ -442,6 +442,7 @@ fun HandwritingRenderScreen(
     onLockedPresetTapped: (String) -> Unit,
     externallySelectedBackgroundId: String? = null,
     onExternalSelectionConsumed: () -> Unit = {},
+    onOutputSucceeded: (askAllowed: Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var text by rememberSaveable { mutableStateOf("") }
@@ -578,6 +579,7 @@ fun HandwritingRenderScreen(
                         templateName = template.descriptor.displayName,
                         missingCharacters = missingChars,
                         snackbarHostState = snackbarHostState,
+                        onOutputSucceeded = onOutputSucceeded,
                         onSaveTransparent = {
                             val seed = lastRenderSeed ?: return@ResultPhaseContent
                             val inputText = lastRenderedText.ifBlank { return@ResultPhaseContent }
@@ -594,6 +596,7 @@ fun HandwritingRenderScreen(
                                         templateName = "${template.descriptor.displayName}_transparent",
                                     )
                                         .onSuccess {
+                                            onOutputSucceeded(true)
                                             snackbarHostState.showSnackbar(
                                                 context.getString(R.string.result_saved_transparent),
                                             )
@@ -823,6 +826,7 @@ private fun ResultPhaseContent(
     missingCharacters: Set<Char>,
     snackbarHostState: SnackbarHostState,
     onSaveTransparent: () -> Unit,
+    onOutputSucceeded: (askAllowed: Boolean) -> Unit,
     onNewNote: () -> Unit,
     onRegenerate: () -> Unit,
     onBackToCompose: () -> Unit,
@@ -862,6 +866,7 @@ private fun ResultPhaseContent(
         }
         OutputExporter.saveImageToGallery(context, bmp, templateName)
             .onSuccess {
+                onOutputSucceeded(true)
                 toast(context.getString(R.string.result_saved))
             }
             .onFailure { toast(context.getString(R.string.result_save_failed, it.message ?: "unknown")) }
@@ -895,6 +900,7 @@ private fun ResultPhaseContent(
         runCatching {
             val uri = OutputExporter.stageBitmapForShare(context, bmp, templateName)
             context.startActivity(OutputExporter.buildShareIntent(uri))
+            onOutputSucceeded(false)
         }.onFailure { toast(context.getString(R.string.result_share_failed, it.message ?: "unknown")) }
     }
 
@@ -903,6 +909,7 @@ private fun ResultPhaseContent(
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         OutputExporter.exportPdf(context, bmp, templateName)
             .onSuccess { uri ->
+                onOutputSucceeded(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     toast(context.getString(R.string.result_pdf_saved))
                 } else {

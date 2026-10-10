@@ -6,12 +6,19 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.baer.handtype.feature.onboarding.OnboardingSheet
+import com.baer.handtype.feature.settings.AppSettings
+import com.baer.handtype.feature.settings.SettingsScreen
 import com.baer.handtype.feature.template.HandwritingRenderScreen
 import com.baer.handtype.feature.template.TemplateChooserScreen
 import com.baer.handtype.template.BundledTemplateRepository
@@ -57,6 +64,50 @@ class ProductionReadinessTest {
         rule.onAllNodesWithText(context.getString(R.string.template_chooser_use_template))[0]
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
         rule.runOnIdle { assertTrue("Template CTA must expose an accessibility click", selected) }
+    }
+
+    @Test fun settingsShowsShareAndRateRows() {
+        rule.setContent {
+            HandTypeTheme {
+                SettingsScreen(
+                    settings = AppSettings(),
+                    onSettingsChanged = {},
+                    onOpenDrawer = {},
+                    premiumUnlocked = true,
+                    onUnlockPremium = {},
+                    onRestorePremium = {},
+                    onShareApp = {},
+                    onRateApp = {},
+                )
+            }
+        }
+        rule.onNodeWithTag(HandTypeTestTags.SETTINGS_SHARE_APP).performScrollTo().assertIsDisplayed()
+        rule.onNodeWithTag(HandTypeTestTags.SETTINGS_RATE_APP).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun onboardingWalksThreePagesThenRevealsChooser() {
+        val repo = BundledTemplateRepository(context)
+        rule.setContent {
+            HandTypeTheme {
+                var complete by remember { mutableStateOf(false) }
+                TemplateChooserScreen(
+                    templates = repo.listBuiltInTemplates(),
+                    premiumTemplate = repo.premiumTemplate(),
+                    onTemplateSelected = {},
+                    onPremiumSelected = {},
+                )
+                if (!complete) OnboardingSheet(onFinished = { complete = true })
+            }
+        }
+        rule.onNodeWithTag(HandTypeTestTags.ONBOARDING_SHEET).assertIsDisplayed()
+        repeat(3) {
+            rule.onNodeWithTag(HandTypeTestTags.ONBOARDING_NEXT).performClick()
+            rule.waitForIdle()
+        }
+        rule.waitUntil(5_000) {
+            rule.onAllNodesWithTag(HandTypeTestTags.ONBOARDING_SHEET).fetchSemanticsNodes().isEmpty()
+        }
+        rule.onNodeWithTag(HandTypeTestTags.TEMPLATE_PAGER).assertIsDisplayed()
     }
 
     @Test fun systemBackFromResultRestoresDraft() {

@@ -252,4 +252,16 @@
     <string name="premium_restore_none">Nenhuma compra anterior encontrada.</string>
     <string name="settings_premium_title">Premium</string>
     <string name="settings_premium_unlocked">Premium desbloqueado</string>
+    <string name="settings_support_title">Apoie o HandType</string>
+    <string name="settings_support_body">Está gostando do app? Conte para um amigo ou deixe uma avaliação no Google Play.</string>
+    <string name="settings_share_app">Compartilhar o HandType</string>
+    <string name="settings_rate_app">Avaliar o HandType</string>
+    <string name="share_app_message">Eu transformo texto digitado em letra de mão realista com o HandType. Experimente:</string>
+    <string name="onboarding_p2_title">Escolha um estilo e um papel</string>
+    <string name="onboarding_p2_body">Escolha um estilo de escrita e depois um dos papéis predefinidos. Cada resultado varia um pouco, como uma caneta de verdade.</string>
+    <string name="onboarding_p3_title">Salve, compartilhe ou exporte</string>
+    <string name="onboarding_p3_body">Salve a nota na galeria, compartilhe com qualquer app ou exporte um PNG transparente ou um PDF A4. Suas notas ficam no seu celular.</string>
+    <string name="onboarding_next">Avançar</string>
+    <string name="onboarding_skip">Pular</string>
+    <string name="help_show_intro">Mostrar a introdução novamente</string>
 </resources>

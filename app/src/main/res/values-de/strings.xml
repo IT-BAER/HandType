@@ -234,4 +234,16 @@
     <string name="premium_restore_none">Kein vorheriger Kauf gefunden.</string>
     <string name="settings_premium_title">Premium</string>
     <string name="settings_premium_unlocked">Premium freigeschaltet</string>
+    <string name="settings_support_title">HandType unterstützen</string>
+    <string name="settings_support_body">Gefällt dir die App? Erzähl einem Freund davon oder hinterlasse eine Bewertung bei Google Play.</string>
+    <string name="settings_share_app">HandType teilen</string>
+    <string name="settings_rate_app">HandType bewerten</string>
+    <string name="share_app_message">Ich verwandle getippten Text mit HandType in echt aussehende Handschrift. Probier es aus:</string>
+    <string name="onboarding_p2_title">Wähle einen Stil und ein Papier</string>
+    <string name="onboarding_p2_body">Wähle einen Handschriftstil und dann eine der Papiervorlagen. Jede Ausgabe variiert ein wenig, wie bei einem echten Stift.</string>
+    <string name="onboarding_p3_title">Speichern, teilen oder exportieren</string>
+    <string name="onboarding_p3_body">Speichere die Notiz in deiner Galerie, teile sie mit einer beliebigen App oder exportiere ein transparentes PNG oder ein A4-PDF. Deine Notizen bleiben auf deinem Handy.</string>
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_skip">Überspringen</string>
+    <string name="help_show_intro">Einführung erneut anzeigen</string>
 </resources>

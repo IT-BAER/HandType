@@ -265,4 +265,16 @@
     <!-- UX overhaul: drawer sections -->
     <string name="drawer_section_create">Create</string>
     <string name="drawer_section_info">Info</string>
+    <string name="settings_support_title">Support HandType</string>
+    <string name="settings_support_body">Enjoying the app? Tell a friend or leave a rating on Google Play.</string>
+    <string name="settings_share_app">Share HandType</string>
+    <string name="settings_rate_app">Rate HandType</string>
+    <string name="share_app_message">I turn typed text into real-looking handwriting with HandType. Try it:</string>
+    <string name="onboarding_p2_title">Pick a style and a paper</string>
+    <string name="onboarding_p2_body">Choose a handwriting style, then pick one of the paper presets. Every render varies a little, like a real pen.</string>
+    <string name="onboarding_p3_title">Save, share or export</string>
+    <string name="onboarding_p3_body">Save the note to your gallery, share it to any app, or export a transparent PNG or an A4 PDF. Your notes stay on your phone.</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="help_show_intro">Show the intro again</string>
 </resources>

@@ -3,9 +3,11 @@ package com.baer.handtype.billing
 import java.security.KeyFactory
 import java.security.Signature
 import java.security.spec.X509EncodedKeySpec
-import java.util.Base64
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /** Verifies Play's SHA1withRSA purchase signature against the app's Play license public key. */
+@OptIn(ExperimentalEncodingApi::class)
 object PurchaseSignatureVerifier {
     /** Public key from Play Console > Monetarisierung einrichten > Lizenzierung. Public by design. */
     const val PLAY_LICENSE_KEY =
@@ -13,11 +15,11 @@ object PurchaseSignatureVerifier {
 
     fun verify(base64PublicKey: String, signedData: String, base64Signature: String): Boolean = runCatching {
         val key = KeyFactory.getInstance("RSA")
-            .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(base64PublicKey)))
+            .generatePublic(X509EncodedKeySpec(Base64.decode(base64PublicKey)))
         Signature.getInstance("SHA1withRSA").run {
             initVerify(key)
             update(signedData.toByteArray())
-            verify(Base64.getDecoder().decode(base64Signature))
+            verify(Base64.decode(base64Signature))
         }
     }.getOrDefault(false)
 }

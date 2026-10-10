@@ -51,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -67,6 +68,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.BuildConfig
 import com.baer.handtype.R
+import com.baer.handtype.testing.HandTypeTestTags
 
 const val GITHUB_REPO_URL = "https://github.com/IT-BAER/HandType"
 const val GITHUB_PRIVACY_URL = "https://github.com/IT-BAER/HandType/blob/main/PRIVACY.md"
@@ -125,7 +127,7 @@ private fun HelpCard(title: String, body: String) {
 }
 
 @Composable
-fun HelpScreen(onOpenDrawer: () -> Unit) {
+fun HelpScreen(onOpenDrawer: () -> Unit, onShowIntro: () -> Unit) {
     InfoScaffold(title = stringResource(R.string.help_title), onOpenDrawer = onOpenDrawer) { padding ->
         Column(
             modifier = Modifier
@@ -140,6 +142,14 @@ fun HelpScreen(onOpenDrawer: () -> Unit) {
             HelpCard(stringResource(R.string.help_s3_title), stringResource(R.string.help_s3_body))
             HelpCard(stringResource(R.string.help_s4_title), stringResource(R.string.help_s4_body))
             HelpCard(stringResource(R.string.help_s5_title), stringResource(R.string.help_s5_body))
+            OutlinedButton(
+                onClick = onShowIntro,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(HandTypeTestTags.HELP_SHOW_INTRO),
+            ) {
+                Text(stringResource(R.string.help_show_intro))
+            }
             Spacer(Modifier.height(24.dp))
         }
     }

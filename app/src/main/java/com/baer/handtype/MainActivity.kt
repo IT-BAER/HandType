@@ -20,21 +20,13 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -49,17 +41,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.os.ConfigurationCompat
 import com.baer.handtype.billing.PremiumBilling
 import com.baer.handtype.billing.PremiumState
 import com.baer.handtype.feature.billing.PremiumPaywallSheet
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import com.baer.handtype.feature.capture.SheetSampleProcessor
+import com.baer.handtype.feature.feedback.ReviewPromptStore
+import com.baer.handtype.feature.feedback.openStoreListing
+import com.baer.handtype.feature.feedback.requestInAppReview
+import com.baer.handtype.feature.feedback.shareApp
 import com.baer.handtype.feature.info.AboutScreen
 import com.baer.handtype.feature.info.FaqScreen
 import com.baer.handtype.feature.info.HelpScreen
 import com.baer.handtype.feature.info.PrivacyScreen
+import com.baer.handtype.feature.onboarding.OnboardingSheet
 import com.baer.handtype.feature.settings.AppSettings
 import com.baer.handtype.feature.settings.AppSettingsStore
 import com.baer.handtype.feature.settings.SettingsScreen
@@ -134,6 +130,7 @@ private fun HandTypeRoot(
 ) {
     val context = LocalContext.current
     val activity = context as Activity
+    val reviewStore = remember { ReviewPromptStore(activity) }
     val repository = remember(context) { BundledTemplateRepository(context) }
     val builtInTemplates = remember(repository) { repository.listBuiltInTemplates() }
     val premiumTemplate = remember(repository) { repository.premiumTemplate() }
@@ -223,6 +220,12 @@ private fun HandTypeRoot(
                             },
                             externallySelectedBackgroundId = pendingPresetSelection,
                             onExternalSelectionConsumed = { pendingPresetSelection = null },
+                            onOutputSucceeded = { askAllowed ->
+                                if (reviewStore.recordSuccessAndCheck() && askAllowed) {
+                                    reviewStore.markShown()
+                                    requestInAppReview(activity)
+                                }
+                            },
                         )
                     }
                 }
@@ -278,7 +281,13 @@ private fun HandTypeRoot(
                         onOpenDrawer = openDrawer,
                         onCreateNote = { route = RootRoute.TemplateChooser.name },
                     )
-                    RootRoute.Help.name -> HelpScreen(onOpenDrawer = openDrawer)
+                    RootRoute.Help.name -> HelpScreen(
+                        onOpenDrawer = openDrawer,
+                        onShowIntro = {
+                            onSettingsChanged(settings.copy(onboardingComplete = false))
+                            route = RootRoute.TemplateChooser.name
+                        },
+                    )
                     RootRoute.Faq.name -> FaqScreen(onOpenDrawer = openDrawer)
                     RootRoute.About.name -> AboutScreen(onOpenDrawer = openDrawer)
                     RootRoute.Privacy.name -> PrivacyScreen(onOpenDrawer = openDrawer)
@@ -288,6 +297,8 @@ private fun HandTypeRoot(
                         onOpenDrawer = openDrawer,
                         premiumUnlocked = premiumUnlocked,
                         onUnlockPremium = { requirePremium {} },
+                        onShareApp = { shareApp(activity) },
+                        onRateApp = { openStoreListing(activity) },
                         onRestorePremium = {
                             scope.launch {
                                 billing.refresh()
@@ -331,34 +342,9 @@ private fun HandTypeRoot(
             }
 
             if (!settings.onboardingComplete && currentRoute == RootRoute.TemplateChooser.name) {
-                val onboardingSheetState = rememberModalBottomSheetState()
-                ModalBottomSheet(
-                    onDismissRequest = { onSettingsChanged(settings.copy(onboardingComplete = true)) },
-                    sheetState = onboardingSheetState,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.onboarding_title),
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                        Text(
-                            text = stringResource(R.string.onboarding_body),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Button(
-                            onClick = { onSettingsChanged(settings.copy(onboardingComplete = true)) },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(text = stringResource(R.string.onboarding_cta))
-                        }
-                    }
-                }
+                OnboardingSheet(
+                    onFinished = { onSettingsChanged(settings.copy(onboardingComplete = true)) },
+                )
             }
         }
     }
@@ -486,6 +472,7 @@ private fun TemplateRenderRoute(
     onLockedPresetTapped: (String) -> Unit,
     externallySelectedBackgroundId: String?,
     onExternalSelectionConsumed: () -> Unit,
+    onOutputSucceeded: (askAllowed: Boolean) -> Unit,
 ) {
     val template by produceState<HandwritingTemplate?>(initialValue = null, templateId) {
         value = withContext(Dispatchers.IO) {
@@ -508,6 +495,7 @@ private fun TemplateRenderRoute(
             onLockedPresetTapped = onLockedPresetTapped,
             externallySelectedBackgroundId = externallySelectedBackgroundId,
             onExternalSelectionConsumed = onExternalSelectionConsumed,
+            onOutputSucceeded = onOutputSucceeded,
         )
     } else if (showLoading) {
         LoadingTemplateScreen(

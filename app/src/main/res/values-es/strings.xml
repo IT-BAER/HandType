@@ -252,4 +252,16 @@
     <string name="premium_restore_none">No se encontró ninguna compra anterior.</string>
     <string name="settings_premium_title">Premium</string>
     <string name="settings_premium_unlocked">Premium desbloqueado</string>
+    <string name="settings_support_title">Apoya HandType</string>
+    <string name="settings_support_body">¿Te gusta la app? Cuéntaselo a un amigo o deja una valoración en Google Play.</string>
+    <string name="settings_share_app">Compartir HandType</string>
+    <string name="settings_rate_app">Valorar HandType</string>
+    <string name="share_app_message">Convierto texto escrito a máquina en una letra manuscrita realista con HandType. Pruébalo:</string>
+    <string name="onboarding_p2_title">Elige un estilo y un papel</string>
+    <string name="onboarding_p2_body">Elige un estilo de escritura y luego uno de los papeles predefinidos. Cada resultado varía un poco, como con un bolígrafo real.</string>
+    <string name="onboarding_p3_title">Guarda, comparte o exporta</string>
+    <string name="onboarding_p3_body">Guarda la nota en tu galería, compártela con cualquier app o exporta un PNG transparente o un PDF A4. Tus notas se quedan en tu teléfono.</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_skip">Omitir</string>
+    <string name="help_show_intro">Mostrar la introducción de nuevo</string>
 </resources>

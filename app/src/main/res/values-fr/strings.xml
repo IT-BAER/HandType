@@ -252,4 +252,16 @@
     <string name="premium_restore_none">Aucun achat précédent trouvé.</string>
     <string name="settings_premium_title">Premium</string>
     <string name="settings_premium_unlocked">Premium débloqué</string>
+    <string name="settings_support_title">Soutenir HandType</string>
+    <string name="settings_support_body">Vous aimez l\'appli ? Parlez-en à un ami ou laissez une note sur Google Play.</string>
+    <string name="settings_share_app">Partager HandType</string>
+    <string name="settings_rate_app">Noter HandType</string>
+    <string name="share_app_message">Je transforme du texte tapé en écriture manuscrite réaliste avec HandType. Essayez :</string>
+    <string name="onboarding_p2_title">Choisissez un style et un papier</string>
+    <string name="onboarding_p2_body">Choisissez un style d\'écriture, puis l\'un des papiers prédéfinis. Chaque rendu varie un peu, comme avec un vrai stylo.</string>
+    <string name="onboarding_p3_title">Enregistrez, partagez ou exportez</string>
+    <string name="onboarding_p3_body">Enregistrez la note dans votre galerie, partagez-la avec n\'importe quelle appli ou exportez un PNG transparent ou un PDF A4. Vos notes restent sur votre téléphone.</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_skip">Passer</string>
+    <string name="help_show_intro">Afficher à nouveau l\'introduction</string>
 </resources>
