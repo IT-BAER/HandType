@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Onboarding: the dots and buttons stay in place on every page.
 - Template chooser: the menu button stays visible while the page scrolls.
 - Editor: the paper behind the message field lines up with its outline; the paper row scrolls to the screen edge.
+- History: thumbnails of short, wide notes show every word instead of cutting off the right side.
 - History: empty state no longer repeats its title; thumbnails no longer read the raw file name to TalkBack.
 - About: copyright year 2026.
 - Premium purchase signature check works on Android 6.0-7.1 (API 23-25); `java.util.Base64` (API 26+) replaced by `kotlin.io.encoding.Base64`.

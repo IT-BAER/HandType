@@ -71,6 +71,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -423,9 +424,12 @@ private fun HistoryThumbnail(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .background(MaterialTheme.colorScheme.surface),
+                            .background(MaterialTheme.colorScheme.surface)
+                            .background(Color(bitmap.getPixel(0, bitmap.height - 1))),
+                        // Full width: a square crop would cut words off notes wider than tall;
+                        // the paper's bottom-edge colour fills the rest of the square.
                         alignment = Alignment.TopStart,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.FillWidth,
                     )
                 } else {
                     Box(
