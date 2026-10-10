@@ -45,6 +45,8 @@ object HandwritingBitmapRenderer {
     private val descenderChars = setOf('g', 'j', 'p', 'q', 'y')
     private val dottedChars = setOf('i', 'j')
     private val punctuationChars = setOf('.', ',', ';', ':', '!', '?', '\'', '"', '`')
+    /** Marks whose ink floats above the baseline. */
+    private val raisedMarks = setOf('\'', '"', '`', '-')
 
     private data class InkBounds(
         val left: Int,
@@ -169,6 +171,21 @@ object HandwritingBitmapRenderer {
         }
 
         val cropped = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width, bounds.height)
+        return PreparedGlyph(
+            bitmap = cropped,
+            baselineRow = bundledBaselineRow(character, bounds.top, bounds.bottom, templateBaselineRow, isUserTemplate),
+            normalizedUserCanvas = false,
+        )
+    }
+
+    /** Baseline row inside the ink-cropped glyph. */
+    internal fun bundledBaselineRow(
+        character: Char,
+        inkTop: Int,
+        inkBottom: Int,
+        templateBaselineRow: Int,
+        isUserTemplate: Boolean,
+    ): Int {
         val lower = character.lowercaseChar()
         val baselineInSource = when {
             // Only lowercase descenders get the fraction-based baseline.
@@ -178,21 +195,27 @@ object HandwritingBitmapRenderer {
                     'g', 'j' -> 0.50f
                     else -> 0.58f
                 }
-                (bounds.top + (bounds.height * baselineFraction).toInt()).coerceIn(bounds.top, bounds.bottom)
+                (inkTop + ((inkBottom - inkTop + 1) * baselineFraction).toInt()).coerceIn(inkTop, inkBottom)
             }
-            lower in descenderChars -> templateBaselineRow.coerceIn(bounds.top, bounds.bottom)
-            else -> bounds.bottom
+            lower in descenderChars -> templateBaselineRow.coerceIn(inkTop, inkBottom)
+            isUserTemplate -> inkBottom
+            character in raisedMarks -> return (templateBaselineRow - inkTop).coerceAtLeast(inkBottom - inkTop)
+            character == ',' -> templateBaselineRow.coerceIn(inkTop, inkBottom)
+            else -> inkBottom
         }
-        return PreparedGlyph(
-            bitmap = cropped,
-            baselineRow = (baselineInSource - bounds.top).coerceIn(0, cropped.height - 1),
-            normalizedUserCanvas = false,
-        )
+        return (baselineInSource - inkTop).coerceIn(0, inkBottom - inkTop)
     }
 
     internal fun targetInkHeightRatio(character: Char, isUserTemplate: Boolean): Float {
         val lower = character.lowercaseChar()
         val baseRatio = when {
+            // Bundled marks keep their asset height relative to 'l' (0.66 for 100 px of ink).
+            character == '!' -> 0.64f
+            character == '?' -> 0.59f
+            character == ',' -> 0.22f
+            character == '\'' -> 0.23f
+            character == '.' -> 0.13f
+            character == '-' -> 0.08f
             character in punctuationChars -> 0.24f
             character.isDigit() -> 0.72f
             character.isUpperCase() -> 0.80f

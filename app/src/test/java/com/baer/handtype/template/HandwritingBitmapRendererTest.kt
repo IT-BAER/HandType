@@ -74,6 +74,47 @@ class HandwritingBitmapRendererTest {
     }
 }
 
+class BundledPunctuationTest {
+    private fun bundledRatio(c: Char) = HandwritingBitmapRenderer.targetInkHeightRatio(c, isUserTemplate = false)
+
+    @Test
+    fun bundledMarksKeepTheAssetProportionsOfTheLetters() {
+        // Bundled ink heights against 'l' (100 px): ! 98, ? 90, , 33, ' 35, . 19, - 12.
+        assertEquals(0.64f, bundledRatio('!'), 0.0001f)
+        assertEquals(0.59f, bundledRatio('?'), 0.0001f)
+        assertEquals(0.22f, bundledRatio(','), 0.0001f)
+        assertEquals(0.23f, bundledRatio('\''), 0.0001f)
+        assertEquals(0.13f, bundledRatio('.'), 0.0001f)
+        assertEquals(0.08f, bundledRatio('-'), 0.0001f)
+    }
+
+    @Test
+    fun userTemplatePunctuationRatioIsUnchanged() {
+        assertEquals(0.28f, HandwritingBitmapRenderer.targetInkHeightRatio('!', isUserTemplate = true), 0.0001f)
+    }
+
+    private fun row(c: Char, top: Int, bottom: Int) =
+        HandwritingBitmapRenderer.bundledBaselineRow(c, inkTop = top, inkBottom = bottom, templateBaselineRow = 138, isUserTemplate = false)
+
+    @Test
+    fun bundledLettersRestOnTheirInkBottom() {
+        assertEquals(78, row('a', top = 60, bottom = 138))
+        assertEquals(98, row('!', top = 40, bottom = 138))
+    }
+
+    @Test
+    fun bundledRaisedMarksSitAboveTheTemplateBaseline() {
+        // Row past the ink bottom lifts the mark: apostrophe near cap height, hyphen at mid x-height.
+        assertEquals(109, row('\'', top = 29, bottom = 64))
+        assertEquals(46, row('-', top = 92, bottom = 104))
+    }
+
+    @Test
+    fun bundledCommaHangsBelowTheTemplateBaseline() {
+        assertEquals(19, row(',', top = 119, bottom = 152))
+    }
+}
+
 class LeadingPullTest {
     @Test
     fun narrowLettersPullOnlyUnderATuckedNeighbour() {

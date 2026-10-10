@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Personal handwriting capture: a scan that cuts the black corner squares at the image edge no longer skews the sheet; letters such as `w` were blown up and `H`/`P` carried printed cell borders.
 - Personal handwriting: synthesized hyphens, apostrophes and commas sit at the right height (the hyphen used to drop to the baseline).
+- Ink Script: `!` and `?` are full height instead of dot-sized, the hyphen is a short dash at mid x-height instead of a blurred bar, apostrophes sit high, commas hang below the line, and periods match the letters.
 - PDF export no longer adds an empty page when only blank paper is left after the last cut.
 - Onboarding: the dots and buttons stay in place on every page.
 - Template chooser: the menu button stays visible while the page scrolls.
