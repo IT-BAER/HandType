@@ -45,7 +45,7 @@ Full policy: [PRIVACY.md](PRIVACY.md)
 
 - Kotlin 1.9.22, Jetpack Compose, Material3
 - AGP 8.10.1, Gradle 8.11.1, JDK 17
-- minSdk 23, target/compile 36
+- minSdk 29 (Android 10), target/compile 36
 - ML Kit Document Scanner + text recognition (handwriting capture)
 - Google Play Billing (Premium unlock)
 

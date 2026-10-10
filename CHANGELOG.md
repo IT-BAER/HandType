@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Version bumped to 0.2.0 (versionCode 2).
+- Minimum Android version raised to Android 10 (minSdk 29); Play's automatic protection needs at least minSdk 24.
 - Removed the unused `CAMERA` permission; capture goes through the ML Kit document scanner.
 - Result screen: the note preview fits the space above the actions, so Save, Share, Export, Regenerate and New Note are always visible without scrolling.
 - Editor: "Your message" is a heading above the paper field instead of a floating label.
