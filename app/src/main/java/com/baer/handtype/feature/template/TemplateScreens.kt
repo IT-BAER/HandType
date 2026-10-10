@@ -9,6 +9,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedContent
@@ -78,6 +80,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Layers
@@ -130,9 +133,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import android.graphics.Typeface as AndroidTypeface
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -185,19 +190,12 @@ fun TemplateChooserScreen(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+        topBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 4.dp, end = 12.dp),
+                    .statusBarsPadding()
+                    .padding(start = 4.dp, end = 12.dp, top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onOpenDrawer) {
@@ -207,6 +205,16 @@ fun TemplateChooserScreen(
                     )
                 }
             }
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(top = 16.dp, bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             Text(
                 text = stringResource(R.string.template_chooser_title),
                 style = MaterialTheme.typography.headlineMedium,
@@ -683,6 +691,12 @@ private fun ComposePhaseContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
+        // A heading instead of a floating label: the label notch would straddle paper and page.
+        Text(
+            text = stringResource(R.string.render_text_label),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -696,11 +710,11 @@ private fun ComposePhaseContent(
             OutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
-                label = { Text(stringResource(R.string.render_text_label)) },
                 placeholder = { Text(stringResource(R.string.render_text_placeholder)) },
                 modifier = Modifier
                     .testTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
                     .fillMaxSize(),
+                shape = RoundedCornerShape(16.dp),
                 maxLines = 20,
                 // The field is drawn over PaperPreviewSurface, which is light paper in both
                 // themes, so content must stay ink-dark instead of following onSurface.
@@ -711,8 +725,6 @@ private fun ComposePhaseContent(
                     cursorColor = BrandColors.Ink,
                     focusedPlaceholderColor = BrandColors.Ink.copy(alpha = 0.62f),
                     unfocusedPlaceholderColor = BrandColors.Ink.copy(alpha = 0.62f),
-                    focusedLabelColor = BrandColors.Green,
-                    unfocusedLabelColor = BrandColors.Ink.copy(alpha = 0.65f),
                     focusedBorderColor = BrandColors.Green,
                     unfocusedBorderColor = BrandColors.Ink.copy(alpha = 0.28f),
                     focusedContainerColor = Color.Transparent,
@@ -921,10 +933,10 @@ private fun ResultPhaseContent(
             .onFailure { toast(context.getString(R.string.result_pdf_failed, it.message ?: "unknown")) }
     }
 
+    // The preview takes the space left over, so every action stays on screen for any note length.
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -948,52 +960,61 @@ private fun ResultPhaseContent(
             }
         }
 
-        if (bitmap != null) {
-            var imageScale by remember(bitmap) { mutableFloatStateOf(1f) }
-            var imageOffsetX by remember(bitmap) { mutableFloatStateOf(0f) }
-            var imageOffsetY by remember(bitmap) { mutableFloatStateOf(0f) }
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                modifier = Modifier.clipToBounds(),
-            ) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = stringResource(R.string.render_result_image_desc),
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (bitmap != null) {
+                var imageScale by remember(bitmap) { mutableFloatStateOf(1f) }
+                var imageOffsetX by remember(bitmap) { mutableFloatStateOf(0f) }
+                var imageOffsetY by remember(bitmap) { mutableFloatStateOf(0f) }
+                Card(
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
                     modifier = Modifier
-                        .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                        .graphicsLayer(
-                            scaleX = imageScale,
-                            scaleY = imageScale,
-                            translationX = imageOffsetX,
-                            translationY = imageOffsetY,
-                        )
-                        .pointerInput(bitmap) {
-                            detectTapGestures(onDoubleTap = {
-                                imageScale = 1f
-                                imageOffsetX = 0f
-                                imageOffsetY = 0f
-                            })
-                        }
-                        .pointerInput(bitmap) {
-                            detectTransformGestures { _, pan, zoom, _ ->
-                                val newScale = (imageScale * zoom).coerceIn(1f, 6f)
-                                imageScale = newScale
-                                if (newScale > 1f) {
-                                    imageOffsetX += pan.x
-                                    imageOffsetY += pan.y
-                                } else {
+                        .aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                        .clipToBounds(),
+                ) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = stringResource(R.string.render_result_image_desc),
+                        modifier = Modifier
+                            .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
+                            .fillMaxSize()
+                            .padding(4.dp)
+                            .graphicsLayer(
+                                scaleX = imageScale,
+                                scaleY = imageScale,
+                                translationX = imageOffsetX,
+                                translationY = imageOffsetY,
+                            )
+                            .pointerInput(bitmap) {
+                                detectTapGestures(onDoubleTap = {
+                                    imageScale = 1f
                                     imageOffsetX = 0f
                                     imageOffsetY = 0f
+                                })
+                            }
+                            .pointerInput(bitmap) {
+                                detectTransformGestures { _, pan, zoom, _ ->
+                                    val newScale = (imageScale * zoom).coerceIn(1f, 6f)
+                                    imageScale = newScale
+                                    if (newScale > 1f) {
+                                        imageOffsetX += pan.x
+                                        imageOffsetY += pan.y
+                                    } else {
+                                        imageOffsetX = 0f
+                                        imageOffsetY = 0f
+                                    }
                                 }
                             }
-                        }
-                        .stripReveal(progress = inkRevealProgress.value),
-                    contentScale = ContentScale.FillWidth,
-                )
+                            .stripReveal(progress = inkRevealProgress.value),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
             }
         }
 
@@ -1212,11 +1233,21 @@ private fun BackgroundPicker(
             }
         }
 
+        // Bleeds over the editor's 16.dp side padding so scrolled cards reach the screen edge.
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .layout { measurable, constraints ->
+                    val bleed = 16.dp.roundToPx()
+                    val placeable = measurable.measure(
+                        constraints.copy(
+                            minWidth = constraints.maxWidth + bleed * 2,
+                            maxWidth = constraints.maxWidth + bleed * 2,
+                        ),
+                    )
+                    layout(constraints.maxWidth, placeable.height) { placeable.place(-bleed, 0) }
+                }
                 .horizontalScroll(rememberScrollState())
-                .padding(end = 8.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             presets.forEach { preset ->
@@ -1224,6 +1255,7 @@ private fun BackgroundPicker(
                     preset = preset,
                     selected = preset.id == selectedBackgroundId,
                     isDefault = preset.id == defaultBackgroundId,
+                    locked = preset.premium && !premiumUnlocked,
                     onClick = {
                         if (preset.premium && !premiumUnlocked) {
                             onLockedPresetTapped(preset.id)
@@ -1242,8 +1274,11 @@ private fun BackgroundPresetCard(
     preset: NoteBackgroundPreset,
     selected: Boolean,
     isDefault: Boolean,
+    locked: Boolean,
     onClick: () -> Unit,
 ) {
+    val label = stringResource(preset.labelRes)
+    val lockedState = stringResource(R.string.template_chooser_premium_badge)
     val borderColor = when {
         selected -> MaterialTheme.colorScheme.primary
         isDefault -> MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
@@ -1256,6 +1291,11 @@ private fun BackgroundPresetCard(
             onClick = onClick,
             modifier = Modifier
                 .testTag(HandTypeTestTags.backgroundPresetCard(preset.id))
+                .semantics {
+                    contentDescription = label
+                    this.selected = selected
+                    if (locked) stateDescription = lockedState
+                }
                 .width(58.dp)
                 .graphicsLayer {
                     scaleX = bounceScale
@@ -1274,7 +1314,7 @@ private fun BackgroundPresetCard(
                     .padding(4.dp)
                     .size(width = 50.dp, height = 40.dp),
                 shape = RoundedCornerShape(10.dp),
-                showPremiumBadge = true,
+                showLockBadge = locked,
             )
         }
         if (selected) {
@@ -1303,7 +1343,7 @@ private fun PaperPreviewSurface(
     preset: NoteBackgroundPreset,
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(10.dp),
-    showPremiumBadge: Boolean = false,
+    showLockBadge: Boolean = false,
 ) {
     val previewColors = preset.previewColors.map { Color(it) }
 
@@ -1397,15 +1437,23 @@ private fun PaperPreviewSurface(
             }
         }
 
-        if (showPremiumBadge && preset.premium) {
+        if (showLockBadge) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(4.dp)
-                    .size(6.dp)
+                    .padding(3.dp)
+                    .size(16.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF7C4D11)),
-            )
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(10.dp),
+                )
+            }
         }
     }
 }
@@ -1455,63 +1503,63 @@ private fun TemplateOptionCard(
 ) {
     val isUserTemplate = descriptor.id.startsWith("user_")
     val context = LocalContext.current
-    // Templates with real glyph bitmaps preview as a rendered sample; the cursive template
-    // has no glyphs and previews as text in the system cursive font.
-    val hasGlyphPreview = isUserTemplate || descriptor.id == "classic_script"
+    // Every template previews as a rendered ink-on-paper sample.
     var sampleBitmap by remember(descriptor.id) { mutableStateOf<Bitmap?>(null) }
-    if (hasGlyphPreview) {
-        LaunchedEffect(descriptor.id) {
-            sampleBitmap = withContext(Dispatchers.IO) {
-                runCatching {
-                    val repo = BundledTemplateRepository(context)
-                    val template = repo.loadTemplate(descriptor.id)
-                    val config = HandwritingRenderConfig(
-                        maxWidthPx = 1200,
-                        targetLineHeightPx = 62,
-                        marginPx = 32,
-                    )
-                    val full = HandwritingBitmapRenderer.render(
+    LaunchedEffect(descriptor.id) {
+        sampleBitmap = withContext(Dispatchers.IO) {
+            runCatching {
+                val repo = BundledTemplateRepository(context)
+                val template = repo.loadTemplate(descriptor.id)
+                val config = HandwritingRenderConfig(
+                    maxWidthPx = 1200,
+                    targetLineHeightPx = 62,
+                    marginPx = 32,
+                )
+                val seed = descriptor.id.hashCode().toLong()
+                val full = if (template.isStrokeBased) {
+                    HandwritingBitmapRenderer.renderCursive(
+                        text = descriptor.sampleText,
+                        strokeData = template.strokeData!!,
+                        config = config,
+                        seed = seed,
+                    ).bitmap
+                } else {
+                    HandwritingBitmapRenderer.render(
                         text = descriptor.sampleText,
                         template = template,
                         config = config,
-                        seed = descriptor.id.hashCode().toLong(),
+                        seed = seed,
                     ).bitmap
-                    // Crop to ink — scan for rows/cols that differ from the paper bg color.
-                    // To optically centre the text, we include full descenders but add
-                    // equal extra top padding to balance the descender depth below baseline.
-                    val paperColor = 0xFFF8F1E4.toInt()
-                    val w = full.width; val h = full.height
-                    var top = 0; var left = 0; var right = w - 1
-                    outer@ for (y in 0 until h) for (x in 0 until w) {
-                        if (full.getPixel(x, y) != paperColor) { top = y; break@outer }
-                    }
-                    // Collect all rows with any ink.
-                    val inkRows = (top until h).filter { y ->
-                        (0 until w).any { x -> full.getPixel(x, y) != paperColor }
-                    }
-                    val bottom = inkRows.lastOrNull() ?: (h - 1)
-                    outer@ for (x in 0 until w) for (y in top..bottom) {
-                        if (full.getPixel(x, y) != paperColor) { left = x; break@outer }
-                    }
-                    outer@ for (x in w - 1 downTo left) for (y in top..bottom) {
-                        if (full.getPixel(x, y) != paperColor) { right = x; break@outer }
-                    }
-                    val hPad = 14
-                    val topPad = hPad
-                    val botPad = 22
-                    val cx = (left - hPad).coerceAtLeast(0)
-                    val cy = (top - topPad).coerceAtLeast(0)
-                    val cw = (right - left + 1 + hPad * 2).coerceAtMost(w - cx)
-                    val ch = (bottom - cy + 1 + botPad).coerceAtMost(h - cy)
-                    if (cw > 0 && ch > 0) Bitmap.createBitmap(full, cx, cy, cw, ch) else full
-                }.getOrNull()
-            }
-        }
-    }
-    val templateFontFamily: FontFamily? = remember(descriptor.id) {
-        when (descriptor.id) {
-            "flowing_cursive" -> FontFamily(AndroidTypeface.create("cursive", AndroidTypeface.NORMAL))
-            else -> null
+                }
+                // Crop to ink — scan for rows/cols that differ from the paper bg color.
+                // To optically centre the text, we include full descenders but add
+                // equal extra top padding to balance the descender depth below baseline.
+                val paperColor = 0xFFF8F1E4.toInt()
+                val w = full.width; val h = full.height
+                var top = 0; var left = 0; var right = w - 1
+                outer@ for (y in 0 until h) for (x in 0 until w) {
+                    if (full.getPixel(x, y) != paperColor) { top = y; break@outer }
+                }
+                // Collect all rows with any ink.
+                val inkRows = (top until h).filter { y ->
+                    (0 until w).any { x -> full.getPixel(x, y) != paperColor }
+                }
+                val bottom = inkRows.lastOrNull() ?: (h - 1)
+                outer@ for (x in 0 until w) for (y in top..bottom) {
+                    if (full.getPixel(x, y) != paperColor) { left = x; break@outer }
+                }
+                outer@ for (x in w - 1 downTo left) for (y in top..bottom) {
+                    if (full.getPixel(x, y) != paperColor) { right = x; break@outer }
+                }
+                val hPad = 14
+                val topPad = hPad
+                val botPad = 22
+                val cx = (left - hPad).coerceAtLeast(0)
+                val cy = (top - topPad).coerceAtLeast(0)
+                val cw = (right - left + 1 + hPad * 2).coerceAtMost(w - cx)
+                val ch = (bottom - cy + 1 + botPad).coerceAtMost(h - cy)
+                if (cw > 0 && ch > 0) Bitmap.createBitmap(full, cx, cy, cw, ch) else full
+            }.getOrNull()
         }
     }
     val cardShape = RoundedCornerShape(28.dp)
@@ -1573,38 +1621,29 @@ private fun TemplateOptionCard(
                     border = sampleBorder,
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
-                        if (hasGlyphPreview) {
-                            val bmp = sampleBitmap
-                            if (bmp != null) {
-                                Image(
-                                    bitmap = bmp.asImageBitmap(),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.FillWidth,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp)),
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(40.dp)
-                                        .background(
-                                            if (isUserTemplate) {
-                                                Color(0xFFE7CE92).copy(alpha = 0.35f)
-                                            } else {
-                                                accentColor.copy(alpha = 0.18f)
-                                            },
-                                            RoundedCornerShape(8.dp),
-                                        ),
-                                )
-                            }
+                        val bmp = sampleBitmap
+                        if (bmp != null) {
+                            Image(
+                                bitmap = bmp.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp)),
+                            )
                         } else {
-                            Text(
-                                text = descriptor.sampleText,
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontFamily = templateFontFamily,
-                                color = accentColor,
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp)
+                                    .background(
+                                        if (isUserTemplate) {
+                                            Color(0xFFE7CE92).copy(alpha = 0.35f)
+                                        } else {
+                                            accentColor.copy(alpha = 0.18f)
+                                        },
+                                        RoundedCornerShape(8.dp),
+                                    ),
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))

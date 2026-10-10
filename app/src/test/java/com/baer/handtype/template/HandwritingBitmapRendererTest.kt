@@ -88,4 +88,18 @@ class LeadingPullTest {
         assertEquals(120, HandwritingBitmapRenderer.xHeightTopRow(listOf(130, 110, 120)))
         assertEquals(PunctuationSynthesizer.InkStyle.DEFAULT.xHeightTop, HandwritingBitmapRenderer.xHeightTopRow(emptyList()))
     }
+
+    @Test
+    fun userCanvasLettersRestOnTheirInkBottom() {
+        assertEquals(150, HandwritingBitmapRenderer.userCanvasBaselineRow('a', canvasBaseline = 163, inkBottom = 150))
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('g', canvasBaseline = 163, inkBottom = 200))
+    }
+
+    @Test
+    fun synthesizedPunctuationKeepsTheCanvasBaseline() {
+        // A hyphen's ink bottom sits mid x-height; treating it as the baseline drops it to the line.
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('-', canvasBaseline = 163, inkBottom = 115))
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('\'', canvasBaseline = 163, inkBottom = 90))
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow(',', canvasBaseline = 163, inkBottom = 177))
+    }
 }

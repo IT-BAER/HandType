@@ -19,14 +19,20 @@ import org.junit.runner.RunWith
 class SheetExtractionQualityTest {
 
     @Test
-    fun extractedGlyphsCarryNoPrintedFurniture() {
+    fun extractedGlyphsCarryNoPrintedFurniture() = assertCleanGlyphs(FIXTURE)
+
+    /** The same sheet after the ML Kit document scanner cropped and enhanced it. */
+    @Test
+    fun scannerOutputGlyphsCarryNoPrintedFurniture() = assertCleanGlyphs(SCANNER_FIXTURE)
+
+    private fun assertCleanGlyphs(fixture: String) {
         val captured = InstrumentationRegistry.getInstrumentation().context.assets
-            .open(FIXTURE).use { BitmapFactory.decodeStream(it) }
-            ?: error("could not decode androidTest asset $FIXTURE")
+            .open(fixture).use { BitmapFactory.decodeStream(it) }
+            ?: error("could not decode androidTest asset $fixture")
 
         val glyphs = SheetSampleProcessor.process(captured, skipPageDetection = true).glyphs
         if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(glyphs)
-        assertTrue("no glyphs extracted from $FIXTURE", glyphs.size >= EXPECTED_GLYPHS)
+        assertTrue("no glyphs extracted from $fixture", glyphs.size >= EXPECTED_GLYPHS)
 
         val medianWidth = glyphs.values.map { it.width }.sorted()[glyphs.size / 2]
         val failures = mutableListOf<String>()
@@ -107,6 +113,7 @@ class SheetExtractionQualityTest {
 
     private companion object {
         const val FIXTURE = "practice_sheet_scan.jpg"
+        const val SCANNER_FIXTURE = "practice_sheet_scanner_output.png"
         const val EXPECTED_GLYPHS = 60
         const val ALPHA_MIN = 40
         const val MIN_COMPONENT_PX = 12

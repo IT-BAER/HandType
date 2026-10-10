@@ -92,7 +92,6 @@ fun CameraCaptureScreen(
         stringResource(R.string.camera_pre_scan_step_3),
         stringResource(R.string.camera_pre_scan_step_4),
     )
-    val tipText = stringResource(R.string.camera_tip)
     val sheetButtonText = stringResource(R.string.camera_sheet_button)
     val scanButtonText = stringResource(R.string.camera_scan_button)
     val openingText = stringResource(R.string.camera_opening_scanner)
@@ -268,12 +267,6 @@ fun CameraCaptureScreen(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = tipText,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
                     Spacer(modifier = Modifier.height(12.dp))
                     TextButton(
                         onClick = { context.shareTemplateSheet() },

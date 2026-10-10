@@ -634,7 +634,31 @@ object SheetSampleProcessor {
         val tr = pickFiducial(components, midX, 0, width, midY, width.toFloat(), 0f) ?: return null
         val br = pickFiducial(components, midX, midY, width, height, width.toFloat(), height.toFloat()) ?: return null
         val bl = pickFiducial(components, 0, midY, midX, height, 0f, height.toFloat()) ?: return null
-        return Fiducials(tl.centroid, tr.centroid, br.centroid, bl.centroid)
+        // A tight scanner crop can cut a square at the frame edge; its centroid then sits off the
+        // true centre, which skews rectification. Rebuild such centres from the uncut side.
+        val picked = listOf(tl, tr, br, bl)
+        val sides = picked.flatMap { c ->
+            listOfNotNull(
+                c.bboxW.takeIf { c.minX > 0 && c.maxX < width - 1 },
+                c.bboxH.takeIf { c.minY > 0 && c.maxY < height - 1 },
+            )
+        }.sorted()
+        if (sides.isEmpty()) return Fiducials(tl.centroid, tr.centroid, br.centroid, bl.centroid)
+        val half = sides[sides.size / 2] / 2f
+        fun centre(c: Component): Pair<Float, Float> {
+            val x = when {
+                c.minX == 0 && c.maxX < width - 1 -> c.maxX + 1 - half
+                c.maxX == width - 1 && c.minX > 0 -> c.minX + half
+                else -> c.centroid.first
+            }
+            val y = when {
+                c.minY == 0 && c.maxY < height - 1 -> c.maxY + 1 - half
+                c.maxY == height - 1 && c.minY > 0 -> c.minY + half
+                else -> c.centroid.second
+            }
+            return x to y
+        }
+        return Fiducials(centre(tl), centre(tr), centre(br), centre(bl))
     }
 
     private data class Component(
@@ -644,6 +668,10 @@ object SheetSampleProcessor {
         val centroid: Pair<Float, Float>,
         val fillDensity: Float,
         val aspectRatio: Float,
+        val minX: Int,
+        val minY: Int,
+        val maxX: Int,
+        val maxY: Int,
     )
 
     private fun collectComponents(mask: BooleanArray, width: Int, height: Int): List<Component> {
@@ -713,6 +741,10 @@ object SheetSampleProcessor {
                     centroid = (sumX.toDouble() / size).toFloat() to (sumY.toDouble() / size).toFloat(),
                     fillDensity = fillDensity,
                     aspectRatio = aspectRatio,
+                    minX = minBX,
+                    minY = minBY,
+                    maxX = maxBX,
+                    maxY = maxBY,
                 )
             }
         }

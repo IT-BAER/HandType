@@ -10,8 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
@@ -110,6 +114,39 @@ class ProductionReadinessTest {
         rule.onNodeWithTag(HandTypeTestTags.TEMPLATE_PAGER).assertIsDisplayed()
     }
 
+    @Test fun chooserMenuButtonStaysVisibleWhenScrolled() {
+        val repo = BundledTemplateRepository(context)
+        rule.setContent {
+            HandTypeTheme {
+                Box(Modifier.height(420.dp)) {
+                    TemplateChooserScreen(
+                        templates = repo.listBuiltInTemplates(),
+                        premiumTemplate = repo.premiumTemplate(),
+                        onTemplateSelected = {},
+                        onPremiumSelected = {},
+                    )
+                }
+            }
+        }
+        rule.onNodeWithText(context.getString(R.string.template_chooser_premium_button)).performScrollTo()
+        val menu = rule.onNodeWithContentDescription(context.getString(R.string.cd_menu)).fetchSemanticsNode()
+        assertTrue(
+            "Menu button clipped: visible ${menu.boundsInRoot.height} of ${menu.size.height} px",
+            menu.boundsInRoot.height == menu.size.height.toFloat(),
+        )
+    }
+
+    @Test fun onboardingNextButtonKeepsItsPositionOnEveryPage() {
+        rule.setContent { HandTypeTheme { OnboardingSheet(onFinished = {}) } }
+        val next = rule.onNodeWithTag(HandTypeTestTags.ONBOARDING_NEXT)
+        val tops = (0 until 3).map { page ->
+            if (page > 0) next.performClick()
+            rule.waitForIdle()
+            next.getUnclippedBoundsInRoot().top
+        }
+        assertTrue("Next button moved between pages: $tops", tops.distinct().size == 1)
+    }
+
     @Test fun systemBackFromResultRestoresDraft() {
         val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
         var leftEditor = false
@@ -137,5 +174,57 @@ class ProductionReadinessTest {
         rule.waitForIdle()
         rule.runOnIdle { assertFalse("Back must edit the result instead of leaving the editor", leftEditor) }
         rule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT).assertTextContains("Keep this draft.")
+    }
+
+    @Test fun paperCardsAnnounceTheirNameAndLockedState() {
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        rule.setContent {
+            HandTypeTheme {
+                HandwritingRenderScreen(
+                    template = template,
+                    onBackToTemplates = {},
+                    onPremiumSelected = {},
+                    premiumUnlocked = false,
+                    onLockedPresetTapped = {},
+                )
+            }
+        }
+        val ruled = com.baer.handtype.template.NoteBackgroundCatalog.presetOrDefault("ruled_sheet")
+        rule.onNodeWithTag(HandTypeTestTags.backgroundPresetCard("ruled_sheet"))
+            .assert(hasContentDescription(context.getString(ruled.labelRes)))
+            .assert(hasStateDescription(context.getString(R.string.template_chooser_premium_badge)))
+    }
+
+    @Test fun resultShowsEveryActionWithoutScrollingForALongNote() {
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        rule.setContent {
+            HandTypeTheme {
+                HandwritingRenderScreen(
+                    template = template,
+                    onBackToTemplates = {},
+                    onPremiumSelected = {},
+                    premiumUnlocked = true,
+                    onLockedPresetTapped = {},
+                )
+            }
+        }
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
+            .performTextReplacement("Dear Anna,\nthank you for the lovely evening.\nSee you on Sunday!\nLove, Ben")
+        Espresso.closeSoftKeyboard()
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performScrollTo().performClick()
+        rule.waitUntil(15_000) {
+            rule.onAllNodesWithTag(HandTypeTestTags.RENDER_RESULT_IMAGE).fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.waitForIdle()
+        val rootHeight = rule.onRoot().fetchSemanticsNode().size.height
+        listOf(R.string.result_save_button, R.string.result_regenerate_button, R.string.result_new_note_button)
+            .forEach { res ->
+                val node = rule.onNodeWithText(context.getString(res)).fetchSemanticsNode()
+                assertTrue(
+                    "${context.getString(res)} not fully on screen: ${node.boundsInRoot} root=$rootHeight",
+                    node.boundsInRoot.height == node.size.height.toFloat() &&
+                        node.boundsInRoot.bottom <= rootHeight,
+                )
+            }
     }
 }

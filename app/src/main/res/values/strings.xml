@@ -67,7 +67,6 @@
 
     <!-- Camera capture screen -->
     <string name="camera_section_title">Capture your handwriting sheet</string>
-    <string name="camera_tip">Tip: use even lighting and keep all rows of letters visible.</string>
     <string name="camera_pre_scan_title">Before you scan</string>
     <string name="camera_pre_scan_step_1">Print the practice sheet.</string>
     <string name="camera_pre_scan_step_2">Write the matching character in each box, resting on the lower guide line and filling up to the upper one.</string>
@@ -175,7 +174,7 @@
 
     <!-- History screen -->
     <string name="history_title">History</string>
-    <string name="history_empty">No notes yet. Generate one and it will appear here.</string>
+    <string name="history_empty">Generate one and it will appear here.</string>
     <string name="history_delete_title">Delete this note?</string>
     <string name="history_delete_body">This removes the saved copy from your device. Files you\'ve already exported to Pictures or Downloads stay where they are.</string>
     <string name="history_deleted_toast">Deleted</string>
@@ -218,7 +217,7 @@
     <string name="about_version">Version %1$s</string>
     <string name="about_description">Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device.</string>
     <string name="about_github_button">View source on GitHub</string>
-    <string name="about_copyright">© 2025 IT-BAER. Made with care.</string>
+    <string name="about_copyright">© 2026 IT-BAER. Made with care.</string>
     <string name="result_tip_share">💡 Tip: pinch to zoom the note, double-tap to reset.</string>
 
     <!-- UX overhaul: content descriptions and shared actions -->

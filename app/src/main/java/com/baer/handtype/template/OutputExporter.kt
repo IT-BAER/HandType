@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
@@ -148,7 +149,8 @@ object OutputExporter {
      * snap to the most paper-empty (whitespace) row inside a search window.
      * This avoids slicing through a line of handwriting.
      */
-    private fun computePageCuts(bitmap: Bitmap, maxSliceHeight: Int): List<Int> {
+    @VisibleForTesting
+    internal fun computePageCuts(bitmap: Bitmap, maxSliceHeight: Int): List<Int> {
         val h = bitmap.height
         if (h <= maxSliceHeight) return listOf(0, h)
         val w = bitmap.width
@@ -197,8 +199,24 @@ object OutputExporter {
             cuts.add(bestRow)
             pos = bestRow
         }
+        // A tail that is only paper (the bottom margin) would print as an empty page.
+        if (!hasInk(bitmap, pos, h)) return cuts
         cuts.add(h)
         return cuts
+    }
+
+    /** Ink is near-black; every paper preset, rule line and grid line is brighter than 100. */
+    private fun hasInk(bitmap: Bitmap, top: Int, bottom: Int): Boolean {
+        val w = bitmap.width
+        val row = IntArray(w)
+        for (y in top until bottom) {
+            bitmap.getPixels(row, 0, w, 0, y, w, 1)
+            for (c in row) {
+                val brightness = (((c shr 16) and 0xFF) * 30 + ((c shr 8) and 0xFF) * 59 + (c and 0xFF) * 11) / 100
+                if (brightness < 100) return true
+            }
+        }
+        return false
     }
 
     /**

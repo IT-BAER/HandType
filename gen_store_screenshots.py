@@ -42,7 +42,7 @@ CAPTIONS = {
     },
     "de-DE": {
         "before_after": ("Tippen.", "Handschrift erhalten.", "Getippter Text wird zur echten Handschrift"),
-        "styles": ("Handschrift-", "Stile", "Ink Script, Flowing Cursive oder deine eigene"),
+        "styles": ("Handschrift-", "Stile", "Tintenschrift, Kursivschrift oder deine eigene"),
         "papers": ("11 Papiere", "zur Auswahl", "Creme, Kraft, liniert, kariert und mehr"),
         "capture": ("Deine eigene", "Handschrift", "Übungsblatt scannen, in deiner Schrift schreiben"),
         "export": ("Speichern, teilen", "oder drucken", "PNG, transparentes PNG und A4-PDF"),

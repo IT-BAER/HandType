@@ -58,7 +58,6 @@
     <string name="result_permission_denied">Permissão de armazenamento negada</string>
 
     <string name="camera_section_title">Capture sua folha de caligrafia</string>
-    <string name="camera_tip">Dica: use iluminação uniforme e mantenha todas as linhas de letras visíveis.</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>
     <string name="camera_pre_scan_step_1">Imprima a folha de prática.</string>
     <string name="camera_pre_scan_step_2">Escreva o caractere correspondente em cada caixa e mantenha-o sobre a linha guia.</string>
@@ -118,7 +117,7 @@
 
     <!-- History screen -->
     <string name="history_title">Histórico</string>
-    <string name="history_empty">Nenhuma nota ainda. Gere uma e ela aparecerá aqui.</string>
+    <string name="history_empty">Gere uma e ela aparecerá aqui.</string>
     <string name="history_delete_title">Excluir esta nota?</string>
     <string name="history_delete_body">Isso remove a cópia salva do seu dispositivo. Arquivos já exportados para Imagens ou Downloads permanecem onde estão.</string>
     <string name="history_deleted_toast">Excluído</string>
@@ -161,7 +160,7 @@
     <string name="about_version">Versão %1$s</string>
     <string name="about_description">Transforma texto digitado em escrita que realmente parece manuscrita. Os modelos integrados funcionam completamente offline; nada sobre seu texto sai do seu dispositivo.</string>
     <string name="about_github_button">Ver código-fonte no GitHub</string>
-    <string name="about_copyright">© 2025 IT-BAER. Feito com cuidado.</string>
+    <string name="about_copyright">© 2026 IT-BAER. Feito com cuidado.</string>
 
     <string name="template_chooser_new_badge">Novo</string>
     <string name="premium_default_template_name">Minha letra</string>

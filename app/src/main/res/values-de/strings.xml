@@ -59,7 +59,6 @@
     <string name="result_permission_denied">Speicherzugriff verweigert</string>
 
     <string name="camera_section_title">Handschriftblatt aufnehmen</string>
-    <string name="camera_tip">Tipp: Verwende gleichmäßige Beleuchtung und halte alle Buchstabenreihen sichtbar.</string>
     <string name="camera_pre_scan_title">Vor dem Scan</string>
     <string name="camera_pre_scan_step_1">Drucke das Übungsblatt.</string>
     <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld, auf der unteren Hilfslinie stehend und bis zur oberen reichend.</string>
@@ -127,7 +126,7 @@
 
     <!-- History screen -->
     <string name="history_title">Verlauf</string>
-    <string name="history_empty">Noch keine Notizen. Erstelle eine und sie erscheint hier.</string>
+    <string name="history_empty">Erstelle eine und sie erscheint hier.</string>
     <string name="history_delete_title">Diese Notiz löschen?</string>
     <string name="history_delete_body">Dies entfernt die gespeicherte Kopie von deinem Gerät. Dateien, die du bereits in Bilder oder Downloads exportiert hast, bleiben erhalten.</string>
     <string name="history_deleted_toast">Gelöscht</string>
@@ -170,7 +169,7 @@
     <string name="about_version">Version %1$s</string>
     <string name="about_description">Verwandelt getippten Text in Handschrift, die sich wirklich handgeschrieben anfühlt. Integrierte Vorlagen funktionieren vollständig offline; nichts über deinen Text verlässt dein Gerät.</string>
     <string name="about_github_button">Quellcode auf GitHub ansehen</string>
-    <string name="about_copyright">© 2025 IT-BAER. Mit Sorgfalt gemacht.</string>
+    <string name="about_copyright">© 2026 IT-BAER. Mit Sorgfalt gemacht.</string>
 
     <string name="template_ink_script_name">Tintenschrift</string>
     <string name="template_ink_script_description">Eine natürliche Tintenschrift mit organischer Variation und handgezeichnetem Charakter.</string>

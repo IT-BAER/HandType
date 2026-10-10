@@ -16,8 +16,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -129,34 +131,18 @@ fun SettingsScreen(
                 },
             ) {
                 if (!premiumUnlocked) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onUnlockPremium)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.template_chooser_premium_button),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    ActionRow(
+                        icon = Icons.Default.WorkspacePremium,
+                        label = stringResource(R.string.template_chooser_premium_button),
+                        onClick = onUnlockPremium,
+                    )
                     HorizontalDivider()
                 }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = onRestorePremium)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.premium_paywall_restore),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+                ActionRow(
+                    icon = Icons.Default.Restore,
+                    label = stringResource(R.string.premium_paywall_restore),
+                    onClick = onRestorePremium,
+                )
             }
             PreferenceCard(
                 title = stringResource(R.string.settings_support_title),
@@ -282,6 +268,10 @@ private fun themePreferenceLabel(preference: ThemePreference): String {
 @Composable
 private fun languagePreferenceLabel(preference: LanguagePreference): String {
     val tag = preference.languageTag ?: return stringResource(R.string.settings_language_system)
+    return nativeLanguageName(tag)
+}
+
+internal fun nativeLanguageName(tag: String): String {
     val locale = Locale.forLanguageTag(tag)
-    return locale.getDisplayName(locale)
+    return locale.getDisplayName(locale).replaceFirstChar { it.titlecase(locale) }
 }

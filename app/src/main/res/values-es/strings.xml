@@ -58,7 +58,6 @@
     <string name="result_permission_denied">Permiso de almacenamiento denegado</string>
 
     <string name="camera_section_title">Captura tu hoja de escritura</string>
-    <string name="camera_tip">Consejo: usa iluminación uniforme y mantén visibles todas las filas de letras.</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>
     <string name="camera_pre_scan_step_1">Imprime la hoja de práctica.</string>
     <string name="camera_pre_scan_step_2">Escribe el carácter correspondiente en cada casilla y mantenlo sobre la línea guía.</string>
@@ -118,7 +117,7 @@
 
     <!-- History screen -->
     <string name="history_title">Historial</string>
-    <string name="history_empty">Sin notas aún. Genera una y aparecerá aquí.</string>
+    <string name="history_empty">Genera una y aparecerá aquí.</string>
     <string name="history_delete_title">¿Eliminar esta nota?</string>
     <string name="history_delete_body">Esto elimina la copia guardada de tu dispositivo. Los archivos que ya exportaste a Imágenes o Descargas permanecerán.</string>
     <string name="history_deleted_toast">Eliminado</string>
@@ -161,7 +160,7 @@
     <string name="about_version">Versión %1$s</string>
     <string name="about_description">Convierte texto escrito en letra que realmente parece escrita a mano. Las plantillas integradas funcionan completamente sin conexión; nada sobre tu texto sale de tu dispositivo.</string>
     <string name="about_github_button">Ver código fuente en GitHub</string>
-    <string name="about_copyright">© 2025 IT-BAER. Hecho con cuidado.</string>
+    <string name="about_copyright">© 2026 IT-BAER. Hecho con cuidado.</string>
 
     <string name="template_chooser_new_badge">Nuevo</string>
     <string name="premium_default_template_name">Mi letra</string>

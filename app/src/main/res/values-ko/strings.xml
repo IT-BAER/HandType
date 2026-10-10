@@ -58,7 +58,6 @@
     <string name="result_permission_denied">저장 공간 권한 거부됨</string>
 
     <string name="camera_section_title">필기 시트 캡처</string>
-    <string name="camera_tip">팁: 균일한 조명을 사용하고 모든 글자 행이 보이도록 하세요.</string>
     <string name="camera_pre_scan_title">스캔 전</string>
     <string name="camera_pre_scan_step_1">연습 시트를 인쇄하세요.</string>
     <string name="camera_pre_scan_step_2">각 칸에 해당 문자를 쓰고 가이드 라인 위에 유지하세요.</string>
@@ -118,7 +117,7 @@
 
     <!-- History screen -->
     <string name="history_title">기록</string>
-    <string name="history_empty">아직 메모가 없습니다. 하나 생성하면 여기에 표시됩니다.</string>
+    <string name="history_empty">하나 생성하면 여기에 표시됩니다.</string>
     <string name="history_delete_title">이 메모를 삭제하시겠습니까?</string>
     <string name="history_delete_body">기기에서 저장된 복사본이 삭제됩니다. 이미 사진이나 다운로드로 내보낸 파일은 그대로 유지됩니다.</string>
     <string name="history_deleted_toast">삭제됨</string>
@@ -161,7 +160,7 @@
     <string name="about_version">버전 %1$s</string>
     <string name="about_description">입력한 텍스트를 실제로 손으로 쓴 것처럼 느껴지는 필체로 변환합니다. 내장 템플릿은 완전히 오프라인으로 작동하며 텍스트에 대한 정보는 기기를 떠나지 않습니다.</string>
     <string name="about_github_button">GitHub에서 소스 보기</string>
-    <string name="about_copyright">© 2025 IT-BAER. 정성껏 만들었습니다.</string>
+    <string name="about_copyright">© 2026 IT-BAER. 정성껏 만들었습니다.</string>
 
     <string name="template_chooser_new_badge">새로운</string>
     <string name="premium_default_template_name">내 필기체</string>

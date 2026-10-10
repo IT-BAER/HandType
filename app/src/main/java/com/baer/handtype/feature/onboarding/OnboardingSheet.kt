@@ -32,10 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.baer.handtype.R
@@ -75,28 +77,13 @@ fun OnboardingSheet(onFinished: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { index ->
-                val page = pages[index]
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Icon(
-                        imageVector = page.icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(64.dp),
-                    )
-                    Text(
-                        text = stringResource(page.titleRes),
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                    )
-                    Text(
-                        text = stringResource(page.bodyRes),
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                    )
+                // Invisible copies of every page make all pages as tall as the tallest one,
+                // so the dots and buttons below never move.
+                Box {
+                    pages.forEachIndexed { i, page ->
+                        val hidden = Modifier.alpha(0f).clearAndSetSemantics {}
+                        OnboardingPageContent(page, if (i == index) Modifier else hidden)
+                    }
                 }
             }
             Row(
@@ -154,5 +141,31 @@ fun OnboardingSheet(onFinished: () -> Unit) {
             }
             Spacer(Modifier.height(8.dp))
         }
+    }
+}
+
+@Composable
+private fun OnboardingPageContent(page: OnboardingPage, modifier: Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            imageVector = page.icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(64.dp),
+        )
+        Text(
+            text = stringResource(page.titleRes),
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = stringResource(page.bodyRes),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+        )
     }
 }

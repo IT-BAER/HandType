@@ -153,9 +153,7 @@ object HandwritingBitmapRenderer {
             val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
             val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
             val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
-            // Writers float letters above the printed guide by varying amounts, so the ink
-            // bottom is the baseline for everything that has no descender.
-            val baseline = if (character.lowercaseChar() in descenderChars) canvasBaseline else bounds.bottom
+            val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom)
             return PreparedGlyph(
                 bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
                 baselineRow = (baseline - cropTop).coerceIn(0, cropH - 1),
@@ -216,6 +214,13 @@ object HandwritingBitmapRenderer {
     }
 
     internal fun descenderDropRatio(isUserTemplate: Boolean): Float = if (isUserTemplate) 0.08f else 0.05f
+
+    /**
+     * Writers float letters above the printed guide by varying amounts, so a letter's ink bottom
+     * is its baseline. Descenders and synthesized punctuation are already placed on the canvas baseline.
+     */
+    internal fun userCanvasBaselineRow(character: Char, canvasBaseline: Int, inkBottom: Int): Int =
+        if (character.lowercaseChar() in descenderChars || !character.isLetterOrDigit()) canvasBaseline else inkBottom
 
     internal fun targetInkHeightPx(
         lineHeightPx: Int,

@@ -419,7 +419,7 @@ private fun HistoryThumbnail(
                 if (bitmap != null) {
                     Image(
                         bitmap = bitmap.asImageBitmap(),
-                        contentDescription = stringResource(R.string.history_note_desc) + " ${entry.id}",
+                        contentDescription = stringResource(R.string.history_note_desc),
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
@@ -560,10 +560,6 @@ private fun HistoryDetailDialog(
                     FilledTonalButton(
                         onClick = ::share,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                        ),
                     ) { Text(stringResource(R.string.action_share)) }
                 }
                 OutlinedButton(

@@ -57,7 +57,6 @@
     <string name="result_permission_denied">स्टोरेज अनुमति अस्वीकृत</string>
 
     <string name="camera_section_title">अपनी हस्तलेखन शीट कैप्चर करें</string>
-    <string name="camera_tip">टिप: समान प्रकाश व्यवस्था का उपयोग करें और सभी अक्षर पंक्तियाँ दृश्यमान रखें।</string>
     <string name="camera_pre_scan_title">स्कैन करने से पहले</string>
     <string name="camera_pre_scan_step_1">अभ्यास शीट प्रिंट करें।</string>
     <string name="camera_pre_scan_step_2">प्रत्येक बॉक्स में मिलान वर्ण लिखें और उसे गाइड लाइन पर रखें।</string>
@@ -117,7 +116,7 @@
 
     <!-- History screen -->
     <string name="history_title">इतिहास</string>
-    <string name="history_empty">अभी कोई नोट नहीं। एक बनाएं और यह यहां दिखाई देगा।</string>
+    <string name="history_empty">एक बनाएं और यह यहां दिखाई देगा।</string>
     <string name="history_delete_title">यह नोट हटाएं?</string>
     <string name="history_delete_body">इससे आपके डिवाइस से सहेजी गई प्रति हट जाएगी। जो फ़ाइलें पहले से Pictures या Downloads में निर्यात की गई हैं वे वहीं रहेंगी।</string>
     <string name="history_deleted_toast">हटाया गया</string>
@@ -160,7 +159,7 @@
     <string name="about_version">संस्करण %1$s</string>
     <string name="about_description">टाइप किए गए टेक्स्ट को ऐसी लिखावट में बदलता है जो वाकई हाथ से लिखी लगे। अंतर्निहित टेम्पलेट पूरी तरह ऑफलाइन काम करते हैं; आपके टेक्स्ट के बारे में कुछ भी डिवाइस नहीं छोड़ता।</string>
     <string name="about_github_button">GitHub पर सोर्स देखें</string>
-    <string name="about_copyright">© 2025 IT-BAER. देखभाल से बनाया गया।</string>
+    <string name="about_copyright">© 2026 IT-BAER. देखभाल से बनाया गया।</string>
 
     <string name="template_chooser_new_badge">नया</string>
     <string name="premium_default_template_name">मेरी लिखावट</string>

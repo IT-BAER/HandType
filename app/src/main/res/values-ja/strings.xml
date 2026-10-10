@@ -58,7 +58,6 @@
     <string name="result_permission_denied">ストレージ権限が拒否されました</string>
 
     <string name="camera_section_title">手書きシートをキャプチャ</string>
-    <string name="camera_tip">ヒント：均一な照明を使用し、すべての文字行が見えるようにしてください。</string>
     <string name="camera_pre_scan_title">スキャン前</string>
     <string name="camera_pre_scan_step_1">練習シートを印刷してください。</string>
     <string name="camera_pre_scan_step_2">各ボックスに対応する文字を書き、ガイドライン上に置いてください。</string>
@@ -117,7 +116,7 @@
 
     <!-- History screen -->
     <string name="history_title">履歴</string>
-    <string name="history_empty">まだノートはありません。生成するとここに表示されます。</string>
+    <string name="history_empty">生成するとここに表示されます。</string>
     <string name="history_delete_title">このノートを削除しますか？</string>
     <string name="history_delete_body">これによりデバイスから保存されたコピーが削除されます。すでに画像やダウンロードにエクスポートしたファイルはそのまま残ります。</string>
     <string name="history_deleted_toast">削除しました</string>
@@ -160,7 +159,7 @@
     <string name="about_version">バージョン %1$s</string>
     <string name="about_description">入力したテキストを実際に手書きのような筆跡に変換します。内蔵テンプレートは完全オフラインで動作し、テキストに関する情報はデバイスの外に出ません。</string>
     <string name="about_github_button">GitHubでソースを見る</string>
-    <string name="about_copyright">© 2025 IT-BAER. 心を込めて作りました。</string>
+    <string name="about_copyright">© 2026 IT-BAER. 心を込めて作りました。</string>
     <string name="template_chooser_new_badge">新着</string>
     <string name="premium_default_template_name">マイ手書き</string>
     <string name="rename_handwriting_default_name">%1$s %2$s</string>
