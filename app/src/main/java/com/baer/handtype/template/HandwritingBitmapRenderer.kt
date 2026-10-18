@@ -38,9 +38,14 @@ data class HandwritingRenderConfig(
 data class HandwritingRenderResult(
     val bitmap: Bitmap,
     val missingCharacters: Set<Char>,
+    /** Text of each laid-out line of the glyph path, for layout tests. Empty for the cursive path. */
+    internal val lines: List<String> = emptyList(),
 )
 
 object HandwritingBitmapRenderer {
+    private const val MIN_CHARS_BEFORE_HYPHEN = 2
+    private const val MIN_CHARS_AFTER_HYPHEN = 3
+
 
     private val descenderChars = setOf('g', 'j', 'p', 'q', 'y')
     private val dottedChars = setOf('i', 'j')
@@ -280,6 +285,14 @@ object HandwritingBitmapRenderer {
             else -> 0
         }
     }
+
+    /** Bundled glyphs overlap their neighbour, so a tall mark after a letter would read as one of its strokes. */
+    internal fun markLeadPx(previous: Char?, character: Char, lineHeightPx: Int, normalizedUserCanvas: Boolean): Int =
+        if (!normalizedUserCanvas && character in setOf('!', '?') && previous?.isLetterOrDigit() == true) {
+            (lineHeightPx * 0.06f).toInt()
+        } else {
+            0
+        }
 
     private fun glyphAdvancePx(
         glyph: PreparedGlyph,
@@ -730,7 +743,10 @@ object HandwritingBitmapRenderer {
             lineHeightPx
         }
 
+        val laidOutLines = mutableListOf(StringBuilder())
+
         fun moveToNextLine() {
+            laidOutLines += StringBuilder()
             cursorX = config.marginPx
             cursorY += (if (hasNormalizedUserCanvas) lineAdvancePx else lineHeight) + effectiveVerticalSpacingPx
             lineHeight = lineHeightPx
@@ -741,7 +757,7 @@ object HandwritingBitmapRenderer {
 
         fun wordWidth(word: String): Int {
             var w = 0
-            word.forEach { ch ->
+            word.forEachIndexed { i, ch ->
                 val variants = template.glyphs[ch]
                     ?: template.glyphs[ch.lowercaseChar()]
                     ?: template.glyphs[ch.uppercaseChar()]
@@ -773,10 +789,33 @@ object HandwritingBitmapRenderer {
                         scaleX = glyphScaleX,
                         lineHeightPx = lineHeightPx,
                         normalizedUserCanvas = prepared.normalizedUserCanvas,
-                    ) + effectiveHorizontalSpacingPx
+                    ) + effectiveHorizontalSpacingPx +
+                        markLeadPx(word.getOrNull(i - 1), ch, lineHeightPx, prepared.normalizedUserCanvas)
                 }
             }
             return w
+        }
+
+        // Worst case: every gap jitters wide and the last glyph's ink reaches past its advance.
+        fun maxWordWidth(word: String): Int =
+            wordWidth(word) + word.length * effectiveSpacingJitterPx + effectiveJitterXPx + (lineHeightPx * 0.04f).toInt()
+
+        val lineWidth = safeWidth - 2 * config.marginPx
+
+        /** Splits a word wider than a whole line into "abc-" pieces that each fit one line. */
+        fun hyphenatedPieces(word: String): List<String> {
+            val pieces = mutableListOf<String>()
+            var rest = word
+            while (true) {
+                // Trailing punctuation does not count towards the letters carried to the next line.
+                val minAfter = MIN_CHARS_AFTER_HYPHEN + rest.length - rest.trimEnd { !it.isLetterOrDigit() }.length
+                if (maxWordWidth(rest) <= lineWidth || rest.length < MIN_CHARS_BEFORE_HYPHEN + minAfter) break
+                var cut = rest.length - minAfter
+                while (cut > MIN_CHARS_BEFORE_HYPHEN && maxWordWidth(rest.take(cut) + "-") > lineWidth) cut--
+                pieces += rest.take(cut) + "-"
+                rest = rest.drop(cut)
+            }
+            return pieces + rest
         }
 
         val lines = (if (normalizedText.isBlank()) " " else normalizedText).split('\n')
@@ -790,7 +829,7 @@ object HandwritingBitmapRenderer {
 
             for ((wordIndex, word) in words.withIndex()) {
                 if (wordIndex > 0) {
-                    val neededWidth = spaceWidth + wordWidth(word)
+                    val neededWidth = spaceWidth + maxWordWidth(word)
                     if (cursorX + neededWidth > safeWidth - config.marginPx && cursorX > config.marginPx) {
                         moveToNextLine()
                     } else {
@@ -800,130 +839,136 @@ object HandwritingBitmapRenderer {
                             0
                         }
                         maxUsedX = max(maxUsedX, cursorX)
+                        laidOutLines.last().append(' ')
                     }
                 }
 
-                var previousTucked = false
-                for (character in word) {
-                    val variants = template.glyphs[character]
-                        ?: template.glyphs[character.lowercaseChar()]
-                        ?: template.glyphs[character.uppercaseChar()]
+                for ((pieceIndex, piece) in hyphenatedPieces(word).withIndex()) {
+                    if (pieceIndex > 0) moveToNextLine()
+                    var previousTucked = false
+                    for ((charIndex, character) in piece.withIndex()) {
+                        val variants = template.glyphs[character]
+                            ?: template.glyphs[character.lowercaseChar()]
+                            ?: template.glyphs[character.uppercaseChar()]
 
-                    var glyph: Bitmap? = variants?.let { it[rng.nextInt(it.size)] }
+                        var glyph: Bitmap? = variants?.let { it[rng.nextInt(it.size)] }
 
-                    // Auto-synthesize common punctuation that the user template does not
-                    // contain — pen-style approximations of '.', ',', '!', '?', ':', ';',
-                    // quotes, and hyphen. Only applies to user templates; bundled templates
-                    // already ship complete punctuation sets.
-                    if (glyph == null && isUserTemplate && PunctuationSynthesizer.supports(character)) {
-                        glyph = synthesizedGlyphCache.getOrPut(character) {
-                            PunctuationSynthesizer.synthesize(character, synthesizedInkStyle)
+                        // Auto-synthesize common punctuation that the user template does not
+                        // contain — pen-style approximations of '.', ',', '!', '?', ':', ';',
+                        // quotes, and hyphen. Only applies to user templates; bundled templates
+                        // already ship complete punctuation sets.
+                        if (glyph == null && isUserTemplate && PunctuationSynthesizer.supports(character)) {
+                            glyph = synthesizedGlyphCache.getOrPut(character) {
+                                PunctuationSynthesizer.synthesize(character, synthesizedInkStyle)
+                            }
                         }
-                    }
 
-                    if (glyph == null) {
-                        missingCharacters += character
-                        val missingAdvance = when {
-                            character in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
-                            character in punctuationChars -> (lineHeightPx * 0.08f).toInt().coerceAtLeast(4)
-                            else -> spaceWidth
+                        if (glyph == null) {
+                            missingCharacters += character
+                            val missingAdvance = when {
+                                character in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
+                                character in punctuationChars -> (lineHeightPx * 0.08f).toInt().coerceAtLeast(4)
+                                else -> spaceWidth
+                            }
+                            cursorX += missingAdvance
+                            maxUsedX = max(maxUsedX, cursorX)
+                            charIndexInLine++
+                            continue
                         }
-                        cursorX += missingAdvance
+
+                        val prepared = preparedGlyph(character, glyph)
+                        cursorX += markLeadPx(piece.getOrNull(charIndex - 1), character, lineHeightPx, prepared.normalizedUserCanvas)
+                        val targetInkHeight = targetInkHeightPx(
+                            lineHeightPx = lineHeightPx,
+                            character = character,
+                            isUserTemplate = isUserTemplate,
+                            normalizedUserCanvas = prepared.normalizedUserCanvas,
+                        )
+                        // User templates hold one sample per letter; vary its size a little so
+                        // repeated letters do not read as stamped copies.
+                        val sizeJitter = if (isUserTemplate) 1f + (rng.nextFloat() * 2f - 1f) * 0.04f else 1f
+                        val (glyphScaleX, glyphScaleY) = UserGlyphWidthNormalizer.scales(
+                            character = character,
+                            templateId = template.descriptor.id,
+                            glyphWidthPx = prepared.bitmap.width,
+                            glyphHeightPx = prepared.bitmap.height,
+                            targetInkHeightPx = targetInkHeight,
+                        ).let { (x, y) -> x * sizeJitter to y * sizeJitter }
+                        val scaledGlyphW = (prepared.bitmap.width * glyphScaleX).toInt().coerceAtLeast(1)
+                        val scaledGlyphH = (prepared.bitmap.height * glyphScaleY).toInt().coerceAtLeast(1)
+                        val advance = glyphAdvancePx(
+                            glyph = prepared,
+                            character = character,
+                            scaleX = glyphScaleX,
+                            lineHeightPx = lineHeightPx,
+                            normalizedUserCanvas = prepared.normalizedUserCanvas,
+                        )
+
+                        if (cursorX + scaledGlyphW > safeWidth - config.marginPx && cursorX > config.marginPx) {
+                            moveToNextLine()
+                        }
+
+                        val jx = rng.nextInt(-effectiveJitterXPx, effectiveJitterXPx + 1)
+                        val jy = rng.nextInt(-effectiveJitterYPx, effectiveJitterYPx + 1)
+                        val waveOffset = effectiveBaselineWaveAmplitude *
+                            sin((charIndexInLine / config.baselineWavePeriod + lineBaselinePhase).toDouble()).toFloat()
+                        val driftOffset = lineDriftSlope * (charIndexInLine.toFloat() / totalCharsInLine)
+                        val rotationLimit = if (isUserTemplate) 1.8f else 3.5f
+                        val rotation = (rng.nextFloat() * 2f - 1f) * rotationLimit
+                        val alpha = 0.90f + rng.nextFloat() * 0.08f  // 230-250 range
+
+                        val baselineY = cursorY + baselineOffsetPx
+                        // For user templates the baselineFraction in prepareGlyph() already places
+                        // the glyph's ink-baseline at baselineY exactly — no additional drop needed.
+                        // For bundled templates the legacy descenderDrop gives the slight optical shift.
+                        val descenderDrop = if (!isUserTemplate && character.lowercaseChar() in descenderChars) {
+                            (lineHeightPx * descenderDropRatio(isUserTemplate)).toInt()
+                        } else {
+                            0
+                        }
+                        val drawTop = baselineY - (prepared.baselineRow * glyphScaleY).toInt() + descenderDrop
+                        val drawLeft = cursorX + jx - leadingPullPx(
+                            character = character,
+                            lineHeightPx = lineHeightPx,
+                            normalizedUserCanvas = prepared.normalizedUserCanvas,
+                            previousTucked = previousTucked,
+                        )
+                        previousTucked = prepared.advanceWidth < prepared.bitmap.width
+
+                        laidOutLines.last().append(character)
+                        placements += GlyphPlacement(
+                            bitmap = prepared.bitmap,
+                            left = drawLeft,
+                            top = drawTop + jy + waveOffset.toInt() + driftOffset.toInt(),
+                            rotationDeg = rotation,
+                            alpha = alpha,
+                            drawScaleX = glyphScaleX,
+                            drawScaleY = glyphScaleY,
+                        )
+
+                        cursorX += advance + effectiveHorizontalSpacingPx + if (effectiveSpacingJitterPx > 0) {
+                            rng.nextInt(-effectiveSpacingJitterPx, effectiveSpacingJitterPx + 1)
+                        } else {
+                            0
+                        }
+                        lineHeight = max(
+                            lineHeight,
+                            max(
+                                lineHeightPx,
+                                // Normalized user canvas glyphs are pre-scaled to lineHeightPx, so
+                                // adding effectiveVerticalSpacingPx/2 here would push lineHeight just
+                                // above lineHeightPx and cause the text baselines to drift below the
+                                // background guide lines line by line.
+                                if (prepared.normalizedUserCanvas) {
+                                    scaledGlyphH
+                                } else {
+                                    scaledGlyphH + effectiveVerticalSpacingPx / 2
+                                },
+                            ),
+                        )
                         maxUsedX = max(maxUsedX, cursorX)
                         charIndexInLine++
-                        continue
                     }
-
-                    val prepared = preparedGlyph(character, glyph)
-                    val targetInkHeight = targetInkHeightPx(
-                        lineHeightPx = lineHeightPx,
-                        character = character,
-                        isUserTemplate = isUserTemplate,
-                        normalizedUserCanvas = prepared.normalizedUserCanvas,
-                    )
-                    // User templates hold one sample per letter; vary its size a little so
-                    // repeated letters do not read as stamped copies.
-                    val sizeJitter = if (isUserTemplate) 1f + (rng.nextFloat() * 2f - 1f) * 0.04f else 1f
-                    val (glyphScaleX, glyphScaleY) = UserGlyphWidthNormalizer.scales(
-                        character = character,
-                        templateId = template.descriptor.id,
-                        glyphWidthPx = prepared.bitmap.width,
-                        glyphHeightPx = prepared.bitmap.height,
-                        targetInkHeightPx = targetInkHeight,
-                    ).let { (x, y) -> x * sizeJitter to y * sizeJitter }
-                    val scaledGlyphW = (prepared.bitmap.width * glyphScaleX).toInt().coerceAtLeast(1)
-                    val scaledGlyphH = (prepared.bitmap.height * glyphScaleY).toInt().coerceAtLeast(1)
-                    val advance = glyphAdvancePx(
-                        glyph = prepared,
-                        character = character,
-                        scaleX = glyphScaleX,
-                        lineHeightPx = lineHeightPx,
-                        normalizedUserCanvas = prepared.normalizedUserCanvas,
-                    )
-
-                    if (cursorX + scaledGlyphW > safeWidth - config.marginPx && cursorX > config.marginPx) {
-                        moveToNextLine()
-                    }
-
-                    val jx = rng.nextInt(-effectiveJitterXPx, effectiveJitterXPx + 1)
-                    val jy = rng.nextInt(-effectiveJitterYPx, effectiveJitterYPx + 1)
-                    val waveOffset = effectiveBaselineWaveAmplitude *
-                        sin((charIndexInLine / config.baselineWavePeriod + lineBaselinePhase).toDouble()).toFloat()
-                    val driftOffset = lineDriftSlope * (charIndexInLine.toFloat() / totalCharsInLine)
-                    val rotationLimit = if (isUserTemplate) 1.8f else 3.5f
-                    val rotation = (rng.nextFloat() * 2f - 1f) * rotationLimit
-                    val alpha = 0.90f + rng.nextFloat() * 0.08f  // 230-250 range
-
-                    val baselineY = cursorY + baselineOffsetPx
-                    // For user templates the baselineFraction in prepareGlyph() already places
-                    // the glyph's ink-baseline at baselineY exactly — no additional drop needed.
-                    // For bundled templates the legacy descenderDrop gives the slight optical shift.
-                    val descenderDrop = if (!isUserTemplate && character.lowercaseChar() in descenderChars) {
-                        (lineHeightPx * descenderDropRatio(isUserTemplate)).toInt()
-                    } else {
-                        0
-                    }
-                    val drawTop = baselineY - (prepared.baselineRow * glyphScaleY).toInt() + descenderDrop
-                    val drawLeft = cursorX + jx - leadingPullPx(
-                        character = character,
-                        lineHeightPx = lineHeightPx,
-                        normalizedUserCanvas = prepared.normalizedUserCanvas,
-                        previousTucked = previousTucked,
-                    )
-                    previousTucked = prepared.advanceWidth < prepared.bitmap.width
-
-                    placements += GlyphPlacement(
-                        bitmap = prepared.bitmap,
-                        left = drawLeft,
-                        top = drawTop + jy + waveOffset.toInt() + driftOffset.toInt(),
-                        rotationDeg = rotation,
-                        alpha = alpha,
-                        drawScaleX = glyphScaleX,
-                        drawScaleY = glyphScaleY,
-                    )
-
-                    cursorX += advance + effectiveHorizontalSpacingPx + if (effectiveSpacingJitterPx > 0) {
-                        rng.nextInt(-effectiveSpacingJitterPx, effectiveSpacingJitterPx + 1)
-                    } else {
-                        0
-                    }
-                    lineHeight = max(
-                        lineHeight,
-                        max(
-                            lineHeightPx,
-                            // Normalized user canvas glyphs are pre-scaled to lineHeightPx, so
-                            // adding effectiveVerticalSpacingPx/2 here would push lineHeight just
-                            // above lineHeightPx and cause the text baselines to drift below the
-                            // background guide lines line by line.
-                            if (prepared.normalizedUserCanvas) {
-                                scaledGlyphH
-                            } else {
-                                scaledGlyphH + effectiveVerticalSpacingPx / 2
-                            },
-                        ),
-                    )
-                    maxUsedX = max(maxUsedX, cursorX)
-                    charIndexInLine++
                 }
             }
             moveToNextLine()
@@ -1007,7 +1052,11 @@ object HandwritingBitmapRenderer {
             }
         }
 
-        return HandwritingRenderResult(bitmap = output, missingCharacters = missingCharacters)
+        return HandwritingRenderResult(
+            bitmap = output,
+            missingCharacters = missingCharacters,
+            lines = laidOutLines.map(StringBuilder::toString).filter(String::isNotEmpty),
+        )
     }
 }
 
