@@ -157,7 +157,7 @@
     <!-- About screen -->
     <string name="about_title">このアプリについて</string>
     <string name="about_version">バージョン %1$s</string>
-    <string name="about_description">入力したテキストを実際に手書きのような筆跡に変換します。内蔵テンプレートは完全オフラインで動作し、テキストに関する情報はデバイスの外に出ません。</string>
+    <string name="about_description">入力したテキストを実際に手書きのような筆跡に変換します。内蔵テンプレートは完全オフラインで動作し、テキストに関する情報はデバイスの外に出ません。Apache License 2.0 のオープンソースです。</string>
     <string name="about_github_button">GitHubでソースを見る</string>
     <string name="about_copyright">© 2026 IT-BAER. 心を込めて作りました。</string>
     <string name="template_chooser_new_badge">新着</string>

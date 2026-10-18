@@ -215,7 +215,7 @@
     <!-- About screen -->
     <string name="about_title">About</string>
     <string name="about_version">Version %1$s</string>
-    <string name="about_description">Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device.</string>
+    <string name="about_description">Turn typed text into handwriting that actually feels written. Built-in templates work fully offline; nothing about your text leaves your device. Open source under the Apache License 2.0.</string>
     <string name="about_github_button">View source on GitHub</string>
     <string name="about_copyright">© 2026 IT-BAER. Made with care.</string>
     <string name="result_tip_share">💡 Tip: pinch to zoom the note, double-tap to reset.</string>

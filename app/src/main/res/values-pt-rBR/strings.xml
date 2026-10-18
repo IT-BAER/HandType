@@ -158,7 +158,7 @@
     <!-- About screen -->
     <string name="about_title">Sobre</string>
     <string name="about_version">Versão %1$s</string>
-    <string name="about_description">Transforma texto digitado em escrita que realmente parece manuscrita. Os modelos integrados funcionam completamente offline; nada sobre seu texto sai do seu dispositivo.</string>
+    <string name="about_description">Transforma texto digitado em escrita que realmente parece manuscrita. Os modelos integrados funcionam completamente offline; nada sobre seu texto sai do seu dispositivo. Código aberto sob a licença Apache 2.0.</string>
     <string name="about_github_button">Ver código-fonte no GitHub</string>
     <string name="about_copyright">© 2026 IT-BAER. Feito com cuidado.</string>
 

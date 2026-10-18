@@ -158,7 +158,7 @@
     <!-- About screen -->
     <string name="about_title">Acerca de</string>
     <string name="about_version">Versión %1$s</string>
-    <string name="about_description">Convierte texto escrito en letra que realmente parece escrita a mano. Las plantillas integradas funcionan completamente sin conexión; nada sobre tu texto sale de tu dispositivo.</string>
+    <string name="about_description">Convierte texto escrito en letra que realmente parece escrita a mano. Las plantillas integradas funcionan completamente sin conexión; nada sobre tu texto sale de tu dispositivo. Código abierto bajo la licencia Apache 2.0.</string>
     <string name="about_github_button">Ver código fuente en GitHub</string>
     <string name="about_copyright">© 2026 IT-BAER. Hecho con cuidado.</string>
 

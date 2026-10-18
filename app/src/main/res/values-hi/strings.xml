@@ -157,7 +157,7 @@
     <!-- About screen -->
     <string name="about_title">परिचय</string>
     <string name="about_version">संस्करण %1$s</string>
-    <string name="about_description">टाइप किए गए टेक्स्ट को ऐसी लिखावट में बदलता है जो वाकई हाथ से लिखी लगे। अंतर्निहित टेम्पलेट पूरी तरह ऑफलाइन काम करते हैं; आपके टेक्स्ट के बारे में कुछ भी डिवाइस नहीं छोड़ता।</string>
+    <string name="about_description">टाइप किए गए टेक्स्ट को ऐसी लिखावट में बदलता है जो वाकई हाथ से लिखी लगे। अंतर्निहित टेम्पलेट पूरी तरह ऑफलाइन काम करते हैं; आपके टेक्स्ट के बारे में कुछ भी डिवाइस नहीं छोड़ता। Apache License 2.0 के तहत ओपन सोर्स।</string>
     <string name="about_github_button">GitHub पर सोर्स देखें</string>
     <string name="about_copyright">© 2026 IT-BAER. देखभाल से बनाया गया।</string>
 

@@ -43,6 +43,10 @@ The optional "use my handwriting" feature opens Google's document scanner, where
 - Files you exported to the gallery, Downloads or any share target are owned by your filesystem and must be removed via your Files or Gallery app.
 - Uninstalling HandType removes all of the app's private data (including History, templates and the unlock flag). A purchase stays on your Google account and can be restored after reinstalling.
 
+## Source code
+
+HandType is open source under the Apache License 2.0. The full source code is public at <https://github.com/IT-BAER/HandType>, so every statement in this policy can be checked.
+
 ## Changes
 
 If this policy changes, this file will be updated and a note will appear in the app's release notes.

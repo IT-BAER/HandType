@@ -158,7 +158,7 @@
     <!-- About screen -->
     <string name="about_title">关于</string>
     <string name="about_version">版本 %1$s</string>
-    <string name="about_description">将输入的文字转化为真正看起来手写的笔迹。内置模板完全离线运行；您的文字信息不会离开设备。</string>
+    <string name="about_description">将输入的文字转化为真正看起来手写的笔迹。内置模板完全离线运行；您的文字信息不会离开设备。基于 Apache License 2.0 开源。</string>
     <string name="about_github_button">在 GitHub 上查看源代码</string>
     <string name="about_copyright">© 2026 IT-BAER. 用心制作。</string>
 

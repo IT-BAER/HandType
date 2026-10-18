@@ -167,7 +167,7 @@
     <!-- About screen -->
     <string name="about_title">Über</string>
     <string name="about_version">Version %1$s</string>
-    <string name="about_description">Verwandelt getippten Text in Handschrift, die sich wirklich handgeschrieben anfühlt. Integrierte Vorlagen funktionieren vollständig offline; nichts über deinen Text verlässt dein Gerät.</string>
+    <string name="about_description">Verwandelt getippten Text in Handschrift, die sich wirklich handgeschrieben anfühlt. Integrierte Vorlagen funktionieren vollständig offline; nichts über deinen Text verlässt dein Gerät. Open Source unter der Apache-Lizenz 2.0.</string>
     <string name="about_github_button">Quellcode auf GitHub ansehen</string>
     <string name="about_copyright">© 2026 IT-BAER. Mit Sorgfalt gemacht.</string>
 

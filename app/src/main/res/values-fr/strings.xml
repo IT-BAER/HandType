@@ -158,7 +158,7 @@
     <!-- About screen -->
     <string name="about_title">À propos</string>
     <string name="about_version">Version %1$s</string>
-    <string name="about_description">Transformez du texte tapé en écriture qui semble vraiment manuscrite. Les modèles intégrés fonctionnent entièrement hors ligne ; rien sur votre texte ne quitte votre appareil.</string>
+    <string name="about_description">Transformez du texte tapé en écriture qui semble vraiment manuscrite. Les modèles intégrés fonctionnent entièrement hors ligne ; rien sur votre texte ne quitte votre appareil. Open source sous licence Apache 2.0.</string>
     <string name="about_github_button">Voir le code source sur GitHub</string>
     <string name="about_copyright">© 2026 IT-BAER. Fait avec soin.</string>
 

@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-18
+
 ### Fixed
 - Premium unlocks when the app returns to the foreground after a purchase completed outside the paywall (slow payment methods, promo codes, a purchase on another device); such purchases are also acknowledged then, so Play does not refund them after 3 days.
 
 ### Changed
 - Privacy policy: no camera or storage permission is requested; Google Play purchases, the rating prompt, on-device settings and the Internet permission declared by Google's libraries are described.
 - Release workflow uploads the signed bundle to the Google Play internal testing track and keeps the APK on the GitHub release.
+- Version 1.0.0 (versionCode 3).
+- About and the privacy policy say that HandType is open source under the Apache License 2.0.
 
 ## [0.2.0] - 2026-10-10
 

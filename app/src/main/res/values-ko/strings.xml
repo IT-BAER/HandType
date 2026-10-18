@@ -158,7 +158,7 @@
     <!-- About screen -->
     <string name="about_title">앱 정보</string>
     <string name="about_version">버전 %1$s</string>
-    <string name="about_description">입력한 텍스트를 실제로 손으로 쓴 것처럼 느껴지는 필체로 변환합니다. 내장 템플릿은 완전히 오프라인으로 작동하며 텍스트에 대한 정보는 기기를 떠나지 않습니다.</string>
+    <string name="about_description">입력한 텍스트를 실제로 손으로 쓴 것처럼 느껴지는 필체로 변환합니다. 내장 템플릿은 완전히 오프라인으로 작동하며 텍스트에 대한 정보는 기기를 떠나지 않습니다. Apache License 2.0 기반 오픈 소스입니다.</string>
     <string name="about_github_button">GitHub에서 소스 보기</string>
     <string name="about_copyright">© 2026 IT-BAER. 정성껏 만들었습니다.</string>
 
