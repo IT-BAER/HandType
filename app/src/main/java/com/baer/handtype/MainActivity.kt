@@ -40,8 +40,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.ConfigurationCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.baer.handtype.billing.PremiumBilling
 import com.baer.handtype.billing.PremiumState
 import com.baer.handtype.feature.billing.PremiumPaywallSheet
@@ -136,7 +139,11 @@ private fun HandTypeRoot(
     val premiumTemplate = remember(repository) { repository.premiumTemplate() }
 
     val billing = remember(activity) { PremiumBilling.create(activity, settingsStore) }
-    LaunchedEffect(billing) { billing.refresh() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    // Every resume re-queries Play: pending payments, promo codes and other-device purchases arrive outside the paywall.
+    LaunchedEffect(billing, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) { billing.refresh() }
+    }
     DisposableEffect(billing) { onDispose { billing.close() } }
     val premiumState by billing.state.collectAsState()
     val premiumUnlocked = premiumState == PremiumState.Unlocked

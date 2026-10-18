@@ -1,4 +1,4 @@
-name: Release to GitHub
+name: Release
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build & Release
+    name: Build, Play Internal & GitHub Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -48,7 +48,64 @@ jobs:
             IS_PRERELEASE="false"
           fi
           echo "name=$TAG" >> $GITHUB_OUTPUT
+          echo "base=${TAG%%-*}" >> $GITHUB_OUTPUT
           echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+
+      # versionCode is bumped by hand; Play rejects a reused one.
+      - name: Check versionName matches release version
+        env:
+          BASE_VERSION: ${{ steps.version.outputs.base }}
+        run: |
+          VERSION_NAME=$(sed -n 's/^ *versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts)
+          VERSION_CODE=$(sed -n 's/^ *versionCode = \([0-9]*\).*/\1/p' app/build.gradle.kts)
+          echo "versionName=$VERSION_NAME versionCode=$VERSION_CODE"
+          if [ "$VERSION_NAME" != "$BASE_VERSION" ]; then
+            echo "::error::versionName $VERSION_NAME in app/build.gradle.kts does not match release $BASE_VERSION"
+            exit 1
+          fi
+
+      - name: Extract Changelog Entry
+        id: changelog
+        env:
+          BASE_VERSION: ${{ steps.version.outputs.base }}
+        run: |
+          CHANGELOG_CONTENT=$(awk -v v="$BASE_VERSION" 'index($0, "## [" v "]") == 1 { p = 1; next } /^## \[/ { if (p) exit } p' CHANGELOG.md | sed '/^---/Q' | sed '/^$/d')
+          if [ -z "$CHANGELOG_CONTENT" ]; then
+            echo "::error::CHANGELOG.md has no '## [$BASE_VERSION]' section"
+            exit 1
+          fi
+          printf '%s\n' "$CHANGELOG_CONTENT" > "$RUNNER_TEMP/changelog.md"
+          EOF=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
+          echo "body<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGELOG_CONTENT" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare What's New for Play
+        run: |
+          # Committed whatsnew/whatsnew-<lang-REGION> files win; otherwise en-US is built from
+          # the changelog entry, cut at a line boundary. Play allows 500 characters per locale.
+          export LC_ALL=C.UTF-8
+          if ls whatsnew/whatsnew-* >/dev/null 2>&1; then
+            echo "Using committed release notes."
+          else
+            echo "No committed notes, generating en-US from CHANGELOG."
+            mkdir -p whatsnew
+            : > whatsnew/whatsnew-en-US
+            total=0
+            while IFS= read -r line; do
+              line=$(printf '%s' "$line" | sed 's/^### //; s/^- /• /; s/\*\*//g; s/`//g')
+              n=$(( ${#line} + 1 ))
+              if [ $(( total + n )) -gt 500 ]; then break; fi
+              printf '%s\n' "$line" >> whatsnew/whatsnew-en-US
+              total=$(( total + n ))
+            done < "$RUNNER_TEMP/changelog.md"
+          fi
+          for f in whatsnew/whatsnew-*; do
+            n=$(wc -m < "$f")
+            echo "--- $f ($n chars) ---"; cat "$f"; echo
+            if [ "$n" -gt 500 ]; then echo "::error::$f exceeds 500 chars ($n)"; exit 1; fi
+            if [ "$n" -eq 0 ]; then echo "::error::$f is empty"; exit 1; fi
+          done
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -60,27 +117,38 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Decode Release Keystore
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > app/release.keystore
+          if [ -z "$RELEASE_KEYSTORE_BASE64" ]; then
+            echo "::error::RELEASE_KEYSTORE_BASE64 secret missing"
+            exit 1
+          fi
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          # The SHA1 must match the Play upload certificate, or Play rejects the bundle.
+          keytool -list -v -keystore app/release.keystore -storepass:env RELEASE_KEYSTORE_PASSWORD -alias "$RELEASE_KEY_ALIAS" | grep -E 'SHA1:|SHA256:'
 
-      - name: Build Release APK
+      - name: Build Release APK & AAB
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease bundleRelease --no-daemon
         env:
           RELEASE_KEYSTORE_FILE: ${{ github.workspace }}/app/release.keystore
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
-      - name: Extract Changelog Entry
-        id: changelog
-        run: |
-          CHANGELOG_CONTENT=$(awk '/^## \[/ { if (count++) exit; next } { if (count) print }' CHANGELOG.md | sed '/^---/Q' | sed '/^$/d')
-          EOF=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
-          echo "body<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$CHANGELOG_CONTENT" >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
+      - name: Upload to Google Play Internal Testing
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          packageName: com.baer.handtype
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+          whatsNewDirectory: whatsnew/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

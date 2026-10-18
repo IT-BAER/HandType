@@ -17,10 +17,13 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.baer.handtype.BuildConfig
 import com.baer.handtype.feature.settings.AppSettingsStore
 import com.baer.handtype.testing.HandTypeDebugHooks
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -66,13 +69,13 @@ private class PlayPremiumBilling(
     )
     override val state: StateFlow<PremiumState> = _state.asStateFlow()
 
-    private var pendingPurchaseUpdate: ((BillingResult) -> Unit)? = null
+    private val scope = MainScope()
 
-    private val listener = PurchasesUpdatedListener { result, _ ->
-        val callback = pendingPurchaseUpdate
-        pendingPurchaseUpdate = null
-        callback?.invoke(result)
+    private val purchaseUpdates = PurchaseUpdateRouter<BillingResult> { result ->
+        if (result.responseCode == BillingResponseCode.OK) scope.launch { refresh() }
     }
+
+    private val listener = PurchasesUpdatedListener { result, _ -> purchaseUpdates.deliver(result) }
 
     private val client: BillingClient = BillingClient.newBuilder(activity)
         .setListener(listener)
@@ -175,12 +178,13 @@ private class PlayPremiumBilling(
             )
             .build()
         val billingResult = suspendCancellableCoroutine<BillingResult> { continuation ->
-            pendingPurchaseUpdate = { result ->
+            purchaseUpdates.expect { result ->
                 if (continuation.isActive) continuation.resume(result)
             }
+            continuation.invokeOnCancellation { purchaseUpdates.cancel() }
             val launchResult = client.launchBillingFlow(activity, params)
             if (launchResult.responseCode != BillingResponseCode.OK) {
-                pendingPurchaseUpdate = null
+                purchaseUpdates.cancel()
                 if (continuation.isActive) continuation.resume(launchResult)
             }
         }
@@ -207,6 +211,7 @@ private class PlayPremiumBilling(
     }
 
     override fun close() {
+        scope.cancel()
         client.endConnection()
     }
 
