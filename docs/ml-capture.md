@@ -19,30 +19,22 @@ Source files:
 - `app/src/main/java/com/baer/handtype/feature/capture/SheetSampleProcessor.kt` (detection, rectification, cell extraction)
 - `app/src/main/java/com/baer/handtype/feature/capture/PaperCornerDetector.kt` (alternate corner finder, not in active path)
 - `app/src/main/java/com/baer/handtype/ml/GlyphPostProcessor.kt` (per-glyph cleanup, shared)
-- `app/src/main/java/com/baer/handtype/ml/HandwritingExtractor.kt` (ML Kit text path, not wired into the live flow)
 - `app/src/main/java/com/baer/handtype/MainActivity.kt` (`PremiumCaptureRoute`, around line 280, the production caller)
 - `app/src/main/java/com/baer/handtype/template/UserTemplateRepository.kt` (`saveTemplate`)
 
 ## On-device and offline
 
-There is no server. Two GMS/ML Kit dependencies back this feature (`app/build.gradle.kts`):
+There is no server. One GMS/ML Kit dependency backs this feature (`app/build.gradle.kts`):
 
 ```
 com.google.android.gms:play-services-mlkit-document-scanner:16.0.0
-com.google.android.gms:play-services-mlkit-text-recognition:19.0.1
 ```
 
-The manifest declares the model dependency for predownload:
-
-```xml
-<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="ocr" />
-```
-
-These are on-device GMS modules; the scanner and recognizer run locally. Note the meta-data primes `ocr` (text recognition) but the live capture path does not use text recognition (see "Two extraction paths" below). All glyph extraction in `SheetSampleProcessor` is pure pixel math on the bitmap, with no ML Kit call.
+The scanner is an on-device GMS module and runs locally. All glyph extraction in `SheetSampleProcessor` is pure pixel math on the bitmap, with no ML Kit call.
 
 ## Permissions
 
-- `AndroidManifest.xml` declares `android.permission.CAMERA`, `uses-feature android.hardware.camera.any (required=true)`, and `WRITE_EXTERNAL_STORAGE` capped at `maxSdkVersion=28` (legacy gallery save, unrelated to capture).
+- `AndroidManifest.xml` declares `uses-feature android.hardware.camera.any (required=true)` and no runtime permissions; the scanner activity owns camera access.
 - `CameraCaptureScreen` requests **no** camera permission itself. The capture is delegated to the GMS Document Scanner activity, which handles camera permission, the live preview, perspective correction, and rotation internally. There is no runtime permission prompt or permission-priming screen in this flow.
 
 ## 1. Practice sheet generation (`PracticeSheetGenerator`)
@@ -288,14 +280,9 @@ Pipeline:
 
 This 220-tall, baseline-aligned, guide-band-normalized canvas is what `HandwritingBitmapRenderer` and `PunctuationSynthesizer` rely on (`normalizedCanvasSize()` = 220, `normalizedBaselineRow()` = 162, `normalizedGuideBandHeight()` = 101).
 
-## 6. Two extraction paths
+## 6. Extraction path
 
-There are two glyph extractors that share `GlyphPostProcessor.cleanGlyph` but serve different roles:
-
-- **`SheetSampleProcessor` (live capture path):** fiducial sheet detection, perspective rectify, known-cell crops. No ML Kit. This is what `MainActivity` wires.
-- **`HandwritingExtractor` (ML Kit text path):** wraps a Latin `TextRecognizer` (`TextRecognizerOptions.DEFAULT_OPTIONS`), walks `textBlocks -> lines -> elements -> symbols`, keeps single-char `isLetterOrDigit` symbols (falls back to slicing the element box into equal-width regions when no symbol boxes exist), crops each with `paddingPx = 12`, runs `cleanGlyph` (no guide band, `expectsDiacritic = false`), and returns an `ExtractionResult` (`glyphs`, `glyphMap` first-crop-per-char, `recognizedText`). The header calls it the "alphabet-calibration flow." It is **not** invoked by the live capture flow in `MainActivity`; treat it as an alternate/calibration path. Because it passes no guide band and `expectsDiacritic = false`, it gets none of the i/j tittle recovery the sheet path applies. The equal-width fallback assumes monospaced characters and misaligns proportional handwriting; it is best-effort only.
-
-The manifest's `com.google.mlkit.vision.DEPENDENCIES = ocr` predownload corresponds to this text-recognition path, not the live sheet path.
+`SheetSampleProcessor` is the only glyph extractor: fiducial sheet detection, perspective rectify, known-cell crops, then `GlyphPostProcessor.cleanGlyph`. No ML Kit. `MainActivity` wires it.
 
 ## 7. Result -> UserTemplate (`UserTemplateRepository.saveTemplate`)
 

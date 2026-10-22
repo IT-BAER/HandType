@@ -92,9 +92,9 @@
     <string name="loading_template_title">Vorlage wird geladen</string>
     <string name="loading_template_body">Bitmap-Glyphen für den Standard-Handschriftablauf werden vorbereitet.</string>
 
-    <string name="premium_instruction">Schreibe A–Z, a–z, 0–9 und ÄÖÜäöüß auf das Übungsblatt und zentriere die Seite im Rahmen, um deine persönliche Vorlage zu erstellen.</string>
+    <string name="premium_instruction">Schreibe A–Z, a–z, 0–9 und ÄÖÜäöüß auf das Übungsblatt und scanne dann die ganze Seite mit allen vier schwarzen Quadraten, um deine persönliche Vorlage zu erstellen.</string>
     <string name="premium_processing">Handschriftprobe wird mit ML Kit verarbeitet…</string>
-    <string name="premium_no_glyphs">Keine alphanumerischen Glyphen erkannt. Versuche es mit besserer Beleuchtung und fülle mehr des Rahmens mit der Seite. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
+    <string name="premium_no_glyphs">Keine alphanumerischen Glyphen erkannt. Versuche es mit besserer Beleuchtung oder einem dunkleren Stift und scanne erneut. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
     <string name="premium_capture_complete">Handschrift-Aufnahme abgeschlossen. %1$d Glyphen aus %2$d einzigartigen Zeichen extrahiert. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
     <string name="premium_marker_detection_failed">Dieser Scan sah nicht wie das HandType-Übungsblatt aus. Stelle sicher, dass das gedruckte Blatt den Großteil des Scans füllt und alle vier schwarzen Quadrate sichtbar sind.</string>
     <string name="premium_save_failed">Die Handschriftvorlage konnte nicht gespeichert werden. Versuche es erneut.</string>
@@ -153,7 +153,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Wo werden gespeicherte Dateien abgelegt?</string>
-    <string name="faq_a1">PNGs werden in Pictures/HandType gespeichert. PDFs werden ab Android 10 in Download/HandType gespeichert. Auf älteren Android-Versionen teile das PDF, um eine Kopie zu speichern. PNGs benötigen bis Android 9 eine Speicherberechtigung.</string>
+    <string name="faq_a1">PNGs werden in Pictures/HandType gespeichert. PDFs werden in Download/HandType gespeichert.</string>
     <string name="faq_q2">Wofür ist das transparente PNG?</string>
     <string name="faq_a2">Es ist dieselbe Handschrift ohne Papierhintergrund, nützlich wenn du die Notiz auf ein anderes Bild, Dokument oder eine Folie legen möchtest.</string>
     <string name="faq_q3">Kann eine lange Notiz mehrere PDF-Seiten umfassen?</string>

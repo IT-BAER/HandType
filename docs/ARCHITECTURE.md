@@ -38,7 +38,6 @@ com.baer.handtype
 │  ├─ BundledGlyphTextNormalizer.kt  input text normalization
 │  └─ UserGlyphWidthNormalizer.kt    per-glyph X/Y scale clamping
 ├─ ml/                        on-device extraction (no Compose, no UI)
-│  ├─ HandwritingExtractor.kt        ML Kit text recognition over a captured sheet
 │  └─ GlyphPostProcessor.kt          crop/threshold/normalize glyphs to a 220-row canvas
 ├─ ui/animation/             shared Compose animation helpers (staggeredItemAnimation)
 └─ testing/                  HandTypeTestTags + HandTypeDebugHooks (test/debug instrumentation)
@@ -55,7 +54,7 @@ The app is layered by package, not by Gradle module. Dependencies flow downward 
 | Shell / navigation | `MainActivity`, `feature/shell` | single Activity, route switching, drawer | yes |
 | Feature UI | `feature/template`, `feature/capture`, `feature/info` | screens, dialogs, screen-local state | yes |
 | Data + render | `template/` | template loading/persistence, text→bitmap render, export | no |
-| ML extraction | `ml/` | glyph post-processing of a captured sheet, plus an alternate ML Kit OCR path (not used by live capture) | no |
+| ML extraction | `ml/` | glyph post-processing of a captured sheet | no |
 | Shared UI utils | `ui/animation` | reusable entrance animations | yes |
 | Test/debug hooks | `testing/` | test tags, debug injection hooks | no |
 
@@ -137,7 +136,7 @@ Notes:
 
 `template/OutputExporter` (a Kotlin `object`) owns all output. The output screen exposes 6 flat actions in 3 colors: Save PNG, Share, Export PDF, Save transparent PNG, Recreate, New note.
 
-- **Save PNG / transparent PNG** → `Pictures/HandType` (MediaStore on API 29+, direct file with `WRITE_EXTERNAL_STORAGE` on API 23-28). Transparent export keys out the paper color per-pixel.
+- **Save PNG / transparent PNG** → `Pictures/HandType` (MediaStore). Transparent export keys out the paper color per-pixel.
 - **Export PDF** → `Download/HandType` (API 29+) or app cache (older), A4 portrait, with smart page slicing that snaps page breaks to the emptiest row.
 - **Share** → stages a temp PNG in `cacheDir/shared/`, then `FileProvider.getUriForFile(context, "${packageName}.fileprovider", file)` produces a content URI for `ACTION_SEND`.
 - FileProvider authority is `${applicationId}.fileprovider` (`com.baer.handtype.fileprovider`, debug `com.baer.handtype.debug.fileprovider`), declared in `AndroidManifest.xml`, configured by `res/xml/file_paths.xml` (single `<cache-path name="shared" path="shared/" />`).
@@ -151,7 +150,7 @@ Notes:
 
 ### Premium capture is a free flag
 
-The premium feature (capture your own handwriting from a photographed practice sheet via the GMS ML Kit document scanner, fully on-device; there is no in-app CameraX preview) is gated only by `premium = true` on the descriptor and a "Premium" badge. There is **no purchase, entitlement, or paywall**: no billing dependency exists anywhere in `app/src/main/java`. It is free to use. ML Kit OCR is bundled at install time (`com.google.mlkit.vision.DEPENDENCIES = ocr` meta-data). See [ml-capture.md](./ml-capture.md).
+The premium feature (capture your own handwriting from a photographed practice sheet via the GMS ML Kit document scanner, fully on-device; there is no in-app CameraX preview) is gated only by `premium = true` on the descriptor and a "Premium" badge. There is **no purchase, entitlement, or paywall**: no billing dependency exists anywhere in `app/src/main/java`. It is free to use. See [ml-capture.md](./ml-capture.md).
 
 ### Internationalization
 

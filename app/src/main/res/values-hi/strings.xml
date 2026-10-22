@@ -90,9 +90,9 @@
     <string name="loading_template_title">टेम्पलेट लोड हो रहा है</string>
     <string name="loading_template_body">डिफ़ॉल्ट हस्तलेखन प्रवाह के लिए बंडल बिटमैप ग्लिफ़ तैयार किए जा रहे हैं।</string>
 
-    <string name="premium_instruction">प्रीमियम सुविधा: खाली कागज पर A-Z, a-z और 0-9 लिखें, फिर अपना व्यक्तिगत टेम्पलेट बनाने के लिए पृष्ठ को फ्रेम के अंदर केंद्रित करें।</string>
+    <string name="premium_instruction">अभ्यास शीट पर A-Z, a-z और 0-9 लिखें, फिर अपना व्यक्तिगत टेम्पलेट बनाने के लिए सभी चार काले वर्ग दृश्यमान रखते हुए पूरा पृष्ठ स्कैन करें।</string>
     <string name="premium_processing">ML Kit के साथ हस्तलेखन नमूना प्रसंस्करण हो रहा है…</string>
-    <string name="premium_no_glyphs">कोई अल्फ़ान्यूमेरिक ग्लिफ़ नहीं मिला। बेहतर प्रकाश व्यवस्था आज़माएं और पृष्ठ से अधिक फ्रेम भरें। टेम्पलेट पर वापस जाने के लिए सिस्टम बैक उपयोग करें।</string>
+    <string name="premium_no_glyphs">कोई अल्फ़ान्यूमेरिक ग्लिफ़ नहीं मिला। बेहतर प्रकाश व्यवस्था या गहरे रंग का पेन आज़माएं, फिर दोबारा स्कैन करें। टेम्पलेट पर वापस जाने के लिए सिस्टम बैक उपयोग करें।</string>
     <string name="premium_capture_complete">प्रीमियम कैप्चर पूर्ण। %2$d अनूठे अक्षरों में से %1$d ग्लिफ़ निकाले गए। टेम्पलेट पर वापस जाने के लिए बैक उपयोग करें।</string>
     <string name="premium_capture_failed_focus">टेक्स्ट पहचान विफल। अधिक तेज़ फ़ोकस के साथ दूसरा कैप्चर आज़माएं।</string>
     <string name="premium_marker_detection_failed">वह स्कैन HandType अभ्यास शीट जैसा नहीं लगा। सुनिश्चित करें कि प्रिंटेड शीट स्कैन का अधिकांश भाग भरे और सभी चार काले वर्ग दृश्यमान हों।</string>
@@ -143,7 +143,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">सहेजी गई फ़ाइलें कहां होती हैं?</string>
-    <string name="faq_a1">PNG फ़ाइलें Pictures/HandType में सहेजी जाती हैं। Android 10 और नए संस्करणों में PDF फ़ाइलें Download/HandType में सहेजी जाती हैं। पुराने संस्करणों में PDF की कॉपी सहेजने के लिए उसे साझा करें। Android 9 और पुराने संस्करणों में PNG सहेजने के लिए स्टोरेज की अनुमति चाहिए।</string>
+    <string name="faq_a1">PNG फ़ाइलें Pictures/HandType में सहेजी जाती हैं। PDF फ़ाइलें Download/HandType में सहेजी जाती हैं।</string>
     <string name="faq_q2">ट्रांसपेरेंट PNG किसलिए है?</string>
     <string name="faq_a2">यह पेपर बैकग्राउंड के बिना वही लेखन है, उपयोगी जब आप नोट को किसी अन्य छवि, दस्तावेज़ या स्लाइड पर रखना चाहते हों।</string>
     <string name="faq_q3">क्या एक लंबा नोट कई PDF पृष्ठों में फैल सकता है?</string>

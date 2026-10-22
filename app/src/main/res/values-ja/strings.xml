@@ -91,9 +91,9 @@
     <string name="loading_template_title">テンプレートを読み込み中</string>
     <string name="loading_template_body">デフォルト手書きフローのビットマップグリフを準備中です。</string>
 
-    <string name="premium_instruction">プレミアム機能：A〜Z、a〜z、0〜9を白紙に書き、ページをフレーム内に収めると個人テンプレートが作成されます。</string>
+    <string name="premium_instruction">練習シートにA〜Z、a〜z、0〜9を書き、4つの黒い四角が見える状態でページ全体をスキャンすると、個人テンプレートが作成されます。</string>
     <string name="premium_processing">ML Kitで手書きサンプルを処理中…</string>
-    <string name="premium_no_glyphs">英数字グリフが検出されませんでした。より明るい照明を試し、ページでフレームをより多く埋めてください。テンプレートに戻るにはシステムの戻るボタンを使用してください。</string>
+    <string name="premium_no_glyphs">英数字グリフが検出されませんでした。より明るい照明か濃いペンを使って、もう一度スキャンしてください。テンプレートに戻るにはシステムの戻るボタンを使用してください。</string>
     <string name="premium_capture_complete">プレミアムキャプチャ完了。%2$d個のユニーク文字から%1$dグリフが抽出されました。テンプレートに戻るには戻るボタンを使用してください。</string>
     <string name="premium_capture_failed_focus">テキスト認識に失敗しました。フォーカスを合わせて再キャプチャしてください。</string>
     <string name="premium_marker_detection_failed">そのスキャンはHandType練習シートのようではありませんでした。印刷したシートがスキャンの大部分を埋め、4つの黒い四角が見えることを確認してください。</string>
@@ -143,7 +143,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">保存されたファイルはどこにありますか？</string>
-    <string name="faq_a1">PNGはPictures/HandTypeに保存されます。Android 10以降ではPDFはDownload/HandTypeに保存されます。それ以前のAndroidではPDFを共有してコピーを保存してください。Android 9以前でPNGを保存するにはストレージへのアクセス許可が必要です。</string>
+    <string name="faq_a1">PNGはPictures/HandTypeに保存されます。PDFはDownload/HandTypeに保存されます。</string>
     <string name="faq_q2">透明PNGは何のためですか？</string>
     <string name="faq_a2">紙の背景なしの同じ筆跡で、他の画像・文書・スライドに重ねる際に便利です。</string>
     <string name="faq_q3">長いノートは複数のPDFページにまたがれますか？</string>

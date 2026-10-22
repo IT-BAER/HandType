@@ -91,9 +91,9 @@
     <string name="loading_template_title">템플릿 로드 중</string>
     <string name="loading_template_body">기본 필기 흐름을 위한 번들 비트맵 글리프를 준비 중입니다.</string>
 
-    <string name="premium_instruction">프리미엄 기능: 빈 종이에 A-Z, a-z, 0-9를 쓴 다음 개인 템플릿을 만들기 위해 페이지를 프레임 안에 중앙 배치하세요.</string>
+    <string name="premium_instruction">연습 시트에 A-Z, a-z, 0-9를 쓴 다음 네 개의 검은 사각형이 보이도록 페이지 전체를 스캔하여 개인 템플릿을 만드세요.</string>
     <string name="premium_processing">ML Kit로 필기 샘플 처리 중…</string>
-    <string name="premium_no_glyphs">영숫자 글리프가 감지되지 않았습니다. 더 밝은 조명을 시도하고 페이지로 더 많은 프레임을 채우세요. 템플릿으로 돌아가려면 시스템 뒤로 가기를 사용하세요.</string>
+    <string name="premium_no_glyphs">영숫자 글리프가 감지되지 않았습니다. 더 밝은 조명이나 더 진한 펜을 사용한 후 다시 스캔하세요. 템플릿으로 돌아가려면 시스템 뒤로 가기를 사용하세요.</string>
     <string name="premium_capture_complete">프리미엄 캡처 완료. %2$d개의 고유 문자에서 %1$d개의 글리프가 추출되었습니다. 템플릿으로 돌아가려면 뒤로 가기를 사용하세요.</string>
     <string name="premium_capture_failed_focus">텍스트 인식에 실패했습니다. 더 선명한 초점으로 다시 캡처해 보세요.</string>
     <string name="premium_marker_detection_failed">해당 스캔이 HandType 연습 시트처럼 보이지 않았습니다. 인쇄된 시트가 스캔의 대부분을 채우고 네 개의 검은 사각형이 보이는지 확인하세요.</string>
@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">저장된 파일은 어디에 있나요?</string>
-    <string name="faq_a1">PNG는 Pictures/HandType에 저장됩니다. Android 10 이상에서 PDF는 Download/HandType에 저장됩니다. 이전 Android 버전에서는 PDF를 공유하여 사본을 저장하세요. Android 9 이하에서 PNG를 저장하려면 저장소 권한이 필요합니다.</string>
+    <string name="faq_a1">PNG는 Pictures/HandType에 저장됩니다. PDF는 Download/HandType에 저장됩니다.</string>
     <string name="faq_q2">투명 PNG는 무엇에 사용하나요?</string>
     <string name="faq_a2">종이 배경이 없는 같은 필체로, 다른 이미지, 문서 또는 슬라이드에 메모를 올릴 때 유용합니다.</string>
     <string name="faq_q3">긴 메모가 여러 PDF 페이지에 걸칠 수 있나요?</string>

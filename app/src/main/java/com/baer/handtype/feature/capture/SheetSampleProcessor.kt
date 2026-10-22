@@ -8,6 +8,7 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.Log
+import com.baer.handtype.BuildConfig
 import com.baer.handtype.ml.GlyphPostProcessor
 import java.io.File
 import java.io.FileOutputStream
@@ -114,12 +115,12 @@ object SheetSampleProcessor {
         if (skipPageDetection) {
             pageRect = PageRect(0, 0, working.width - 1, working.height - 1)
             paperMask = null
-            Log.i(TAG, "Page detection skipped — using full image bounds (${working.width}x${working.height})")
+            if (BuildConfig.DEBUG) Log.i(TAG, "Page detection skipped — using full image bounds (${working.width}x${working.height})")
         } else {
             val pageInfo = locatePage(luma, working.width, working.height)
             pageRect = pageInfo.rect
             paperMask = pageInfo.paperMask
-            Log.i(TAG, "Detected page rectangle (working coords): $pageRect")
+            if (BuildConfig.DEBUG) Log.i(TAG, "Detected page rectangle (working coords): $pageRect")
         }
         debugContext?.let { dumpDebugPageRect(it, working, pageRect) }
 
@@ -225,7 +226,7 @@ object SheetSampleProcessor {
             }
         }
 
-        Log.i(TAG, "Sheet processing complete: ${glyphs.size} glyphs extracted, ${missing.size} cells empty")
+        if (BuildConfig.DEBUG) Log.i(TAG, "Sheet processing complete: ${glyphs.size} glyphs extracted, ${missing.size} cells empty")
         return SheetExtractionResult(
             glyphs = glyphs,
             missing = missing,
@@ -311,7 +312,7 @@ object SheetSampleProcessor {
         }
         val normalized = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         normalized.setPixels(pixels, 0, width, 0, 0, width, height)
-        Log.i(TAG, "White point normalized: paper luma $paperLuma -> 255")
+        if (BuildConfig.DEBUG) Log.i(TAG, "White point normalized: paper luma $paperLuma -> 255")
         return normalized
     }
 
@@ -469,7 +470,7 @@ object SheetSampleProcessor {
             }
         }
         val (brightCutoff, brightPeak) = pageBrightCutoff(histogram, threshold)
-        Log.i(TAG, "Page-detection bright cutoff: $brightCutoff (otsu=$threshold, brightPeak=$brightPeak)")
+        if (BuildConfig.DEBUG) Log.i(TAG, "Page-detection bright cutoff: $brightCutoff (otsu=$threshold, brightPeak=$brightPeak)")
 
         // Build a "bright" mask and find the largest connected bright component on a 4-connected
         // grid. That component IS the paper (largest contiguous bright patch in the photo).
@@ -550,7 +551,7 @@ object SheetSampleProcessor {
             right = (bestRight - margin).coerceAtLeast(bestLeft + 1),
             bottom = (bestBottom - margin).coerceAtLeast(bestTop + 1),
         )
-        Log.i(TAG, "Largest bright region size=$bestSize, rect=$pageRect")
+        if (BuildConfig.DEBUG) Log.i(TAG, "Largest bright region size=$bestSize, rect=$pageRect")
         return PageInfo(pageRect, paperMask)
     }
 
@@ -631,7 +632,7 @@ object SheetSampleProcessor {
                 threshold = t
             }
         }
-        Log.i(TAG, "In-page Otsu threshold: $threshold over $pixelCount pixels")
+        if (BuildConfig.DEBUG) Log.i(TAG, "In-page Otsu threshold: $threshold over $pixelCount pixels")
 
         // The paper mask only gates the histogram: a fiducial at a shadowed page edge is not
         // enclosed by bright paper, so the mask is applied to the whole page rectangle and the
@@ -669,7 +670,7 @@ object SheetSampleProcessor {
         // to whichever quadrant its centroid falls into. This is more robust than scanning each
         // quadrant in isolation when a fiducial straddles the midpoint.
         val components = collectComponents(mask, width, height)
-        Log.i(TAG, "Found ${components.size} dark components in mask (after size filter). Centroids: " + components.map { it.centroid })
+        if (BuildConfig.DEBUG) Log.i(TAG, "Found ${components.size} dark components in mask (after size filter). Centroids: " + components.map { it.centroid })
 
         val tl = pickFiducial(components, 0, 0, midX, midY, 0f, 0f) ?: return null
         val tr = pickFiducial(components, midX, 0, width, midY, width.toFloat(), 0f) ?: return null
@@ -766,7 +767,7 @@ object SheetSampleProcessor {
                     }
                 }
                 if (size < minSize || size > maxSize) {
-                    Log.v(TAG, "  Component filtered: size=$size (min=$minSize,max=$maxSize) centroid=(${sumX/size},${sumY/size})")
+                    if (BuildConfig.DEBUG) Log.v(TAG, "  Component filtered: size=$size (min=$minSize,max=$maxSize) centroid=(${sumX/size},${sumY/size})")
                     continue
                 }
                 val bboxW = maxBX - minBX + 1

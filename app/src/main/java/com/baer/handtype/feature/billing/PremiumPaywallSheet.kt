@@ -1,6 +1,7 @@
 package com.baer.handtype.feature.billing
 
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,9 +49,11 @@ fun PremiumPaywallSheet(
     var price by remember { mutableStateOf<String?>(null) }
     var isPurchasing by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val currentState by billing.state.collectAsState()
 
-    LaunchedEffect(billing) {
-        price = billing.formattedPrice()
+    // Re-query on state changes so a price that failed while Play was unreachable loads after a restore.
+    LaunchedEffect(billing, currentState) {
+        if (price == null) price = billing.formattedPrice()
     }
 
     fun startPurchase() {
@@ -101,7 +104,6 @@ fun PremiumPaywallSheet(
                 style = MaterialTheme.typography.bodyMedium,
             )
 
-            val currentState by billing.state.collectAsState()
             when (currentState) {
                 PremiumState.Pending -> Text(
                     text = stringResource(R.string.premium_paywall_pending),
@@ -126,7 +128,7 @@ fun PremiumPaywallSheet(
 
             Button(
                 onClick = ::startPurchase,
-                enabled = !isPurchasing,
+                enabled = PaywallState.isBuyEnabled(currentState, price, isPurchasing),
                 modifier = Modifier
                     .testTag(HandTypeTestTags.PREMIUM_BUY_BUTTON)
                     .fillMaxWidth(),
@@ -146,11 +148,7 @@ fun PremiumPaywallSheet(
                     scope.launch {
                         billing.refresh()
                         val restoredState = billing.state.value
-                        val messageRes = when (restoredState) {
-                            PremiumState.Unlocked -> R.string.premium_restore_success
-                            PremiumState.Unavailable -> R.string.premium_paywall_unavailable
-                            else -> R.string.premium_restore_none
-                        }
+                        val messageRes = PaywallState.restoreMessageRes(restoredState)
                         Toast.makeText(context, context.getString(messageRes), Toast.LENGTH_SHORT).show()
                         if (restoredState == PremiumState.Unlocked) onUnlocked()
                     }
@@ -163,5 +161,18 @@ fun PremiumPaywallSheet(
                 Text(text = stringResource(R.string.premium_paywall_restore))
             }
         }
+    }
+}
+
+internal object PaywallState {
+    fun isBuyEnabled(state: PremiumState, price: String?, isPurchasing: Boolean): Boolean =
+        !isPurchasing && price != null && state != PremiumState.Unavailable
+
+    @StringRes
+    fun restoreMessageRes(state: PremiumState): Int = when (state) {
+        PremiumState.Unlocked -> R.string.premium_restore_success
+        PremiumState.Pending -> R.string.premium_paywall_pending
+        PremiumState.Unavailable -> R.string.premium_paywall_unavailable
+        PremiumState.Locked -> R.string.premium_restore_none
     }
 }

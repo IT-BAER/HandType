@@ -91,9 +91,9 @@
     <string name="loading_template_title">Cargando plantilla</string>
     <string name="loading_template_body">Preparando glifos de mapa de bits integrados para el flujo de escritura predeterminado.</string>
 
-    <string name="premium_instruction">Función premium: escribe A-Z, a-z y 0-9 en papel en blanco, luego centra la página dentro del marco para crear tu plantilla personal.</string>
+    <string name="premium_instruction">Escribe A-Z, a-z y 0-9 en la hoja de práctica y luego escanea la página completa con los cuatro cuadrados negros visibles para crear tu plantilla personal.</string>
     <string name="premium_processing">Procesando muestra de escritura con ML Kit…</string>
-    <string name="premium_no_glyphs">No se detectaron glifos alfanuméricos. Intenta con mejor iluminación y llena más el marco con la página. Usa atrás para volver a las plantillas.</string>
+    <string name="premium_no_glyphs">No se detectaron glifos alfanuméricos. Intenta con mejor iluminación o un bolígrafo más oscuro y vuelve a escanear. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_complete">Captura premium completa. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_failed_focus">El reconocimiento de texto falló. Intenta otra captura con más nitidez.</string>
     <string name="premium_marker_detection_failed">Ese escaneo no parecía la hoja de práctica de HandType. Asegúrate de que la hoja impresa llene la mayor parte del escaneo y los cuatro cuadrados negros sean visibles.</string>
@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">¿Dónde se guardan los archivos?</string>
-    <string name="faq_a1">Los PNG se guardan en Pictures/HandType. Los PDF se guardan en Download/HandType a partir de Android 10. En versiones anteriores, comparte el PDF para guardar una copia. Guardar PNG en Android 9 o anterior requiere permiso de almacenamiento.</string>
+    <string name="faq_a1">Los PNG se guardan en Pictures/HandType. Los PDF se guardan en Download/HandType.</string>
     <string name="faq_q2">¿Para qué sirve el PNG transparente?</string>
     <string name="faq_a2">Es la misma letra sin el fondo de papel, útil para insertar la nota en otra imagen, documento o diapositiva.</string>
     <string name="faq_q3">¿Puede una nota larga abarcar varias páginas PDF?</string>

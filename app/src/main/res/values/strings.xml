@@ -102,9 +102,9 @@
     <string name="loading_template_body">Preparing bundled bitmap glyphs for the default handwriting flow.</string>
 
     <!-- Premium capture flow -->
-    <string name="premium_instruction">Write A-Z, a-z, and 0-9 on the practice sheet, then center the page inside the frame to create your personal template.</string>
+    <string name="premium_instruction">Write A-Z, a-z, and 0-9 on the practice sheet, then scan the whole page with all four black squares visible to create your personal template.</string>
     <string name="premium_processing">Processing handwriting sample with ML Kit…</string>
-    <string name="premium_no_glyphs">No alphanumeric glyphs were detected. Try brighter lighting and fill more of the frame with the page. Use system back to return to templates.</string>
+    <string name="premium_no_glyphs">No alphanumeric glyphs were detected. Try brighter lighting or a darker pen, then scan again. Use system back to return to templates.</string>
     <string name="premium_capture_complete">Handwriting capture complete. %1$d glyph crops extracted across %2$d unique characters. Use back to return to templates.</string>
     <string name="premium_marker_detection_failed">That scan did not look like the HandType practice sheet. Make sure the printed sheet fills most of the scan and all four black squares are visible.</string>
     <string name="premium_save_failed">Could not save the handwriting template. Try again.</string>
@@ -201,7 +201,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Where are saved files stored?</string>
-    <string name="faq_a1">PNGs are saved to Pictures/HandType. PDFs are saved to Download/HandType on Android 10 and newer. On older Android versions, share the PDF to save a copy. Saving PNGs on Android 9 and older requires storage permission.</string>
+    <string name="faq_a1">PNGs are saved to Pictures/HandType. PDFs are saved to Download/HandType.</string>
     <string name="faq_q2">What is the transparent PNG for?</string>
     <string name="faq_a2">It\'s the same handwriting without the paper background, useful when you want to drop the note onto another image, document or slide.</string>
     <string name="faq_q3">Can a long note span multiple PDF pages?</string>

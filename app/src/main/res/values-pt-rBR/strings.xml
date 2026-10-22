@@ -91,9 +91,9 @@
     <string name="loading_template_title">Carregando modelo</string>
     <string name="loading_template_body">Preparando glifos de bitmap integrados para o fluxo de caligrafia padrão.</string>
 
-    <string name="premium_instruction">Recurso premium: escreva A-Z, a-z e 0-9 em papel em branco e centralize a página no quadro para criar seu modelo pessoal.</string>
+    <string name="premium_instruction">Escreva A-Z, a-z e 0-9 na folha de prática e escaneie a página inteira com os quatro quadrados pretos visíveis para criar seu modelo pessoal.</string>
     <string name="premium_processing">Processando amostra de caligrafia com ML Kit…</string>
-    <string name="premium_no_glyphs">Nenhum glifo alfanumérico foi detectado. Tente com iluminação mais forte e preencha mais o quadro com a página. Use voltar para retornar aos modelos.</string>
+    <string name="premium_no_glyphs">Nenhum glifo alfanumérico foi detectado. Tente com iluminação mais forte ou uma caneta mais escura e escaneie novamente. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_complete">Captura premium concluída. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_failed_focus">O reconhecimento de texto falhou. Tente outra captura com foco mais nítido.</string>
     <string name="premium_marker_detection_failed">Esse escaneamento não parecia a folha de prática do HandType. Certifique-se de que a folha impressa preencha a maior parte do escaneamento e os quatro quadrados pretos estejam visíveis.</string>
@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Onde ficam os arquivos salvos?</string>
-    <string name="faq_a1">Os PNGs são salvos em Pictures/HandType. Os PDFs são salvos em Download/HandType no Android 10 ou mais recente. Em versões anteriores, compartilhe o PDF para salvar uma cópia. Salvar PNGs no Android 9 ou anterior exige permissão de armazenamento.</string>
+    <string name="faq_a1">Os PNGs são salvos em Pictures/HandType. Os PDFs são salvos em Download/HandType.</string>
     <string name="faq_q2">Para que serve o PNG transparente?</string>
     <string name="faq_a2">É a mesma escrita sem o fundo de papel, útil para inserir a nota em outra imagem, documento ou slide.</string>
     <string name="faq_q3">Uma nota longa pode abranger várias páginas PDF?</string>

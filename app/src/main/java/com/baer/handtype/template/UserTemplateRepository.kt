@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.core.os.ConfigurationCompat
+import com.baer.handtype.BuildConfig
 import com.baer.handtype.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -85,7 +86,7 @@ class UserTemplateRepository(private val context: Context) {
                 glyphCount = glyphMap.size,
             ),
         )
-        Log.i(TAG, "Saved user template '$folderName' with ${glyphMap.size} glyphs at $templateDir")
+        if (BuildConfig.DEBUG) Log.i(TAG, "Saved user template '$folderName' with ${glyphMap.size} glyphs at $templateDir")
 
         USER_ID_PREFIX + folderName
     }

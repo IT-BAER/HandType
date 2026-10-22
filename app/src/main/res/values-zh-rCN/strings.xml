@@ -91,9 +91,9 @@
     <string name="loading_template_title">正在加载模板</string>
     <string name="loading_template_body">正在为默认手写流程准备内置位图字形。</string>
 
-    <string name="premium_instruction">高级功能：在空白纸上写 A-Z、a-z 和 0-9，然后将页面居中放入框内以创建您的个人模板。</string>
+    <string name="premium_instruction">在练习纸上写 A-Z、a-z 和 0-9，然后扫描整页并确保四个黑色方块可见，以创建您的个人模板。</string>
     <string name="premium_processing">正在使用 ML Kit 处理手写样本…</string>
-    <string name="premium_no_glyphs">未检测到字母数字字形。请尝试改善光线并让页面占据更多画面。使用系统返回键回到模板。</string>
+    <string name="premium_no_glyphs">未检测到字母数字字形。请尝试改善光线或使用颜色更深的笔，然后重新扫描。使用系统返回键回到模板。</string>
     <string name="premium_capture_complete">高级捕捉完成。已从 %2$d 个唯一字符中提取 %1$d 个字形。使用返回键回到模板。</string>
     <string name="premium_capture_failed_focus">文本识别失败。请尝试对焦更清晰地重新拍摄。</string>
     <string name="premium_marker_detection_failed">该扫描看起来不像 HandType 练习纸。请确保打印的纸张占据扫描的大部分，且四个黑色方块可见。</string>
@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">保存的文件在哪里？</string>
-    <string name="faq_a1">PNG 保存到 Pictures/HandType。在 Android 10 及更高版本上，PDF 保存到 Download/HandType。在较早的 Android 版本上，请分享 PDF 以保存副本。在 Android 9 及更早版本上保存 PNG 需要存储权限。</string>
+    <string name="faq_a1">PNG 保存到 Pictures/HandType。PDF 保存到 Download/HandType。</string>
     <string name="faq_q2">透明 PNG 有什么用？</string>
     <string name="faq_a2">与普通版本相同的笔迹但无纸张背景，适合叠加到其他图片、文档或幻灯片上。</string>
     <string name="faq_q3">长笔记可以跨多个 PDF 页面吗？</string>

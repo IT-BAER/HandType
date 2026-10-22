@@ -114,7 +114,7 @@ Save path (back in the route):
 
 ## 7. Permissions
 
-- The manifest declares `android.permission.CAMERA` and `uses-feature android.hardware.camera.any` with `required="true"`, plus `WRITE_EXTERNAL_STORAGE` capped at `maxSdkVersion="28"`.
+- The manifest declares no permissions of its own, only `uses-feature android.hardware.camera.any` with `required="true"`.
 - The capture screen itself requests no runtime camera permission. The ML Kit Document Scanner is a separate Play Services activity that owns the camera, handles its own permission, performs perspective correction and rotation, and exposes the data-access footer seen in screenshot 24 ("...can only access the images you scan"). HandType never sees a `CAMERA` grant/deny result in this flow.
 - There is no in-app permission priming or rationale before the handoff. Tapping the button jumps straight from the cream intro into the scanner's black viewfinder, and any OS permission dialog appears there with no prior in-app context. Unused permission-rationale strings (`camera_permission_*`, `camera_grant_button`, `camera_open_settings_button`) exist in `strings.xml` from an earlier in-app camera design but are not wired into the active screen.
 - Offline-first holds: the scanner, the pipeline, and persistence are all on-device. Nothing in this flow touches the network.
@@ -122,7 +122,7 @@ Save path (back in the route):
 ## 8. Code-vs-reality notes (do not propagate the stale wording)
 
 - The `CameraCaptureScreen` KDoc and several strings describe a CameraX/ML-Kit-OCR flow with "Manuell/Automatische Aufnahme" and an in-app preview. The active capture is fully delegated to the GMS Document Scanner; there is no in-app camera surface or capture-mode toggle owned by HandType.
-- `premium_processing` says "with ML Kit", but the live extraction path is `SheetSampleProcessor` (fiducial detection + perspective rectify + per-cell crop). It does not call ML Kit. The ML Kit text-recognition extractor (`HandwritingExtractor`) exists but is not wired into this flow.
+- `premium_processing` says "with ML Kit", but the live extraction path is `SheetSampleProcessor` (fiducial detection + perspective rectify + per-cell crop). It does not call ML Kit; the app has no ML Kit text recognition.
 - Many `camera_*` and `camera_permission_*` strings (`camera_gallery_button`, `camera_adjust_*`, `camera_capture_button`, `camera_default_instruction`, the permission set) are leftovers from the prior in-app camera design and are not rendered by the current screen.
 - `PracticeSheetGenerator` KDoc says "Fiducial size: 60x60px"; the actual constant is `FIDUCIAL_SIZE = 80`.
 

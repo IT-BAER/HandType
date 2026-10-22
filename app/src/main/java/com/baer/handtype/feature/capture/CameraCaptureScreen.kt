@@ -78,7 +78,7 @@ fun CameraCaptureScreen(
     onCaptureError: (Throwable) -> Unit,
     onBack: () -> Unit = {},
     modifier: Modifier = Modifier,
-    instructionText: String = "Print the practice sheet, fill every cell with your handwriting, then tap Scan to photograph the whole page.",
+    instructionText: String,
     isProcessing: Boolean = false,
     onWriteOnScreen: (() -> Unit)? = null,
 ) {

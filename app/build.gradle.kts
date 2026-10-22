@@ -109,7 +109,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.6.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
-    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
     implementation("com.google.mlkit:digital-ink-recognition:19.0.0")
     implementation("com.android.billingclient:billing:9.1.0")
     implementation("com.google.android.play:review:2.0.2")

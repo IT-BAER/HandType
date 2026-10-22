@@ -46,7 +46,11 @@ class ProductionReadinessTest {
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, 2f)) {
                 HandTypeTheme {
-                    CameraCaptureScreen(onImageCaptured = {}, onCaptureError = {})
+                    CameraCaptureScreen(
+                        onImageCaptured = {},
+                        onCaptureError = {},
+                        instructionText = context.getString(R.string.premium_instruction),
+                    )
                 }
             }
         }

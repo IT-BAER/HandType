@@ -91,9 +91,9 @@
     <string name="loading_template_title">Chargement du modèle</string>
     <string name="loading_template_body">Préparation des glyphes bitmap intégrés pour le flux d\'écriture par défaut.</string>
 
-    <string name="premium_instruction">Fonctionnalité premium : écrivez A–Z, a–z et 0–9 sur une feuille blanche, puis centrez la page dans le cadre pour créer votre modèle personnel.</string>
+    <string name="premium_instruction">Écrivez A–Z, a–z et 0–9 sur la feuille d\'entraînement, puis scannez la page entière avec les quatre carrés noirs visibles pour créer votre modèle personnel.</string>
     <string name="premium_processing">Traitement de l\'échantillon d\'écriture avec ML Kit…</string>
-    <string name="premium_no_glyphs">Aucun glyphe alphanumérique détecté. Essayez avec un meilleur éclairage et remplissez davantage le cadre avec la page. Utilisez le bouton retour pour revenir aux modèles.</string>
+    <string name="premium_no_glyphs">Aucun glyphe alphanumérique détecté. Essayez avec un meilleur éclairage ou un stylo plus foncé, puis scannez à nouveau. Utilisez le bouton retour pour revenir aux modèles.</string>
     <string name="premium_capture_complete">Capture premium terminée. %1$d découpes de glyphes extraites pour %2$d caractères uniques. Utilisez retour pour revenir aux modèles.</string>
     <string name="premium_capture_failed_focus">La reconnaissance de texte a échoué. Essayez une autre capture avec une mise au point plus nette.</string>
     <string name="premium_marker_detection_failed">Ce scan ne ressemblait pas à la feuille d\'entraînement HandType. Assurez-vous que la feuille imprimée remplit la majeure partie du scan et que les quatre carrés noirs sont visibles.</string>
@@ -144,7 +144,7 @@
     <!-- FAQ screen -->
     <string name="faq_title">FAQ</string>
     <string name="faq_q1">Où sont stockés les fichiers enregistrés ?</string>
-    <string name="faq_a1">Les PNG sont enregistrés dans Pictures/HandType. Les PDF sont enregistrés dans Download/HandType à partir d’Android 10. Sur les versions antérieures, partagez le PDF pour en conserver une copie. Les PNG nécessitent une autorisation de stockage sous Android 9 et antérieur.</string>
+    <string name="faq_a1">Les PNG sont enregistrés dans Pictures/HandType. Les PDF sont enregistrés dans Download/HandType.</string>
     <string name="faq_q2">À quoi sert le PNG transparent ?</string>
     <string name="faq_a2">C\'est la même écriture sans le fond papier, utile pour insérer la note dans une autre image, document ou diapositive.</string>
     <string name="faq_q3">Une longue note peut-elle s\'étendre sur plusieurs pages PDF ?</string>

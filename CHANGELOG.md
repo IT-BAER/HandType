@@ -15,11 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The practice sheet has 9 rows instead of 8, so each cell is slightly shorter.
+- Removed the unused ML Kit text recognition library and its install-time OCR model download.
+- Removed the `WRITE_EXTERNAL_STORAGE` permission, which applied only up to Android 9.
+- Capture diagnostics are logged only in debug builds.
 
 ### Fixed
 - Ink Script splits a word wider than one line with a hyphen instead of breaking it mid-word without one.
 - "!" and "?" no longer merge into a preceding letter that ends in a vertical stroke ("Tom!").
 - The result screen shows a long note at full width and scrolls it, instead of shrinking it into a narrow strip.
+- Paywall: Buy is disabled while Google Play is unavailable or the price has not loaded; the price is queried again when the Play state changes.
+- Paywall: Restore while a purchase is pending shows the pending message instead of "No previous purchase found".
+- Texts in all 10 languages: the FAQ no longer mentions the Android 9 storage permission or a PDF fallback for older versions; the capture instruction and the "no glyphs" hint refer to the scan instead of a camera frame.
 
 ## [1.0.1] - 2026-10-22
 
