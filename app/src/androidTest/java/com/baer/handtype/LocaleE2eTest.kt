@@ -4,8 +4,13 @@ import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.PathMeasure
 import android.net.Uri
 import android.provider.MediaStore
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -43,8 +48,8 @@ import java.io.File
 
 /**
  * German and accented letters through the real app: editor, result, save, PDF export, history,
- * a captured handwriting template and the on-screen sheet. A screenshot of every step lands in
- * the app's external files dir under handtype_test/e2e for review.
+ * a captured handwriting template and the on-screen sheet written to the end. A screenshot of
+ * every step lands in the app's external files dir under handtype_test/e2e for review.
  */
 @RunWith(AndroidJUnit4::class)
 class LocaleE2eTest {
@@ -115,6 +120,109 @@ class LocaleE2eTest {
         // The counter shows finished cells; the German row adds ÄÖÜäöüß to the 62 alphanumerics.
         composeRule.onNodeWithText(context.getString(R.string.stylus_progress, 0, cells)).assertIsDisplayed()
         if (composeRule.activity.resources.configuration.locales[0].language == "de") assertEquals(69, cells)
+    }
+
+    @Test
+    fun stylusSheetWithLocaleLettersBuildsATemplateThatWritesTheNote() {
+        dismissOnboarding()
+        composeRule.onNodeWithText(context.getString(R.string.template_chooser_premium_button)).performScrollTo().performClick()
+        composeRule.onNodeWithTag(HandTypeTestTags.CAMERA_WRITE_BUTTON).performClick()
+        composeRule.waitForIdle()
+        val cells = PracticeSheetGenerator.cellCharacters(composeRule.activity).filter { it != ' ' }
+        val german = composeRule.activity.resources.configuration.locales[0].language == "de"
+        if (german) assertTrue("German sheet has ÄÖÜäöüß", cells.containsAll("ÄÖÜäöüß".toList()))
+
+        val overridden = mutableListOf<String>()
+        for ((index, character) in cells.withIndex()) {
+            drawGlyph(character)
+            if (index == 0 || character.code > 0x7F || index == cells.lastIndex) shot("stylus_cell_$character")
+            val last = index == cells.lastIndex
+            fun advanced() = if (last) {
+                composeRule.onAllNodesWithTag(HandTypeTestTags.RENAME_HANDWRITING_INPUT).fetchSemanticsNodes().isNotEmpty()
+            } else {
+                stylusText(HandTypeTestTags.STYLUS_PROGRESS) == context.getString(R.string.stylus_progress, index + 1, cells.size)
+            }
+            composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
+            composeRule.waitUntil(TIMEOUT_MS) { advanced() || stylusWarning() != null }
+            if (advanced()) continue
+            val warning = stylusWarning()!!
+            // Shape hints mean the drawn letter is wrong; only a recognizer mismatch may be kept.
+            assertTrue("'$character': $warning", warning !in shapeHints())
+            overridden += "$character: $warning"
+            shot("stylus_override_$character")
+            composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
+            composeRule.waitUntil(TIMEOUT_MS) { advanced() }
+        }
+        android.util.Log.i("LocaleE2eTest", "${overridden.size} of ${cells.size} cells kept after a mismatch: $overridden")
+        shot("stylus_rename")
+
+        composeRule.onNodeWithTag(HandTypeTestTags.RENAME_HANDWRITING_INPUT).performTextReplacement(STYLUS_TEMPLATE_NAME)
+        composeRule.onNodeWithText(context.getString(R.string.rename_handwriting_confirm)).performClick()
+        composeRule.waitForIdle()
+        val repository = BundledTemplateRepository(baseContext)
+        val saved = repository.listUserTemplates().single { it.displayName == STYLUS_TEMPLATE_NAME }
+        val glyphs = runBlocking { repository.loadTemplate(saved.id) }.glyphs.keys
+        assertEquals("every written cell keeps a glyph", emptyList<Char>(), cells.filterNot { it in glyphs })
+
+        swipeTemplatePagerUntilVisible(STYLUS_TEMPLATE_NAME)
+        shot("stylus_chooser")
+        useTemplateOnScreen()
+        // Without the German row ß has no glyph and no base letter.
+        writeNote(expectedMissing = if (german) null else "ß")
+        shot("stylus_template_result")
+    }
+
+    private fun stylusText(tag: String): String =
+        composeRule.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsProperties.Text].joinToString("")
+
+    /** The hint line when it shows a warning, else null. */
+    private fun stylusWarning(): String? = stylusText(HandTypeTestTags.STYLUS_HINT).takeUnless {
+        it in listOf(R.string.stylus_instruction, R.string.stylus_note_shape_only, R.string.stylus_saving).map(context::getString)
+    }
+
+    private fun shapeHints() = listOf(
+        R.string.stylus_hint_empty,
+        R.string.stylus_hint_outside,
+        R.string.stylus_hint_too_small,
+        R.string.stylus_hint_too_large,
+        R.string.stylus_hint_reach_up,
+    ).map(context::getString)
+
+    /** Writes [character] as its font outline, one touch stroke per contour. */
+    private fun drawGlyph(character: Char) {
+        composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_CANVAS).performTouchInput {
+            for (stroke in outlineStrokes(character, width.toFloat(), height.toFloat())) {
+                down(stroke.first())
+                stroke.drop(1).forEach { moveTo(it) }
+                up()
+            }
+        }
+        composeRule.waitForIdle()
+    }
+
+    /**
+     * The glyph outline placed like the screen's ghost letter, at 1.6 guide gaps instead of 2 so
+     * accented capitals stay inside the cell.
+     */
+    private fun outlineStrokes(character: Char, width: Float, height: Float): List<List<Offset>> {
+        val gap = PracticeSheetGenerator.GUIDE_BASELINE_RATIO - PracticeSheetGenerator.GUIDE_UPPER_RATIO
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = height * gap * 1.6f }
+        val text = character.toString()
+        val path = Path()
+        paint.getTextPath(text, 0, text.length, (width - paint.measureText(text)) / 2f, height * PracticeSheetGenerator.GUIDE_BASELINE_RATIO, path)
+        val measure = PathMeasure(path, false)
+        val step = height * 0.01f
+        val position = FloatArray(2)
+        return buildList {
+            do {
+                val length = measure.length
+                if (length < step) continue
+                add((0..(length / step).toInt()).map { i ->
+                    measure.getPosTan(i * step, position, null)
+                    Offset(position[0], position[1])
+                })
+            } while (measure.nextContour())
+        }
     }
 
     /** [expectedMissing] is the only missing-glyph text allowed, or null for none. */
@@ -195,6 +303,7 @@ class LocaleE2eTest {
         private const val TIMEOUT_MS = 25_000L
         private const val NOTE = "Grüße aus Österreich! Café, señor, garçon, à bientôt.\nAção, naïve, Ångström, aquí."
         private val TEMPLATE_NAME = "E2E Akzente ${System.currentTimeMillis()}"
+        private val STYLUS_TEMPLATE_NAME = "E2E Stift ${System.currentTimeMillis()}"
         private var frame = 0
         private var startedAtSeconds = 0L
         private var existingTemplateIds = emptySet<String>()
