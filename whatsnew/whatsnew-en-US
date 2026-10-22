@@ -1,4 +1,3 @@
-HandType 1.0
-• Premium now unlocks as soon as you return to the app after a purchase that finished later (slow payment, promo code, another device).
-• Updated privacy policy: no camera or storage permission, Google Play purchases and the rating prompt explained.
-• HandType is open source under the Apache License 2.0.
+HandType 1.0.1
+• Share text from any app to HandType: pick a style and your text is already in the editor.
+• "Generating your note…" now shows one full pen stroke before your note appears.

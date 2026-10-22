@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history and tags for the whatsnew stale guard
 
       - name: Extract version & pre-release flag
         id: version
@@ -80,26 +82,22 @@ jobs:
           echo "$CHANGELOG_CONTENT" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Prepare What's New for Play
+      - name: Check What's New for Play
         run: |
-          # Committed whatsnew/whatsnew-<lang-REGION> files win; otherwise en-US is built from
-          # the changelog entry, cut at a line boundary. Play allows 500 characters per locale.
+          # whatsnew/whatsnew-<lang-REGION> is written per release from the CHANGELOG section.
+          # It must change after the previous stable tag, so old notes never ship again.
           export LC_ALL=C.UTF-8
-          if ls whatsnew/whatsnew-* >/dev/null 2>&1; then
-            echo "Using committed release notes."
-          else
-            echo "No committed notes, generating en-US from CHANGELOG."
-            mkdir -p whatsnew
-            : > whatsnew/whatsnew-en-US
-            total=0
-            while IFS= read -r line; do
-              line=$(printf '%s' "$line" | sed 's/^### //; s/^- /• /; s/\*\*//g; s/`//g')
-              n=$(( ${#line} + 1 ))
-              if [ $(( total + n )) -gt 500 ]; then break; fi
-              printf '%s\n' "$line" >> whatsnew/whatsnew-en-US
-              total=$(( total + n ))
-            done < "$RUNNER_TEMP/changelog.md"
+          if [ ! -s whatsnew/whatsnew-en-US ]; then
+            echo "::error::whatsnew/whatsnew-en-US is missing or empty"
+            exit 1
           fi
+          PREV_TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' HEAD^ 2>/dev/null || true)
+          if [ -n "$PREV_TAG" ] && git diff --quiet "$PREV_TAG" HEAD -- whatsnew/; then
+            echo "::error::whatsnew/ is unchanged since $PREV_TAG; write the notes for this release"
+            exit 1
+          fi
+          echo "whatsnew/ changed since ${PREV_TAG:-<no previous tag>}"
+          # Play allows 500 characters per locale; wc -m counts characters in a UTF-8 locale.
           for f in whatsnew/whatsnew-*; do
             n=$(wc -m < "$f")
             echo "--- $f ($n chars) ---"; cat "$f"; echo
@@ -115,6 +113,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+
+      - name: Unit tests & lint
+        run: |
+          chmod +x ./gradlew
+          ./gradlew testDebugUnitTest lintDebug --no-daemon
 
       - name: Decode Release Keystore
         env:
