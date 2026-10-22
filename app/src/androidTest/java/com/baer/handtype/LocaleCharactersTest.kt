@@ -9,9 +9,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.baer.handtype.feature.capture.PracticeSheetGenerator
 import com.baer.handtype.feature.capture.SheetSampleProcessor
+import com.baer.handtype.template.AccentComposer
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
+import com.baer.handtype.template.HandwritingTemplate
+import com.baer.handtype.template.PunctuationSynthesizer
+import com.baer.handtype.template.TemplateDescriptor
 import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -19,7 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** The German letters through every path: printed sheet, scan extraction and the bundled script. */
+/** Locale letters through every path: printed sheet, scan extraction, the bundled script and composed accents. */
 @RunWith(AndroidJUnit4::class)
 class LocaleCharactersTest {
 
@@ -61,6 +65,70 @@ class LocaleCharactersTest {
         )
         if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf('R' to result.bitmap))
         assertEquals(emptySet<Char>(), result.missingCharacters)
+    }
+
+    @Test
+    fun accentedLettersComposeFromTheirBaseGlyph() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        val config = HandwritingRenderConfig(maxWidthPx = 900)
+
+        val accented = HandwritingBitmapRenderer.render(ACCENTED, template, config, seed = 42)
+        val plain = HandwritingBitmapRenderer.render(PLAIN, template, config, seed = 42)
+        if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf('é' to accented.bitmap))
+
+        assertEquals(emptySet<Char>(), accented.missingCharacters)
+        assertEquals(ACCENTED.split(' ', '\n').joinToString(""), accented.lines.joinToString("").replace(" ", ""))
+        assertTrue("marks add ink", darkPixels(accented.bitmap) > darkPixels(plain.bitmap) * 1.02)
+    }
+
+    @Test
+    fun userTemplateComposesAccentsInItsPen() {
+        val cells = PracticeSheetGenerator.cellCharacters(german)
+        val glyphs = SheetSampleProcessor.process(writtenSheet(cells), skipPageDetection = true, localeCharacters = german).glyphs
+        val template = HandwritingTemplate(
+            descriptor = TemplateDescriptor("user_u1", "Test", "", "", premium = false),
+            glyphs = glyphs.mapValues { listOf(it.value) },
+        )
+
+        val result = HandwritingBitmapRenderer.render(ACCENTED, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42)
+        if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf('ç' to result.bitmap))
+
+        assertEquals(emptySet<Char>(), result.missingCharacters)
+    }
+
+    @Test
+    fun marksSitAboveTheBodyAndTheCedillaBelowTheBaseline() {
+        val ink = PunctuationSynthesizer.InkStyle.DEFAULT
+        // A 40-wide body from row 20 down to the baseline at row 59, and an i dot off to the left.
+        val body = Bitmap.createBitmap(40, 60, Bitmap.Config.ARGB_8888).apply {
+            Canvas(this).drawRect(10f, 20f, 30f, 60f, Paint().apply { color = Color.BLACK })
+        }
+        val dotted = body.copy(Bitmap.Config.ARGB_8888, true).apply {
+            Canvas(this).drawRect(0f, 2f, 5f, 8f, Paint().apply { color = Color.BLACK })
+        }
+
+        val acute = AccentComposer.compose(body, 59, AccentComposer.decompose('é')!!, 40f, ink)
+        assertTrue("acute above the body", inkRows(acute.bitmap).any { it < 20 + acute.topPad })
+
+        val cedilla = AccentComposer.compose(body, 59, AccentComposer.decompose('ç')!!, 40f, ink)
+        assertTrue("cedilla below the baseline", inkRows(cedilla.bitmap).any { it > 59 + cedilla.topPad })
+
+        val iAcute = AccentComposer.compose(dotted, 59, AccentComposer.decompose('í')!!, 40f, ink)
+        val dotLeft = iAcute.leftPad
+        val dotTop = 2 + iAcute.topPad
+        val dotInk = (dotTop until dotTop + 6).sumOf { y ->
+            (dotLeft until dotLeft + 5).count { x -> iAcute.bitmap.getPixel(x, y) ushr 24 >= ALPHA_MIN }
+        }
+        assertEquals("i dot removed under the accent", 0, dotInk)
+    }
+
+    private fun inkRows(bitmap: Bitmap): List<Int> =
+        (0 until bitmap.height).filter { y -> (0 until bitmap.width).any { x -> bitmap.getPixel(x, y) ushr 24 >= ALPHA_MIN } }
+
+    private fun darkPixels(bitmap: Bitmap): Int {
+        val pixels = IntArray(bitmap.width * bitmap.height).also { bitmap.getPixels(it, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height) }
+        return pixels.count { (Color.red(it) + Color.green(it) + Color.blue(it)) / 3 < 100 }
     }
 
     /** The generated sheet with every cell written in a plain font resting on the baseline guide. */
@@ -134,5 +202,7 @@ class LocaleCharactersTest {
 
     private companion object {
         const val ALPHA_MIN = 40
+        const val ACCENTED = "Café, señor, garçon, à bientôt.\nAção, ÉTÉ, naïve, Ångström, aquí"
+        const val PLAIN = "Cafe, senor, garcon, a bientot.\nAcao, ETE, naive, Angstrom, aqui"
     }
 }

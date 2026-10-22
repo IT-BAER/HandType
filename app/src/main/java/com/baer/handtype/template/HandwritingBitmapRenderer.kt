@@ -70,6 +70,11 @@ object HandwritingBitmapRenderer {
         val baselineRow: Int,
         val normalizedUserCanvas: Boolean,
         val advanceWidth: Int = bitmap.width,
+        /** Size that sets the scale; a composed accent keeps its base letter's size. */
+        val sizeWidth: Int = bitmap.width,
+        val sizeHeight: Int = bitmap.height,
+        /** Columns of mark ink left of the base letter, drawn before the cursor. */
+        val leftOverhang: Int = 0,
     )
 
     private fun drawBackground(
@@ -313,7 +318,7 @@ object HandwritingBitmapRenderer {
                 else -> 2
             }
         } else {
-            (glyph.bitmap.width * scaleX * 0.90f).toInt() + (lineHeightPx * 0.04f).toInt()
+            (glyph.advanceWidth * scaleX * 0.90f).toInt() + (lineHeightPx * 0.04f).toInt()
         }
         val minAdvance = when {
             normalizedUserCanvas && character in punctuationChars -> (lineHeightPx * 0.02f).toInt()
@@ -681,6 +686,31 @@ object HandwritingBitmapRenderer {
                 prepareGlyph(bitmap, character, templateBaselineRow, isUserTemplate)
             }
         }
+        fun variantsFor(character: Char): List<Bitmap>? =
+            template.glyphs[character] ?: template.glyphs[character.lowercaseChar()] ?: template.glyphs[character.uppercaseChar()]
+        // Template x-height in glyph pixels sizes the accent marks.
+        val markUnitPx by lazy {
+            val heights = "acemnorsuvwxz".mapNotNull { c -> template.glyphs[c]?.firstOrNull()?.let { rawBounds[it]?.height } }
+            heights.sorted().getOrNull(heights.size / 2)?.toFloat() ?: (rawBounds.values.map(InkBounds::height).average() * 0.6).toFloat()
+        }
+        val markInkStyle by lazy { PunctuationSynthesizer.InkStyle.estimate(allGlyphs) }
+        val composedGlyphs = HashMap<Pair<Char, Bitmap>, PreparedGlyph>()
+        fun composedGlyph(character: Char, decomposition: AccentComposer.Decomposition, baseBitmap: Bitmap): PreparedGlyph {
+            return composedGlyphs.getOrPut(character to baseBitmap) {
+                val base = preparedGlyph(decomposition.base, baseBitmap)
+                val composed = AccentComposer.compose(base.bitmap, base.baselineRow, decomposition, markUnitPx, markInkStyle)
+                base.copy(
+                    bitmap = composed.bitmap,
+                    baselineRow = base.baselineRow + composed.topPad,
+                    sizeWidth = base.bitmap.width,
+                    sizeHeight = base.bitmap.height,
+                    leftOverhang = composed.leftPad,
+                )
+            }
+        }
+        /** Accented letter without a glyph of its own whose base letter has one. */
+        fun accentFor(character: Char): AccentComposer.Decomposition? =
+            if (variantsFor(character) != null) null else AccentComposer.decompose(character)?.takeIf { variantsFor(it.base) != null }
 
         val averageInkWidth = rawBounds.values.map(InkBounds::width).average().toInt().coerceAtLeast(24)
         val averageInkHeight = rawBounds.values.map(InkBounds::height).average().toInt().coerceAtLeast(48)
@@ -761,11 +791,10 @@ object HandwritingBitmapRenderer {
 
         fun wordWidth(word: String): Int {
             var w = 0
-            word.forEachIndexed { i, ch ->
-                val variants = template.glyphs[ch]
-                    ?: template.glyphs[ch.lowercaseChar()]
-                    ?: template.glyphs[ch.uppercaseChar()]
-                val glyph = variants?.firstOrNull()
+            word.forEachIndexed { i, original ->
+                val accent = accentFor(original)
+                val ch = accent?.base ?: original
+                val glyph = variantsFor(ch)?.firstOrNull()
                 if (glyph == null) {
                     w += when {
                         ch in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
@@ -783,8 +812,8 @@ object HandwritingBitmapRenderer {
                     val (glyphScaleX, _) = UserGlyphWidthNormalizer.scales(
                         character = ch,
                         templateId = template.descriptor.id,
-                        glyphWidthPx = prepared.bitmap.width,
-                        glyphHeightPx = prepared.bitmap.height,
+                        glyphWidthPx = prepared.sizeWidth,
+                        glyphHeightPx = prepared.sizeHeight,
                         targetInkHeightPx = targetInkHeight,
                     )
                     w += glyphAdvancePx(
@@ -850,10 +879,11 @@ object HandwritingBitmapRenderer {
                 for ((pieceIndex, piece) in hyphenatedPieces(word).withIndex()) {
                     if (pieceIndex > 0) moveToNextLine()
                     var previousTucked = false
-                    for ((charIndex, character) in piece.withIndex()) {
-                        val variants = template.glyphs[character]
-                            ?: template.glyphs[character.lowercaseChar()]
-                            ?: template.glyphs[character.uppercaseChar()]
+                    for ((charIndex, typed) in piece.withIndex()) {
+                        // An accented letter without a glyph is sized and placed as its base letter.
+                        val accent = accentFor(typed)
+                        val character = accent?.base ?: typed
+                        val variants = variantsFor(character)
 
                         var glyph: Bitmap? = variants?.let { it[rng.nextInt(it.size)] }
 
@@ -880,7 +910,7 @@ object HandwritingBitmapRenderer {
                             continue
                         }
 
-                        val prepared = preparedGlyph(character, glyph)
+                        val prepared = if (accent != null) composedGlyph(typed, accent, glyph) else preparedGlyph(character, glyph)
                         cursorX += markLeadPx(piece.getOrNull(charIndex - 1), character, lineHeightPx, prepared.normalizedUserCanvas)
                         val targetInkHeight = targetInkHeightPx(
                             lineHeightPx = lineHeightPx,
@@ -894,8 +924,8 @@ object HandwritingBitmapRenderer {
                         val (glyphScaleX, glyphScaleY) = UserGlyphWidthNormalizer.scales(
                             character = character,
                             templateId = template.descriptor.id,
-                            glyphWidthPx = prepared.bitmap.width,
-                            glyphHeightPx = prepared.bitmap.height,
+                            glyphWidthPx = prepared.sizeWidth,
+                            glyphHeightPx = prepared.sizeHeight,
                             targetInkHeightPx = targetInkHeight,
                         ).let { (x, y) -> x * sizeJitter to y * sizeJitter }
                         val scaledGlyphW = (prepared.bitmap.width * glyphScaleX).toInt().coerceAtLeast(1)
@@ -931,15 +961,15 @@ object HandwritingBitmapRenderer {
                             0
                         }
                         val drawTop = baselineY - (prepared.baselineRow * glyphScaleY).toInt() + descenderDrop
-                        val drawLeft = cursorX + jx - leadingPullPx(
+                        val drawLeft = cursorX + jx - (prepared.leftOverhang * glyphScaleX).toInt() - leadingPullPx(
                             character = character,
                             lineHeightPx = lineHeightPx,
                             normalizedUserCanvas = prepared.normalizedUserCanvas,
                             previousTucked = previousTucked,
                         )
-                        previousTucked = prepared.advanceWidth < prepared.bitmap.width
+                        previousTucked = prepared.advanceWidth < prepared.sizeWidth
 
-                        laidOutLines.last().append(character)
+                        laidOutLines.last().append(typed)
                         placements += GlyphPlacement(
                             bitmap = prepared.bitmap,
                             left = drawLeft,

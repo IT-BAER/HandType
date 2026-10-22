@@ -14,6 +14,7 @@ Reference output (default `classic_script` template, warm-cream background): see
 | `template/NoteBackgrounds.kt` | Paper catalog: solid, transparent, textured, ruled/graph guide lines, plus a SharedPreferences default-background store. |
 | `template/OutputExporter.kt` | Save PNG, transparent PNG, multi-page A4 PDF, share staging, private history archive. |
 | `template/PunctuationSynthesizer.kt` | Draws `. , ! ? : ; ' " -` in the user's pen style when a user template lacks that glyph. |
+| `template/AccentComposer.kt` | Builds accented letters without a glyph (é ñ ç à ô å ë ...) from the base letter's glyph plus drawn marks. |
 | `template/BundledGlyphTextNormalizer.kt` | Normalizes input text before the glyph path runs. |
 | `template/UserGlyphWidthNormalizer.kt` | Per-glyph X/Y scale, clamping over-wide user lowercase glyphs. |
 | `ml/GlyphPostProcessor.kt` | Owns the normalized-canvas constants the renderer reads (`220`, baseline, guide band). |
@@ -134,7 +135,9 @@ The renderer detects this with `hasNormalizedUserCanvas` (id starts with `user_`
 
 8. **Compose.** Allocate an `ARGB_8888` bitmap sized to used width/height + margins + a small bottom slack for wave/drift/jitter. Draw the background first (`drawBackground` → preset style, passing `lineSpacingPx` and `firstBaselinePx` so guide lines align to text). Then draw each placement with a `Matrix` (scale, translate, optional rotate about the glyph center) and a per-glyph 6×6 `drawBitmapMesh` warp. Mesh vertices are displaced by overlapping sines with amplitude `wAmp` (0.12 user, `0.5..1.0` bundled). Return `HandwritingRenderResult`.
 
-9. **Punctuation synthesis (user templates only).** If a character has no glyph and `PunctuationSynthesizer.supports(c)`, draw it onto a 220-row canvas aligned to baseline 162 in an `InkStyle` estimated from the user's real glyphs. Result is cached per character. Anything still missing is recorded in `missingCharacters` and advanced as a punctuation-sized or space-sized gap. Bundled templates ship full punctuation, so they never synthesize and rarely report missing characters.
+9. **Accent composition (all glyph templates).** A character with no glyph (and no case fallback) is split with NFD by `AccentComposer.decompose`. If it is a letter plus only supported marks (grave, acute, circumflex, tilde, diaeresis, ring, cedilla) and the base letter has a glyph, the base glyph is prepared as usual and `AccentComposer.compose` draws the marks onto a copy, in an `InkStyle` estimated from the template's glyphs. Size and spacing follow the template x-height (median ink height of `acemnorsuvwxz`): marks above start 0.14 x-height above the letter's ink top, centred on the ink of its top band; the cedilla hangs from the baseline; an `i`/`j` loses its dot. Scale, baseline and advance come from the base letter (`PreparedGlyph.sizeWidth/sizeHeight`), and mark ink left of the letter is drawn before the cursor (`leftOverhang`). Results are cached per character and base bitmap. Characters with their own glyph (bundled `ÄÖÜäöüß`) never take this path; `ß`, `œ`, `æ` and letters with other marks (caron, ogonek, breve, macron, double acute) stay missing.
+
+10. **Punctuation synthesis (user templates only).** If a character has no glyph and `PunctuationSynthesizer.supports(c)`, draw it onto a 220-row canvas aligned to baseline 162 in an `InkStyle` estimated from the user's real glyphs. Result is cached per character. Anything still missing is recorded in `missingCharacters` and advanced as a punctuation-sized or space-sized gap. Bundled templates ship full punctuation, so they never synthesize and rarely report missing characters.
 
 ## Punctuation synthesis (`PunctuationSynthesizer`)
 

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text size slider on the result screen: the note is drawn again in the same handwriting, smaller or larger (0.7x to 1.5x). Regenerate and transparent export keep the chosen size.
 - Premium: write the practice sheet directly on the screen, one character at a time (stylus or finger). Each letter is checked for size, position and, with Google's on-device handwriting recognition, for the expected character before the next one appears.
 - German letters: Ink Script now writes Ä Ö Ü ä ö ü ß, and with German as the app language the practice sheet (printed or on screen) adds a row for them. Sheets printed before this update still scan.
+- Accented letters: Ink Script and your own handwriting now write é è ê ë à â á ã ñ ç ô ó õ î í ï û ú ù å and their capitals. The base letter is drawn with the accent added in the same pen.
 
 ### Changed
 - The practice sheet has 9 rows instead of 8, so each cell is slightly shorter.
