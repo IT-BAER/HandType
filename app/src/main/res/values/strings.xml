@@ -56,6 +56,7 @@
     <string name="result_share_button">Share</string>
     <string name="result_export_pdf_button">Export as PDF</string>
     <string name="result_regenerate_button">Regenerate</string>
+    <string name="result_text_size_label">Text size</string>
     <string name="result_new_note_button">New Note</string>
     <string name="result_saved">Saved to Pictures/HandType</string>
     <string name="result_saved_transparent">Saved transparent PNG to Pictures/HandType</string>

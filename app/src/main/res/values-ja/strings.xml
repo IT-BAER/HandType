@@ -48,6 +48,7 @@
     <string name="result_share_button">共有</string>
     <string name="result_export_pdf_button">PDFとしてエクスポート</string>
     <string name="result_regenerate_button">再生成</string>
+    <string name="result_text_size_label">文字サイズ</string>
     <string name="result_new_note_button">新規ノート</string>
     <string name="result_saved">Pictures/HandTypeに保存しました</string>
     <string name="result_saved_transparent">透過PNGをPictures/HandTypeに保存しました</string>

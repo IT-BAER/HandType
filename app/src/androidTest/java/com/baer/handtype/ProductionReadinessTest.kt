@@ -25,6 +25,7 @@ import com.baer.handtype.feature.settings.AppSettings
 import com.baer.handtype.feature.settings.SettingsScreen
 import com.baer.handtype.feature.template.HandwritingRenderScreen
 import com.baer.handtype.feature.template.TemplateChooserScreen
+import com.baer.handtype.feature.template.TextSizeScale
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.testing.HandTypeTestTags
 import com.baer.handtype.ui.theme.HandTypeTheme
@@ -207,6 +208,52 @@ class ProductionReadinessTest {
         rule.mainClock.advanceTimeBy(1300)
         rule.onNodeWithTag(HandTypeTestTags.RENDER_RESULT_IMAGE).assertExists()
         rule.mainClock.autoAdvance = true
+    }
+
+    @Test fun textSizeSliderRerendersTheNoteLargerAndRegenerateKeepsIt() {
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        rule.setContent {
+            HandTypeTheme {
+                HandwritingRenderScreen(
+                    template = template,
+                    onBackToTemplates = {},
+                    onPremiumSelected = {},
+                    premiumUnlocked = true,
+                    onLockedPresetTapped = {},
+                )
+            }
+        }
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
+            .performTextReplacement("Dear Anna,\nthank you for the lovely evening.\nSee you on Sunday!")
+        Espresso.closeSoftKeyboard()
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performScrollTo().performClick()
+        val defaultRatio = waitForResultRatio { it > 0f }
+
+        rule.onNodeWithTag(HandTypeTestTags.RESULT_TEXT_SIZE_SLIDER)
+            .performSemanticsAction(SemanticsActions.SetProgress) { it(TextSizeScale.MAX) }
+        val largeRatio = waitForResultRatio { it > defaultRatio * 1.2f }
+
+        rule.onNodeWithText(context.getString(R.string.result_regenerate_button)).performClick()
+        rule.waitUntil(15_000) {
+            rule.onAllNodesWithText(context.getString(R.string.render_generating_title))
+                .fetchSemanticsNodes().isEmpty()
+        }
+        val regeneratedRatio = waitForResultRatio { it > 0f }
+        assertTrue(
+            "Regenerate dropped the text size: default=$defaultRatio large=$largeRatio regenerated=$regeneratedRatio",
+            regeneratedRatio > defaultRatio * 1.2f,
+        )
+    }
+
+    /** Height/width of the result preview; it follows the bitmap's aspect ratio. */
+    private fun waitForResultRatio(accept: (Float) -> Boolean): Float {
+        var ratio = 0f
+        rule.waitUntil(15_000) {
+            val nodes = rule.onAllNodesWithTag(HandTypeTestTags.RENDER_RESULT_IMAGE).fetchSemanticsNodes()
+            ratio = nodes.firstOrNull()?.size?.let { it.height.toFloat() / it.width } ?: 0f
+            accept(ratio)
+        }
+        return ratio
     }
 
     @Test fun paperCardsAnnounceTheirNameAndLockedState() {

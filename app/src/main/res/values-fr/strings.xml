@@ -48,6 +48,7 @@
     <string name="result_share_button">Partager</string>
     <string name="result_export_pdf_button">Exporter en PDF</string>
     <string name="result_regenerate_button">Regénérer</string>
+    <string name="result_text_size_label">Taille du texte</string>
     <string name="result_new_note_button">Nouvelle note</string>
     <string name="result_saved">Enregistré dans Images/HandType</string>
     <string name="result_saved_transparent">PNG transparent enregistré dans Images/HandType</string>

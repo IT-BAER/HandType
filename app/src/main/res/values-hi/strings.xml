@@ -47,6 +47,7 @@
     <string name="result_share_button">शेयर करें</string>
     <string name="result_export_pdf_button">PDF के रूप में निर्यात करें</string>
     <string name="result_regenerate_button">पुनः जेनरेट करें</string>
+    <string name="result_text_size_label">टेक्स्ट का आकार</string>
     <string name="result_new_note_button">नई नोट</string>
     <string name="result_saved">Pictures/HandType में सहेजा गया</string>
     <string name="result_saved_transparent">पारदर्शी PNG Pictures/HandType में सहेजा गया</string>

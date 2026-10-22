@@ -71,6 +71,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -83,6 +84,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PictureAsPdf
@@ -98,6 +100,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -479,6 +482,8 @@ fun HandwritingRenderScreen(
     var selectedBackgroundId by rememberSaveable { mutableStateOf(initialDefaultBackgroundId) }
     var lastRenderedText by rememberSaveable { mutableStateOf("") }
     var lastRenderSeed by rememberSaveable { mutableStateOf<Long?>(null) }
+    var textScale by rememberSaveable { mutableFloatStateOf(TextSizeScale.DEFAULT) }
+    var resizing by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(externallySelectedBackgroundId) {
@@ -519,7 +524,7 @@ fun HandwritingRenderScreen(
             suspend fun renderNote(inputText: String, backgroundId: String, seed: Long) = withContext(Dispatchers.Default) {
                 val config = HandwritingRenderConfig(
                     maxWidthPx = renderWidthPx,
-                    targetLineHeightPx = targetLineHeightPx,
+                    targetLineHeightPx = TextSizeScale.lineHeightPx(targetLineHeightPx, textScale),
                     noteBackground = NoteBackgroundCatalog.presetOrDefault(backgroundId),
                 )
                 if (template.isStrokeBased) {
@@ -563,6 +568,23 @@ fun HandwritingRenderScreen(
                 }
             }
 
+            // Same text, paper and seed, so only the size changes; history keeps the first render.
+            fun resize(scale: Float) {
+                val seed = lastRenderSeed ?: return
+                val inputText = lastRenderedText.ifBlank { return }
+                textScale = scale
+                resizing = true
+                scope.launch {
+                    try {
+                        val result = renderNote(inputText, selectedBackgroundId, seed)
+                        resultBitmap = result.bitmap
+                        missingChars = result.missingCharacters
+                    } finally {
+                        resizing = false
+                    }
+                }
+            }
+
             AnimatedContent(
                 targetState = phase,
                 transitionSpec = {
@@ -598,6 +620,9 @@ fun HandwritingRenderScreen(
                         templateName = template.descriptor.displayName,
                         missingCharacters = missingChars,
                         snackbarHostState = snackbarHostState,
+                        textScale = textScale,
+                        resizing = resizing,
+                        onTextScaleChanged = ::resize,
                         onOutputSucceeded = onOutputSucceeded,
                         onSaveTransparent = {
                             val seed = lastRenderSeed ?: return@ResultPhaseContent
@@ -849,6 +874,9 @@ private fun ResultPhaseContent(
     templateName: String,
     missingCharacters: Set<Char>,
     snackbarHostState: SnackbarHostState,
+    textScale: Float,
+    resizing: Boolean,
+    onTextScaleChanged: (Float) -> Unit,
     onSaveTransparent: () -> Unit,
     onOutputSucceeded: (askAllowed: Boolean) -> Unit,
     onNewNote: () -> Unit,
@@ -867,9 +895,9 @@ private fun ResultPhaseContent(
     var pendingTransparent by remember { mutableStateOf(false) }
     var showExportSheet by remember { mutableStateOf(false) }
 
-    // Ink-reveal animation for the result bitmap
+    // Ink-reveal animation once per Generate; a resize swaps the bitmap without replaying it.
     val inkRevealProgress = remember { androidx.compose.animation.core.Animatable(0f) }
-    LaunchedEffect(bitmap) {
+    LaunchedEffect(Unit) {
         if (bitmap != null) {
             inkRevealProgress.snapTo(0f)
             inkRevealProgress.animateTo(
@@ -1028,6 +1056,33 @@ private fun ResultPhaseContent(
                     )
                 }
             }
+            if (resizing) CircularProgressIndicator()
+        }
+
+        val textSizeLabel = stringResource(R.string.result_text_size_label)
+        var sliderValue by remember(textScale) { mutableFloatStateOf(textScale) }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.FormatSize,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+            Slider(
+                value = sliderValue,
+                onValueChange = { sliderValue = it },
+                onValueChangeFinished = { onTextScaleChanged(sliderValue) },
+                valueRange = TextSizeScale.MIN..TextSizeScale.MAX,
+                enabled = bitmap != null && !resizing,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(HandTypeTestTags.RESULT_TEXT_SIZE_SLIDER)
+                    .semantics { contentDescription = textSizeLabel },
+            )
         }
 
         if (missingCharacters.isNotEmpty()) {

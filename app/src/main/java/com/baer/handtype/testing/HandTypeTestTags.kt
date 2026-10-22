@@ -10,6 +10,7 @@ object HandTypeTestTags {
     const val RENDER_MESSAGE_INPUT = "render_message_input"
     const val RENDER_GENERATE_BUTTON = "render_generate_button"
     const val RENDER_RESULT_IMAGE = "render_result_image"
+    const val RESULT_TEXT_SIZE_SLIDER = "result_text_size_slider"
 
     const val RENAME_HANDWRITING_INPUT = "rename_handwriting_input"
 

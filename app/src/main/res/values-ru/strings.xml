@@ -48,6 +48,7 @@
     <string name="result_share_button">Поделиться</string>
     <string name="result_export_pdf_button">Экспортировать как PDF</string>
     <string name="result_regenerate_button">Создать заново</string>
+    <string name="result_text_size_label">Размер текста</string>
     <string name="result_new_note_button">Новая заметка</string>
     <string name="result_saved">Сохранено в Изображения/HandType</string>
     <string name="result_saved_transparent">Прозрачный PNG сохранён в Изображения/HandType</string>

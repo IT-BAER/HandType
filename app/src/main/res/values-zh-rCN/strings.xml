@@ -48,6 +48,7 @@
     <string name="result_share_button">分享</string>
     <string name="result_export_pdf_button">导出为 PDF</string>
     <string name="result_regenerate_button">重新生成</string>
+    <string name="result_text_size_label">文字大小</string>
     <string name="result_new_note_button">新建便条</string>
     <string name="result_saved">已保存至图片/HandType</string>
     <string name="result_saved_transparent">透明 PNG 已保存至图片/HandType</string>

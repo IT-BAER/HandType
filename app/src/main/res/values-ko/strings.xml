@@ -48,6 +48,7 @@
     <string name="result_share_button">공유</string>
     <string name="result_export_pdf_button">PDF로 내보내기</string>
     <string name="result_regenerate_button">다시 생성</string>
+    <string name="result_text_size_label">글자 크기</string>
     <string name="result_new_note_button">새 노트</string>
     <string name="result_saved">Pictures/HandType에 저장됨</string>
     <string name="result_saved_transparent">투명 PNG가 Pictures/HandType에 저장됨</string>
