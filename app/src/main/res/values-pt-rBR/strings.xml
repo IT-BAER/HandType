@@ -264,4 +264,25 @@
     <string name="onboarding_next">Avançar</string>
     <string name="onboarding_skip">Pular</string>
     <string name="help_show_intro">Mostrar a introdução novamente</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">Escrever na tela</string>
+    <string name="stylus_title">Escrever na tela</string>
+    <string name="stylus_instruction">Escreva o caractere claro na caixa. Apoie-o na linha inferior; as minúsculas chegam à linha superior.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Desfazer</string>
+    <string name="stylus_clear">Limpar</string>
+    <string name="stylus_previous">Voltar</string>
+    <string name="stylus_next">Avançar</string>
+    <string name="stylus_finish">Concluir</string>
+    <string name="stylus_saving">Salvando sua letra…</string>
+    <string name="stylus_hint_empty">Escreva o caractere primeiro.</string>
+    <string name="stylus_hint_outside">Mantenha cada traço dentro da caixa.</string>
+    <string name="stylus_hint_too_small">Pequeno demais - use as linhas guia.</string>
+    <string name="stylus_hint_too_large">Grande demais - fique mais perto das linhas guia.</string>
+    <string name="stylus_hint_reach_up">Curto demais - este caractere passa da linha superior.</string>
+    <string name="stylus_hint_wrong">Parece “%1$s”, esperado “%2$s”. Toque em Avançar de novo para mantê-lo.</string>
+    <string name="stylus_hint_unrecognized">Ainda não parece “%1$s”. Toque em Avançar de novo para mantê-lo.</string>
+    <string name="stylus_note_shape_only">O reconhecimento de letras ainda não está pronto (é baixado uma vez), então só o tamanho e a posição são verificados.</string>
+    <string name="cd_stylus_canvas">Caixa de escrita para %1$s</string>
 </resources>

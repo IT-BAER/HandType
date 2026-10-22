@@ -264,4 +264,25 @@
     <string name="onboarding_next">Suivant</string>
     <string name="onboarding_skip">Passer</string>
     <string name="help_show_intro">Afficher à nouveau l\'introduction</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">Écrire à l\'écran</string>
+    <string name="stylus_title">Écrire à l\'écran</string>
+    <string name="stylus_instruction">Écrivez le caractère pâle dans la case. Posez-le sur la ligne inférieure ; les minuscules montent jusqu\'à la ligne supérieure.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Annuler le trait</string>
+    <string name="stylus_clear">Effacer</string>
+    <string name="stylus_previous">Retour</string>
+    <string name="stylus_next">Suivant</string>
+    <string name="stylus_finish">Terminer</string>
+    <string name="stylus_saving">Enregistrement de votre écriture…</string>
+    <string name="stylus_hint_empty">Écrivez d\'abord le caractère.</string>
+    <string name="stylus_hint_outside">Gardez chaque trait dans la case.</string>
+    <string name="stylus_hint_too_small">Trop petit : utilisez les lignes de guide.</string>
+    <string name="stylus_hint_too_large">Trop grand : restez plus près des lignes de guide.</string>
+    <string name="stylus_hint_reach_up">Trop court : ce caractère dépasse la ligne supérieure.</string>
+    <string name="stylus_hint_wrong">Cela ressemble à « %1$s », « %2$s » attendu. Touchez à nouveau Suivant pour le garder.</string>
+    <string name="stylus_hint_unrecognized">Cela ne ressemble pas encore à « %1$s ». Touchez à nouveau Suivant pour le garder.</string>
+    <string name="stylus_note_shape_only">La reconnaissance des lettres n\'est pas encore prête (téléchargée une seule fois) : seules la taille et la position sont vérifiées.</string>
+    <string name="cd_stylus_canvas">Case d\'écriture pour %1$s</string>
 </resources>

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Text size slider on the result screen: the note is drawn again in the same handwriting, smaller or larger (0.7x to 1.5x). Regenerate and transparent export keep the chosen size.
+- Premium: write the practice sheet directly on the screen, one character at a time (stylus or finger). Each letter is checked for size, position and, with Google's on-device handwriting recognition, for the expected character before the next one appears.
 
 ## [1.0.1] - 2026-10-22
 

@@ -71,6 +71,8 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        // digital-ink-recognition 19.0.0 ships Kotlin 2.1 metadata; only its Java API is used here.
+        freeCompilerArgs += "-Xskip-metadata-version-check"
     }
 
     buildFeatures {
@@ -108,6 +110,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+    implementation("com.google.mlkit:digital-ink-recognition:19.0.0")
     implementation("com.android.billingclient:billing:9.1.0")
     implementation("com.google.android.play:review:2.0.2")
 

@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Draw
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -36,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -78,6 +80,7 @@ fun CameraCaptureScreen(
     modifier: Modifier = Modifier,
     instructionText: String = "Print the practice sheet, fill every cell with your handwriting, then tap Scan to photograph the whole page.",
     isProcessing: Boolean = false,
+    onWriteOnScreen: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val cameraTitle = stringResource(R.string.camera_title)
@@ -94,6 +97,7 @@ fun CameraCaptureScreen(
     )
     val sheetButtonText = stringResource(R.string.camera_sheet_button)
     val scanButtonText = stringResource(R.string.camera_scan_button)
+    val writeButtonText = stringResource(R.string.camera_write_button)
     val openingText = stringResource(R.string.camera_opening_scanner)
     val processingText = stringResource(R.string.camera_processing_button)
     val currentOnImageCaptured by rememberUpdatedState(onImageCaptured)
@@ -217,6 +221,25 @@ fun CameraCaptureScreen(
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
+                }
+            }
+            if (onWriteOnScreen != null) {
+                OutlinedButton(
+                    onClick = onWriteOnScreen,
+                    enabled = !isLaunching && !isProcessing,
+                    modifier = Modifier
+                        .testTag(HandTypeTestTags.CAMERA_WRITE_BUTTON)
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                    shape = RoundedCornerShape(22.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Draw,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = writeButtonText)
                 }
             }
             }

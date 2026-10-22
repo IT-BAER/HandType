@@ -277,4 +277,25 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
     <string name="help_show_intro">Show the intro again</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">Write on screen instead</string>
+    <string name="stylus_title">Write on screen</string>
+    <string name="stylus_instruction">Write the faint character in the box. Rest it on the lower line; small letters reach the upper line.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Undo</string>
+    <string name="stylus_clear">Clear</string>
+    <string name="stylus_previous">Back</string>
+    <string name="stylus_next">Next</string>
+    <string name="stylus_finish">Finish</string>
+    <string name="stylus_saving">Saving your handwriting…</string>
+    <string name="stylus_hint_empty">Write the character first.</string>
+    <string name="stylus_hint_outside">Keep every stroke inside the box.</string>
+    <string name="stylus_hint_too_small">Too small - use the guide lines.</string>
+    <string name="stylus_hint_too_large">Too big - stay closer to the guide lines.</string>
+    <string name="stylus_hint_reach_up">Too short - this character reaches above the upper line.</string>
+    <string name="stylus_hint_wrong">Looks like “%1$s”, expected “%2$s”. Tap Next again to keep it.</string>
+    <string name="stylus_hint_unrecognized">That does not look like “%1$s” yet. Tap Next again to keep it.</string>
+    <string name="stylus_note_shape_only">Letter recognition is not ready yet (it downloads once), so only size and position are checked.</string>
+    <string name="cd_stylus_canvas">Writing box for %1$s</string>
 </resources>

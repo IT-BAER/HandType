@@ -246,4 +246,25 @@
     <string name="onboarding_next">आगे</string>
     <string name="onboarding_skip">छोड़ें</string>
     <string name="help_show_intro">परिचय दोबारा दिखाएं</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">इसके बजाय स्क्रीन पर लिखें</string>
+    <string name="stylus_title">स्क्रीन पर लिखें</string>
+    <string name="stylus_instruction">बॉक्स में हल्का दिख रहा वर्ण लिखें। उसे निचली लाइन पर रखें; छोटे अक्षर ऊपरी लाइन तक जाते हैं।</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">पूर्ववत करें</string>
+    <string name="stylus_clear">साफ़ करें</string>
+    <string name="stylus_previous">वापस</string>
+    <string name="stylus_next">आगे</string>
+    <string name="stylus_finish">पूरा करें</string>
+    <string name="stylus_saving">आपकी लिखावट सहेजी जा रही है…</string>
+    <string name="stylus_hint_empty">पहले वर्ण लिखें।</string>
+    <string name="stylus_hint_outside">हर स्ट्रोक बॉक्स के अंदर रखें।</string>
+    <string name="stylus_hint_too_small">बहुत छोटा - गाइड लाइनों का उपयोग करें।</string>
+    <string name="stylus_hint_too_large">बहुत बड़ा - गाइड लाइनों के पास रहें।</string>
+    <string name="stylus_hint_reach_up">बहुत छोटा - यह वर्ण ऊपरी लाइन से ऊपर तक जाता है।</string>
+    <string name="stylus_hint_wrong">यह “%1$s” जैसा दिखता है, अपेक्षित “%2$s”। इसे रखने के लिए फिर से आगे पर टैप करें।</string>
+    <string name="stylus_hint_unrecognized">यह अभी “%1$s” जैसा नहीं दिखता। इसे रखने के लिए फिर से आगे पर टैप करें।</string>
+    <string name="stylus_note_shape_only">अक्षर पहचान अभी तैयार नहीं है (एक बार डाउनलोड होती है), इसलिए केवल आकार और स्थिति जाँची जाती है।</string>
+    <string name="cd_stylus_canvas">%1$s के लिए लेखन बॉक्स</string>
 </resources>

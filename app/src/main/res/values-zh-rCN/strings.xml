@@ -264,4 +264,25 @@
     <string name="onboarding_next">下一步</string>
     <string name="onboarding_skip">跳过</string>
     <string name="help_show_intro">再次查看介绍</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">改为在屏幕上书写</string>
+    <string name="stylus_title">在屏幕上书写</string>
+    <string name="stylus_instruction">在方框中写出浅色显示的字符。让它落在下方线上，小写字母写到上方线。</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">撤销</string>
+    <string name="stylus_clear">清除</string>
+    <string name="stylus_previous">返回</string>
+    <string name="stylus_next">下一步</string>
+    <string name="stylus_finish">完成</string>
+    <string name="stylus_saving">正在保存你的手写…</string>
+    <string name="stylus_hint_empty">请先写出字符。</string>
+    <string name="stylus_hint_outside">请让每一笔都在方框内。</string>
+    <string name="stylus_hint_too_small">太小了 - 请参照引导线。</string>
+    <string name="stylus_hint_too_large">太大了 - 请更贴近引导线。</string>
+    <string name="stylus_hint_reach_up">太矮了 - 这个字符应高过上方线。</string>
+    <string name="stylus_hint_wrong">看起来像“%1$s”，应为“%2$s”。再次点按“下一步”即可保留。</string>
+    <string name="stylus_hint_unrecognized">还不像“%1$s”。再次点按“下一步”即可保留。</string>
+    <string name="stylus_note_shape_only">字母识别尚未就绪（只需下载一次），因此仅检查大小和位置。</string>
+    <string name="cd_stylus_canvas">%1$s 的书写框</string>
 </resources>

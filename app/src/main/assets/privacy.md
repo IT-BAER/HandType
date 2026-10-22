@@ -1,6 +1,6 @@
 # Privacy Policy
 
-_Last updated: October 18, 2026_
+_Last updated: October 22, 2026_
 
 HandType is designed to be offline-first and tracker-free.
 
@@ -32,10 +32,12 @@ After your third successful save, share or export, HandType may ask Google Play 
 
 The optional "use my handwriting" feature opens Google's document scanner, where you can scan or select a practice-sheet photo. HandType extracts the characters from that sheet locally and saves a personal template. The app does not upload your photo or handwriting. Google Play services may need to download the scanner component before its first use.
 
+You can also write the practice sheet directly on the screen. To check each letter, HandType uses Google's ML Kit handwriting recognition. Its English handwriting model is downloaded once from Google the first time you open this screen; after that, recognition runs entirely on your device. Your strokes and the resulting template are never uploaded. If the model is not available, HandType only checks the size and position of each letter.
+
 ## Permissions
 
 - HandType does **not** request camera or storage permissions. The document scanner runs inside Google Play services and handles the camera itself. Saving uses Android's `MediaStore`, so no storage permission is needed.
-- **Internet and network state** are declared by Google's billing, review and scanner libraries so that Google Play services can work. HandType itself sends no data over the network.
+- **Internet and network state** are declared by Google's billing, review, scanner and handwriting-recognition libraries so that Google Play services can work. HandType itself sends no data over the network.
 
 ## Deleting your data
 

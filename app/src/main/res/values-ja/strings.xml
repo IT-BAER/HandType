@@ -262,4 +262,25 @@
     <string name="onboarding_next">次へ</string>
     <string name="onboarding_skip">スキップ</string>
     <string name="help_show_intro">はじめの説明をもう一度表示</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">画面に書く</string>
+    <string name="stylus_title">画面に書く</string>
+    <string name="stylus_instruction">ボックス内の薄い文字をなぞるように書いてください。下の線に乗せ、小文字は上の線まで届かせます。</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">元に戻す</string>
+    <string name="stylus_clear">消去</string>
+    <string name="stylus_previous">戻る</string>
+    <string name="stylus_next">次へ</string>
+    <string name="stylus_finish">完了</string>
+    <string name="stylus_saving">手書きを保存しています…</string>
+    <string name="stylus_hint_empty">先に文字を書いてください。</string>
+    <string name="stylus_hint_outside">すべての線をボックス内に収めてください。</string>
+    <string name="stylus_hint_too_small">小さすぎます - ガイドラインを使ってください。</string>
+    <string name="stylus_hint_too_large">大きすぎます - ガイドラインに近づけてください。</string>
+    <string name="stylus_hint_reach_up">短すぎます - この文字は上の線より上まで届きます。</string>
+    <string name="stylus_hint_wrong">「%1$s」に見えます（期待値:「%2$s」）。もう一度「次へ」をタップするとそのまま使えます。</string>
+    <string name="stylus_hint_unrecognized">まだ「%1$s」に見えません。もう一度「次へ」をタップするとそのまま使えます。</string>
+    <string name="stylus_note_shape_only">文字認識はまだ準備できていません（初回のみダウンロード）。サイズと位置だけを確認します。</string>
+    <string name="cd_stylus_canvas">%1$s の書き込みボックス</string>
 </resources>

@@ -50,6 +50,10 @@ import com.baer.handtype.billing.PremiumState
 import com.baer.handtype.feature.billing.PremiumPaywallSheet
 import com.baer.handtype.feature.capture.CameraCaptureScreen
 import com.baer.handtype.feature.capture.SheetSampleProcessor
+import com.baer.handtype.feature.capture.stylus.InkRasterizer
+import com.baer.handtype.feature.capture.stylus.MlKitInkRecognizer
+import com.baer.handtype.feature.capture.stylus.StylusCaptureScreen
+import com.baer.handtype.feature.capture.stylus.StylusSession
 import com.baer.handtype.feature.feedback.ReviewPromptStore
 import com.baer.handtype.feature.feedback.openStoreListing
 import com.baer.handtype.feature.feedback.requestInAppReview
@@ -160,6 +164,11 @@ private fun HandTypeRoot(
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateName by rememberSaveable { mutableStateOf<String?>(null) }
+    // Held at the root so leaving the writing screen mid-sheet keeps the letters written so far.
+    val stylusCharacters = remember { StylusSession.sheetCharacters() }
+    val stylusSession = rememberSaveable(saver = StylusSession.saver(stylusCharacters)) {
+        StylusSession(stylusCharacters)
+    }
     // Shared text waits on the chooser and prefills the first editor opened; saveable so a recreate does not refill it.
     var pendingSharedText by rememberSaveable { mutableStateOf(SharedTextIntake.textFrom(activity.intent)) }
     var userTemplates by remember(repository) { mutableStateOf(repository.listUserTemplates()) }
@@ -210,7 +219,8 @@ private fun HandTypeRoot(
         label = "rootNav",
     ) { currentRoute ->
         val isImmersive = currentRoute == RootRoute.RenderTemplate.name ||
-            currentRoute == RootRoute.PremiumCapture.name
+            currentRoute == RootRoute.PremiumCapture.name ||
+            currentRoute == RootRoute.StylusCapture.name
 
         if (isImmersive) {
             when (currentRoute) {
@@ -243,6 +253,17 @@ private fun HandTypeRoot(
                 }
                 RootRoute.PremiumCapture.name -> PremiumCaptureRoute(
                     repository = repository,
+                    onTemplateSaved = { newId, defaultName ->
+                        pendingRenameTemplateId = newId
+                        pendingRenameTemplateName = defaultName
+                        route = RootRoute.TemplateChooser.name
+                    },
+                    onBack = { route = RootRoute.TemplateChooser.name },
+                    onWriteOnScreen = { requirePremium { route = RootRoute.StylusCapture.name } },
+                )
+                RootRoute.StylusCapture.name -> StylusCaptureRoute(
+                    repository = repository,
+                    session = stylusSession,
                     onTemplateSaved = { newId, defaultName ->
                         pendingRenameTemplateId = newId
                         pendingRenameTemplateName = defaultName
@@ -377,6 +398,12 @@ private fun HandTypeRoot(
 
 private fun AnimatedContentTransitionScope<String>.routeTransitionSpec(): ContentTransform {
     return when {
+        targetState == RootRoute.StylusCapture.name ->
+            directionalRouteTransition(SlideDirection.Start)
+
+        initialState == RootRoute.StylusCapture.name ->
+            directionalRouteTransition(SlideDirection.End)
+
         targetState == RootRoute.PremiumCapture.name ->
             directionalRouteTransition(SlideDirection.Up)
 
@@ -532,6 +559,7 @@ private fun PremiumCaptureRoute(
     repository: BundledTemplateRepository,
     onTemplateSaved: (String, String) -> Unit,
     onBack: () -> Unit,
+    onWriteOnScreen: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -551,6 +579,7 @@ private fun PremiumCaptureRoute(
         instructionText = instructionText,
         isProcessing = isProcessing,
         onBack = onBack,
+        onWriteOnScreen = onWriteOnScreen,
         onImageCaptured = { bitmap ->
             if (isProcessing) return@CameraCaptureScreen
             isProcessing = true
@@ -606,6 +635,57 @@ private fun PremiumCaptureRoute(
     )
 }
 
+@Composable
+private fun StylusCaptureRoute(
+    repository: BundledTemplateRepository,
+    session: StylusSession,
+    onTemplateSaved: (String, String) -> Unit,
+    onBack: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val saveFailedText = stringResource(R.string.premium_save_failed)
+    val recognizer = remember { MlKitInkRecognizer() }
+    DisposableEffect(recognizer) { onDispose { recognizer.close() } }
+    var isSaving by remember { mutableStateOf(false) }
+    var errorText by remember { mutableStateOf<String?>(null) }
+
+    StylusCaptureScreen(
+        session = session,
+        recognizer = recognizer,
+        isSaving = isSaving,
+        errorText = errorText,
+        onBack = onBack,
+        onFinished = {
+            if (isSaving) return@StylusCaptureScreen
+            isSaving = true
+            errorText = null
+            val strokes = session.glyphs.toList()
+            scope.launch {
+                val defaultTemplateName = createDefaultTemplateName(context)
+                runCatching {
+                    val glyphs = withContext(Dispatchers.Default) {
+                        InkRasterizer.buildGlyphs(session.characters, strokes)
+                    }
+                    repository.userRepository().saveTemplate(
+                        displayName = defaultTemplateName,
+                        glyphMap = glyphs,
+                    )
+                }.onSuccess { savedId ->
+                    android.util.Log.i("StylusCapture", "Written sheet saved as $savedId")
+                    session.reset()
+                    isSaving = false
+                    onTemplateSaved(savedId, defaultTemplateName)
+                }.onFailure { throwable ->
+                    android.util.Log.e("StylusCapture", "Failed to build or persist user template", throwable)
+                    errorText = saveFailedText
+                    isSaving = false
+                }
+            }
+        },
+    )
+}
+
 private fun createDefaultTemplateName(context: Context): String {
     // Locale from the context, not Locale.getDefault(), so the in-app language override applies.
     val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
@@ -622,6 +702,7 @@ private enum class RootRoute {
     TemplateChooser,
     RenderTemplate,
     PremiumCapture,
+    StylusCapture,
     History,
     Help,
     Faq,

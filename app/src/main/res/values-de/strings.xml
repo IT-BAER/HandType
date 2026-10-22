@@ -246,4 +246,25 @@
     <string name="onboarding_next">Weiter</string>
     <string name="onboarding_skip">Überspringen</string>
     <string name="help_show_intro">Einführung erneut anzeigen</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">Stattdessen auf dem Bildschirm schreiben</string>
+    <string name="stylus_title">Auf dem Bildschirm schreiben</string>
+    <string name="stylus_instruction">Schreibe das blasse Zeichen in das Feld. Es steht auf der unteren Linie, Kleinbuchstaben reichen bis zur oberen.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Rückgängig</string>
+    <string name="stylus_clear">Löschen</string>
+    <string name="stylus_previous">Zurück</string>
+    <string name="stylus_next">Weiter</string>
+    <string name="stylus_finish">Fertig</string>
+    <string name="stylus_saving">Deine Handschrift wird gespeichert…</string>
+    <string name="stylus_hint_empty">Schreibe zuerst das Zeichen.</string>
+    <string name="stylus_hint_outside">Bleib mit jedem Strich im Feld.</string>
+    <string name="stylus_hint_too_small">Zu klein - nutze die Hilfslinien.</string>
+    <string name="stylus_hint_too_large">Zu groß - bleib näher an den Hilfslinien.</string>
+    <string name="stylus_hint_reach_up">Zu kurz - dieses Zeichen reicht über die obere Linie.</string>
+    <string name="stylus_hint_wrong">Sieht aus wie „%1$s“, erwartet „%2$s“. Tippe erneut auf Weiter, um es zu behalten.</string>
+    <string name="stylus_hint_unrecognized">Das sieht noch nicht wie „%1$s“ aus. Tippe erneut auf Weiter, um es zu behalten.</string>
+    <string name="stylus_note_shape_only">Die Buchstabenerkennung ist noch nicht bereit (wird einmalig geladen), daher werden nur Größe und Position geprüft.</string>
+    <string name="cd_stylus_canvas">Schreibfeld für %1$s</string>
 </resources>

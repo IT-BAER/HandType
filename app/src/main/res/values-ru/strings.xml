@@ -247,4 +247,25 @@
     <string name="onboarding_next">Далее</string>
     <string name="onboarding_skip">Пропустить</string>
     <string name="help_show_intro">Показать вступление снова</string>
+
+    <!-- Write the practice sheet on screen -->
+    <string name="camera_write_button">Написать на экране</string>
+    <string name="stylus_title">Написать на экране</string>
+    <string name="stylus_instruction">Напишите бледный символ в ячейке. Поставьте его на нижнюю линию; строчные буквы доходят до верхней.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Отменить</string>
+    <string name="stylus_clear">Стереть</string>
+    <string name="stylus_previous">Назад</string>
+    <string name="stylus_next">Далее</string>
+    <string name="stylus_finish">Готово</string>
+    <string name="stylus_saving">Сохраняем ваш почерк…</string>
+    <string name="stylus_hint_empty">Сначала напишите символ.</string>
+    <string name="stylus_hint_outside">Держите каждый штрих внутри ячейки.</string>
+    <string name="stylus_hint_too_small">Слишком мелко - ориентируйтесь на линии.</string>
+    <string name="stylus_hint_too_large">Слишком крупно - держитесь ближе к линиям.</string>
+    <string name="stylus_hint_reach_up">Слишком низко - этот символ выходит выше верхней линии.</string>
+    <string name="stylus_hint_wrong">Похоже на «%1$s», ожидалось «%2$s». Нажмите «Далее» ещё раз, чтобы оставить.</string>
+    <string name="stylus_hint_unrecognized">Пока не похоже на «%1$s». Нажмите «Далее» ещё раз, чтобы оставить.</string>
+    <string name="stylus_note_shape_only">Распознавание букв ещё не готово (загружается один раз), поэтому проверяются только размер и положение.</string>
+    <string name="cd_stylus_canvas">Ячейка для письма: %1$s</string>
 </resources>

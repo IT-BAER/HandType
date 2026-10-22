@@ -60,6 +60,8 @@ object GlyphPostProcessor {
         crop: Bitmap,
         guideYsInCrop: IntArray = intArrayOf(),
         expectsDiacritic: Boolean = false,
+        // A crop without printed sheet furniture must keep rule-shaped ink: a tall I or a wide W.
+        rejectPrintedRules: Boolean = true,
     ): Bitmap {
         val width = crop.width
         val height = crop.height
@@ -146,7 +148,7 @@ object GlyphPostProcessor {
             }
         }
         val components = extractInkComponents(inkMask, width, height)
-            .filterNot { isPrintedRule(it, width, height) }
+            .filterNot { rejectPrintedRules && isPrintedRule(it, width, height) }
         if (components.isEmpty()) {
             return Bitmap.createBitmap(TARGET_CANVAS, TARGET_CANVAS, Bitmap.Config.ARGB_8888)
         }
