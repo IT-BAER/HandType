@@ -43,9 +43,6 @@ data class HandwritingRenderResult(
 )
 
 object HandwritingBitmapRenderer {
-    private const val MIN_CHARS_BEFORE_HYPHEN = 2
-    private const val MIN_CHARS_AFTER_HYPHEN = 3
-
 
     private val descenderChars = setOf('g', 'j', 'p', 'q', 'y')
     private val dottedChars = setOf('i', 'j')
@@ -835,21 +832,8 @@ object HandwritingBitmapRenderer {
 
         val lineWidth = safeWidth - 2 * config.marginPx
 
-        /** Splits a word wider than a whole line into "abc-" pieces that each fit one line. */
-        fun hyphenatedPieces(word: String): List<String> {
-            val pieces = mutableListOf<String>()
-            var rest = word
-            while (true) {
-                // Trailing punctuation does not count towards the letters carried to the next line.
-                val minAfter = MIN_CHARS_AFTER_HYPHEN + rest.length - rest.trimEnd { !it.isLetterOrDigit() }.length
-                if (maxWordWidth(rest) <= lineWidth || rest.length < MIN_CHARS_BEFORE_HYPHEN + minAfter) break
-                var cut = rest.length - minAfter
-                while (cut > MIN_CHARS_BEFORE_HYPHEN && maxWordWidth(rest.take(cut) + "-") > lineWidth) cut--
-                pieces += rest.take(cut) + "-"
-                rest = rest.drop(cut)
-            }
-            return pieces + rest
-        }
+        fun hyphenatedPieces(word: String): List<String> =
+            WordHyphenator.pieces(word) { maxWordWidth(it) <= lineWidth }
 
         val lines = (if (normalizedText.isBlank()) " " else normalizedText).split('\n')
         for (line in lines) {
