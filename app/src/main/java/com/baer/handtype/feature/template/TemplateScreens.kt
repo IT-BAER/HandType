@@ -44,7 +44,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -1010,50 +1011,68 @@ private fun ResultPhaseContent(
                 var imageScale by remember(bitmap) { mutableFloatStateOf(1f) }
                 var imageOffsetX by remember(bitmap) { mutableFloatStateOf(0f) }
                 var imageOffsetY by remember(bitmap) { mutableFloatStateOf(0f) }
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                // The note always shows at full width; a note taller than the space scrolls.
+                Column(
                     modifier = Modifier
-                        .aspectRatio(bitmap.width.toFloat() / bitmap.height)
-                        .clipToBounds(),
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.Center,
                 ) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = stringResource(R.string.render_result_image_desc),
+                    Card(
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
                         modifier = Modifier
-                            .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
-                            .fillMaxSize()
-                            .padding(4.dp)
-                            .graphicsLayer(
-                                scaleX = imageScale,
-                                scaleY = imageScale,
-                                translationX = imageOffsetX,
-                                translationY = imageOffsetY,
-                            )
-                            .pointerInput(bitmap) {
-                                detectTapGestures(onDoubleTap = {
-                                    imageScale = 1f
-                                    imageOffsetX = 0f
-                                    imageOffsetY = 0f
-                                })
-                            }
-                            .pointerInput(bitmap) {
-                                detectTransformGestures { _, pan, zoom, _ ->
-                                    val newScale = (imageScale * zoom).coerceIn(1f, 6f)
-                                    imageScale = newScale
-                                    if (newScale > 1f) {
-                                        imageOffsetX += pan.x
-                                        imageOffsetY += pan.y
-                                    } else {
+                            .fillMaxWidth()
+                            .aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                            .clipToBounds(),
+                    ) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = stringResource(R.string.render_result_image_desc),
+                            modifier = Modifier
+                                .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
+                                .fillMaxSize()
+                                .padding(4.dp)
+                                .graphicsLayer(
+                                    scaleX = imageScale,
+                                    scaleY = imageScale,
+                                    translationX = imageOffsetX,
+                                    translationY = imageOffsetY,
+                                )
+                                .pointerInput(bitmap) {
+                                    detectTapGestures(onDoubleTap = {
+                                        imageScale = 1f
                                         imageOffsetX = 0f
                                         imageOffsetY = 0f
+                                    })
+                                }
+                                .pointerInput(bitmap) {
+                                    // One finger scrolls the note; a pinch zooms, and a zoomed note pans with one finger.
+                                    awaitEachGesture {
+                                        awaitFirstDown(requireUnconsumed = false)
+                                        do {
+                                            val event = awaitPointerEvent()
+                                            if (event.changes.count { it.pressed } > 1 || imageScale > 1f) {
+                                                val newScale = (imageScale * event.calculateZoom()).coerceIn(1f, 6f)
+                                                imageScale = newScale
+                                                if (newScale > 1f) {
+                                                    val pan = event.calculatePan()
+                                                    imageOffsetX += pan.x
+                                                    imageOffsetY += pan.y
+                                                } else {
+                                                    imageOffsetX = 0f
+                                                    imageOffsetY = 0f
+                                                }
+                                                event.changes.forEach { it.consume() }
+                                            }
+                                        } while (event.changes.any { it.pressed })
                                     }
                                 }
-                            }
-                            .stripReveal(progress = inkRevealProgress.value),
-                        contentScale = ContentScale.Fit,
-                    )
+                                .stripReveal(progress = inkRevealProgress.value),
+                            contentScale = ContentScale.Fit,
+                        )
+                    }
                 }
             }
             if (resizing) CircularProgressIndicator()
