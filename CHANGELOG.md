@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-22
+
 ### Added
 - Text size slider on the result screen: the note is drawn again in the same handwriting, smaller or larger (0.7x to 1.5x). Regenerate and transparent export keep the chosen size.
 - Premium: write the practice sheet directly on the screen, one character at a time (stylus or finger). Each letter is checked for size, position and, with Google's on-device handwriting recognition, for the expected character before the next one appears.
@@ -18,9 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the unused ML Kit text recognition library and its install-time OCR model download.
 - Removed the `WRITE_EXTERNAL_STORAGE` permission, which applied only up to Android 9.
 - Capture diagnostics are logged only in debug builds.
+- Version 1.1.0 (versionCode 5).
 
 ### Fixed
-- Ink Script splits a word wider than one line with a hyphen instead of breaking it mid-word without one.
+- Ink Script splits a word wider than one line with a hyphen instead of breaking it mid-word without one, at a syllable where it can ("Öster-reich", not "Österre-ich").
 - "!" and "?" no longer merge into a preceding letter that ends in a vertical stroke ("Tom!").
 - The result screen shows a long note at full width and scrolls it, instead of shrinking it into a narrow strip.
 - Paywall: Buy is disabled while Google Play is unavailable or the price has not loaded; the price is queried again when the Play state changes.
