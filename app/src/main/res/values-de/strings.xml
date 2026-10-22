@@ -92,7 +92,7 @@
     <string name="loading_template_title">Vorlage wird geladen</string>
     <string name="loading_template_body">Bitmap-Glyphen für den Standard-Handschriftablauf werden vorbereitet.</string>
 
-    <string name="premium_instruction">Schreibe A–Z, a–z und 0–9 auf das Übungsblatt und zentriere die Seite im Rahmen, um deine persönliche Vorlage zu erstellen.</string>
+    <string name="premium_instruction">Schreibe A–Z, a–z, 0–9 und ÄÖÜäöüß auf das Übungsblatt und zentriere die Seite im Rahmen, um deine persönliche Vorlage zu erstellen.</string>
     <string name="premium_processing">Handschriftprobe wird mit ML Kit verarbeitet…</string>
     <string name="premium_no_glyphs">Keine alphanumerischen Glyphen erkannt. Versuche es mit besserer Beleuchtung und fülle mehr des Rahmens mit der Seite. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
     <string name="premium_capture_complete">Handschrift-Aufnahme abgeschlossen. %1$d Glyphen aus %2$d einzigartigen Zeichen extrahiert. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
