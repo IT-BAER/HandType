@@ -100,13 +100,14 @@ fun PenWritingAnimation(
     inkColor: Color = Color(0xFF1A1410),
     traceColor: Color = Color(0xFF23443A),
     penSize: Float = 24f,
+    passMillis: Int = 2200,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pen")
     val progress by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = FastOutSlowInEasing),
+            animation = tween(passMillis, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "trace",

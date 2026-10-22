@@ -54,6 +54,7 @@ import com.baer.handtype.feature.feedback.ReviewPromptStore
 import com.baer.handtype.feature.feedback.openStoreListing
 import com.baer.handtype.feature.feedback.requestInAppReview
 import com.baer.handtype.feature.feedback.shareApp
+import com.baer.handtype.feature.intake.SharedTextIntake
 import com.baer.handtype.feature.info.AboutScreen
 import com.baer.handtype.feature.info.FaqScreen
 import com.baer.handtype.feature.info.HelpScreen
@@ -159,6 +160,8 @@ private fun HandTypeRoot(
     var selectedTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateName by rememberSaveable { mutableStateOf<String?>(null) }
+    // Shared text waits on the chooser and prefills the first editor opened; saveable so a recreate does not refill it.
+    var pendingSharedText by rememberSaveable { mutableStateOf(SharedTextIntake.textFrom(activity.intent)) }
     var userTemplates by remember(repository) { mutableStateOf(repository.listUserTemplates()) }
 
     fun refreshUserTemplates() {
@@ -227,6 +230,8 @@ private fun HandTypeRoot(
                             },
                             externallySelectedBackgroundId = pendingPresetSelection,
                             onExternalSelectionConsumed = { pendingPresetSelection = null },
+                            initialText = pendingSharedText,
+                            onInitialTextConsumed = { pendingSharedText = null },
                             onOutputSucceeded = { askAllowed ->
                                 if (reviewStore.recordSuccessAndCheck() && askAllowed) {
                                     reviewStore.markShown()
@@ -479,6 +484,8 @@ private fun TemplateRenderRoute(
     onLockedPresetTapped: (String) -> Unit,
     externallySelectedBackgroundId: String?,
     onExternalSelectionConsumed: () -> Unit,
+    initialText: String?,
+    onInitialTextConsumed: () -> Unit,
     onOutputSucceeded: (askAllowed: Boolean) -> Unit,
 ) {
     val template by produceState<HandwritingTemplate?>(initialValue = null, templateId) {
@@ -502,6 +509,8 @@ private fun TemplateRenderRoute(
             onLockedPresetTapped = onLockedPresetTapped,
             externallySelectedBackgroundId = externallySelectedBackgroundId,
             onExternalSelectionConsumed = onExternalSelectionConsumed,
+            initialText = initialText,
+            onInitialTextConsumed = onInitialTextConsumed,
             onOutputSucceeded = onOutputSucceeded,
         )
     } else if (showLoading) {

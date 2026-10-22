@@ -167,6 +167,7 @@ import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.testing.HandTypeTestTags
 import com.baer.handtype.ui.theme.BrandColors
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -441,6 +442,9 @@ fun TemplateChooserScreen(
 
 private enum class RenderPhase { Compose, Generating, Result }
 
+// The Generating card stays for at least one full pen pass, even when the render is faster.
+private const val PEN_PASS_MILLIS = 1000
+
 @Composable
 fun HandwritingRenderScreen(
     template: HandwritingTemplate,
@@ -450,10 +454,15 @@ fun HandwritingRenderScreen(
     onLockedPresetTapped: (String) -> Unit,
     externallySelectedBackgroundId: String? = null,
     onExternalSelectionConsumed: () -> Unit = {},
+    initialText: String? = null,
+    onInitialTextConsumed: () -> Unit = {},
     onOutputSucceeded: (askAllowed: Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var text by rememberSaveable { mutableStateOf("") }
+    var text by rememberSaveable { mutableStateOf(initialText.orEmpty()) }
+    LaunchedEffect(Unit) {
+        if (initialText != null) onInitialTextConsumed()
+    }
     var phase by rememberSaveable { mutableStateOf(RenderPhase.Compose.name) }
     var resultBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var missingChars by remember { mutableStateOf<Set<Char>>(emptySet()) }
@@ -534,7 +543,9 @@ fun HandwritingRenderScreen(
                 phase = RenderPhase.Generating.name
                 scope.launch {
                     val seed = System.nanoTime()
-                    val result = renderNote(text, selectedBackgroundId, seed)
+                    val rendering = async { renderNote(text, selectedBackgroundId, seed) }
+                    delay(PEN_PASS_MILLIS.toLong())
+                    val result = rendering.await()
                     resultBitmap = result.bitmap
                     missingChars = result.missingCharacters
                     lastRenderedText = text
@@ -814,6 +825,7 @@ private fun GeneratingOverlay() {
                         modifier = Modifier.size(140.dp),
                         inkColor = MaterialTheme.colorScheme.onSurface,
                         traceColor = MaterialTheme.colorScheme.primary,
+                        passMillis = PEN_PASS_MILLIS,
                     )
                     Text(
                         text = stringResource(R.string.render_generating_title),

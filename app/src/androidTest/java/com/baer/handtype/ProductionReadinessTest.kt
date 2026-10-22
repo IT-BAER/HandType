@@ -176,6 +176,39 @@ class ProductionReadinessTest {
         rule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT).assertTextContains("Keep this draft.")
     }
 
+    @Test fun generatingCardStaysForOnePenPassEvenWhenRenderIsFaster() {
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        rule.setContent {
+            HandTypeTheme {
+                HandwritingRenderScreen(
+                    template = template,
+                    onBackToTemplates = {},
+                    onPremiumSelected = {},
+                    premiumUnlocked = true,
+                    onLockedPresetTapped = {},
+                )
+            }
+        }
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT).performTextReplacement("Hi")
+        Espresso.closeSoftKeyboard()
+        rule.waitForIdle()
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performScrollTo()
+        rule.mainClock.autoAdvance = false
+        // A tap gesture is not processed while the clock is paused; the semantics click is.
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        rule.mainClock.advanceTimeByFrame()
+        // Real time for the render on Dispatchers.Default; the test clock stays near 0 ms.
+        Thread.sleep(1500)
+        rule.mainClock.advanceTimeByFrame()
+        rule.onNodeWithText(context.getString(R.string.render_generating_title)).assertExists()
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_RESULT_IMAGE).assertDoesNotExist()
+
+        rule.mainClock.advanceTimeBy(1300)
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_RESULT_IMAGE).assertExists()
+        rule.mainClock.autoAdvance = true
+    }
+
     @Test fun paperCardsAnnounceTheirNameAndLockedState() {
         val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
         rule.setContent {
