@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-22
+
 ### Added
 - Receive text from other apps through the Android share sheet (plain text): HandType opens on the style chooser, and the chosen style's editor starts with the shared text.
 
 ### Changed
 - The "Generating your note" card stays for one full 1-second pen stroke before the result appears, even when the render finishes sooner.
+- Version 1.0.1 (versionCode 4).
 
 ## [1.0.0] - 2026-10-18
 
