@@ -1,12 +1,17 @@
 package com.baer.handtype
 
+import android.graphics.Bitmap
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.baer.handtype.billing.PremiumBilling
 import com.baer.handtype.billing.PremiumState
 import com.baer.handtype.billing.PurchaseResult
@@ -42,6 +47,22 @@ class PremiumPaywallStatesTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag(HandTypeTestTags.PREMIUM_BUY_BUTTON).assertIsEnabled()
+    }
+
+    @Test
+    fun pendingPurchaseShowsThePendingMessage() {
+        composeRule.setContent {
+            PremiumPaywallSheet(StubBilling(PremiumState.Pending, price = "€ 2,99"), onDismiss = {}, onUnlocked = {})
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.waitUntil(TIMEOUT_MS) {
+            composeRule.onAllNodesWithText(context.getString(R.string.premium_paywall_pending)).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(context.getString(R.string.premium_paywall_pending)).assertIsDisplayed()
+        // Frame for review: the real app's fake billing never reaches Pending.
+        val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot() ?: return
+        val dir = context.getExternalFilesDir(null)!!.resolve("handtype_test/paywall").apply { mkdirs() }
+        dir.resolve("paywall_pending.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
     private class StubBilling(initial: PremiumState, private val price: String?) : PremiumBilling {
