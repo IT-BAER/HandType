@@ -48,6 +48,10 @@ object SheetSampleProcessor {
     private const val GUIDE_LUMA_MAX = 215
     private const val GUIDE_SEARCH_RADIUS = 20
 
+    // Covers the ~15 px bow near the page bottom but stays below the 19 px that separates the
+    // nearest 8-row and 9-row borders.
+    private const val BORDER_SEARCH_RADIUS = 15
+
     data class SheetExtractionResult(
         val glyphs: Map<Char, Bitmap>,
         val missing: Set<Char>,
@@ -62,17 +66,21 @@ object SheetSampleProcessor {
      *   working-image bounds are used as the page region. Set this when [captured] is already a
      *   clean, perspective-corrected document scan (e.g. from ML Kit Document Scanner) so that
      *   the fiducial search spans the entire image rather than a potentially incomplete sub-rect.
+     * @param localeCharacters The language row's letters ([PracticeSheetGenerator.localeCharacters])
+     *   of the sheet the app printed; ignored when the photo shows a legacy 8-row sheet.
      */
     fun process(
         captured: Bitmap,
         debugContext: Context? = null,
         skipPageDetection: Boolean = false,
+        localeCharacters: List<Char> = emptyList(),
     ): SheetExtractionResult {
         debugContext?.let { clearDebugDir(it); dumpDebugCaptured(it, captured) }
         val initial = processAttempt(
             captured = captured,
             debugContext = debugContext,
             skipPageDetection = skipPageDetection,
+            localeCharacters = localeCharacters,
         )
         if (skipPageDetection && initial.glyphs.isEmpty()) {
             Log.w(
@@ -83,6 +91,7 @@ object SheetSampleProcessor {
                 captured = captured,
                 debugContext = debugContext,
                 skipPageDetection = false,
+                localeCharacters = localeCharacters,
             )
         }
         return initial
@@ -92,6 +101,7 @@ object SheetSampleProcessor {
         captured: Bitmap,
         debugContext: Context? = null,
         skipPageDetection: Boolean,
+        localeCharacters: List<Char>,
     ): SheetExtractionResult {
         val (working, scaleToOriginal) = downscale(captured, MAX_WORKING_DIM)
         val luma = computeLuma(working)
@@ -145,7 +155,10 @@ object SheetSampleProcessor {
         val gridHeightPx = gridBottomPx - gridTopPx
 
         val rectifiedLuma = computeLuma(rectified)
-        PracticeSheetGenerator.normalizedCells.forEachIndexed { index, cell ->
+        val rows = detectGridRows(rectifiedLuma)
+        Log.i(TAG, "Detected $rows grid rows")
+        val cells = PracticeSheetGenerator.normalizedCells(PracticeSheetGenerator.cellCharacters(localeCharacters, rows))
+        cells.forEachIndexed { index, cell ->
             if (cell.character == ' ') return@forEachIndexed
             // The nominal cell from the grid geometry, then snapped onto the printed borders:
             // rectification bow moves a border by up to ~15 px near the bottom of the page.
@@ -198,7 +211,7 @@ object SheetSampleProcessor {
             val cleaned = GlyphPostProcessor.cleanGlyph(
                 edgeCleanCellCrop,
                 guideYsInCrop,
-                expectsDiacritic = characterHasDiacritic(cell.character),
+                expectsDiacritic = GlyphPostProcessor.expectsDiacritic(cell.character),
             )
 
             debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
@@ -300,6 +313,34 @@ object SheetSampleProcessor {
         normalized.setPixels(pixels, 0, width, 0, 0, width, height)
         Log.i(TAG, "White point normalized: paper luma $paperLuma -> 255")
         return normalized
+    }
+
+    /**
+     * Cell rows of the rectified sheet in [luma]: the layout whose interior borders land on darker
+     * grid-wide rows wins. Sheets printed before the language row have 8 rows, current ones 9.
+     */
+    internal fun detectGridRows(luma: IntArray): Int =
+        listOf(PracticeSheetGenerator.GRID_ROWS, PracticeSheetGenerator.LEGACY_GRID_ROWS)
+            .minBy { rows -> interiorBorderLuma(luma, rows) }
+
+    /** Mean, over the interior horizontal borders of a [rows]-row grid, of the darkest row near each. */
+    private fun interiorBorderLuma(luma: IntArray, rows: Int): Float {
+        val fl = PracticeSheetGenerator.fiducialLayout
+        val gridWidthPx = fl.topRight.first - fl.topLeft.first
+        val gridHeightPx = fl.bottomLeft.second - fl.topLeft.second
+        val cells = PracticeSheetGenerator.normalizedCells(PracticeSheetGenerator.cellCharacters(rows = rows))
+        val x0 = (fl.topLeft.first + cells.first().left * gridWidthPx).toInt()
+        val x1 = (fl.topLeft.first + cells.last().right * gridWidthPx).toInt()
+        return cells.map { it.top }.distinct().drop(1).map { top ->
+            val nominalY = (fl.topLeft.second + top * gridHeightPx).toInt()
+            val from = (nominalY - BORDER_SEARCH_RADIUS).coerceAtLeast(0)
+            val to = (nominalY + BORDER_SEARCH_RADIUS).coerceAtMost(RECTIFIED_HEIGHT - 1)
+            (from..to).minOf { y ->
+                var sum = 0L
+                for (x in x0 until x1) sum += luma[y * RECTIFIED_WIDTH + x]
+                sum.toFloat() / (x1 - x0)
+            }
+        }.average().toFloat()
     }
 
     /** Darkest row within [GUIDE_SEARCH_RADIUS] of [nominalY] across [x0, x1): the printed border. */
@@ -867,21 +908,6 @@ object SheetSampleProcessor {
     // ---------------------------------------------------------------------------------------------
     // Empty-cell detection
     // ---------------------------------------------------------------------------------------------
-
-    private fun characterHasDiacritic(c: Char): Boolean {
-        // Only lowercase 'i' and 'j' carry tittles in English. Uppercase 'I' and 'J' have no
-        // dot, so we must not run the diacritic-recovery passes on them.
-        if (c == 'i' || c == 'j') return true
-        return c in DIACRITIC_CHARS
-    }
-
-    private val DIACRITIC_CHARS = setOf(
-        'ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü',
-        'á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú',
-        'à', 'è', 'ì', 'ò', 'ù', 'À', 'È', 'Ì', 'Ò', 'Ù',
-        'â', 'ê', 'î', 'ô', 'û', 'Â', 'Ê', 'Î', 'Ô', 'Û',
-        'ñ', 'Ñ', 'ç', 'Ç',
-    )
 
     private fun hasInk(glyph: Bitmap): Boolean {
         val w = glyph.width

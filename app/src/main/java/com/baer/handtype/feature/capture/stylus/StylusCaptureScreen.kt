@@ -103,8 +103,9 @@ class StylusSession(
     }
 
     companion object {
-        /** The printed sheet's characters without its blank filler cells. */
-        fun sheetCharacters(): List<Char> = PracticeSheetGenerator.cellCharacters.filter { it != ' ' }
+        /** The printed sheet's [cells] without its blank filler cells. */
+        fun sheetCharacters(cells: List<Char> = PracticeSheetGenerator.cellCharacters()): List<Char> =
+            cells.filter { it != ' ' }
 
         fun saver(characters: List<Char>): Saver<StylusSession, Any> = listSaver(
             save = { session -> listOf<Any>(session.index) + session.glyphs.map { InkStrokeCodec.encode(it) } },

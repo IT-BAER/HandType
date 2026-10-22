@@ -127,6 +127,7 @@ class BundledTemplateRepository(private val context: Context) {
             addAll(('a'..'z').toList())
             addAll(('0'..'9').toList())
             addAll(listOf('.', ',', '!', '?', '\'', '-'))
+            addAll("ÄÖÜäöüß".toList())
         }
     }
 }

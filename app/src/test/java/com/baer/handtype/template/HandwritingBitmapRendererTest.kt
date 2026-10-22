@@ -7,6 +7,21 @@ import org.junit.Test
 class HandwritingBitmapRendererTest {
 
     @Test
+    fun bundledUmlautsKeepTheBodySizeOfTheirBaseLetter() {
+        // The dots add ink height, so the umlaut needs a larger target for the same body.
+        for ((umlaut, base) in listOf('Ä' to 'A', 'Ö' to 'O', 'Ü' to 'U', 'ä' to 'a', 'ö' to 'o', 'ü' to 'u')) {
+            val umlautRatio = HandwritingBitmapRenderer.targetInkHeightRatio(umlaut, isUserTemplate = false)
+            val baseRatio = HandwritingBitmapRenderer.targetInkHeightRatio(base, isUserTemplate = false)
+            assertTrue("$umlaut $umlautRatio vs $base $baseRatio", umlautRatio > baseRatio * 1.15f)
+        }
+        assertEquals(
+            HandwritingBitmapRenderer.targetInkHeightRatio('b', isUserTemplate = false),
+            HandwritingBitmapRenderer.targetInkHeightRatio('ß', isUserTemplate = false),
+            0f,
+        )
+    }
+
+    @Test
     fun normalizedUserCanvasUsesOneSharedTargetHeight() {
         val lineHeightPx = 140
 

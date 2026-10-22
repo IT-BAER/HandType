@@ -35,7 +35,7 @@ data class CellGeometry(val cellWidthPx: Int, val cellHeightPx: Int) {
             val gridTop = layout.topLeft.second
             val gridWidth = layout.topRight.first - gridLeft
             val gridHeight = layout.bottomLeft.second - gridTop
-            val cell = PracticeSheetGenerator.normalizedCells.first()
+            val cell = PracticeSheetGenerator.normalizedCells(PracticeSheetGenerator.cellCharacters()).first()
             val left = (gridLeft + cell.left * gridWidth).toInt()
             val top = (gridTop + cell.top * gridHeight).toInt()
             val right = (gridLeft + cell.right * gridWidth).toInt()
@@ -111,8 +111,7 @@ object InkRasterizer {
             glyphs[c] = GlyphPostProcessor.cleanGlyph(
                 crop,
                 geometry.guideYsInCrop,
-                // Same rule as the scan path: only i and j carry a dot among the sheet characters.
-                expectsDiacritic = c == 'i' || c == 'j',
+                expectsDiacritic = GlyphPostProcessor.expectsDiacritic(c),
                 rejectPrintedRules = false,
             )
         }

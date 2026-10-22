@@ -16,7 +16,7 @@ PAGE_HEIGHT = 1754
 OUTER_MARGIN = 60
 FIDUCIAL_SIZE = 80
 GRID_COLS = 8
-GRID_ROWS = 8
+GRID_ROWS = 9
 LABEL_COLOR = (0xB7, 0xB0, 0xA3)
 GRID_COLOR = (0xCC, 0xC4, 0xB4)
 GUIDE_COLOR = (0xCE, 0xC6, 0xB4)
@@ -25,11 +25,13 @@ GUIDE_BASELINE_RATIO = 0.78
 INK_COLOR = (0x1A, 0x14, 0x10)
 
 
-def cell_characters() -> list[str]:
+def cell_characters(extras: str = "ÄÖÜäöüß") -> list[str]:
+    """The German sheet by default; the app fills the last row with the app language's letters."""
     chars: list[str] = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     chars += list("abcdefghijklmnopqrstuvwxyz")
     chars += list("0123456789")
-    chars += [" ", " "]
+    chars += list(extras)
+    chars += [" "] * (GRID_COLS * GRID_ROWS - len(chars))
     return chars
 
 

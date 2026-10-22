@@ -7,6 +7,12 @@ import org.junit.Test
 class GlyphPostProcessorTest {
 
     @Test
+    fun marksAboveTheBodyAreExpectedOnDottedAndAccentedLetters() {
+        for (c in "ijÄÖÜäöüéè") assertTrue("$c", GlyphPostProcessor.expectsDiacritic(c))
+        for (c in "IJAaßl1") assertFalse("$c", GlyphPostProcessor.expectsDiacritic(c))
+    }
+
+    @Test
     fun resolveGuideBandUsesTopAndBottomOnly() {
         assertTrue(
             GlyphPostProcessor.resolveGuideBand(intArrayOf(118, 81, 46)) == 46..118,

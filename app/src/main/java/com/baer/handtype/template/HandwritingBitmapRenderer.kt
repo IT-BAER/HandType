@@ -223,9 +223,13 @@ object HandwritingBitmapRenderer {
             character == '-' -> 0.08f
             character in punctuationChars -> 0.24f
             character.isDigit() -> 0.72f
+            // Ink Free umlaut ink includes the dots: the base letter's ratio times the measured
+            // ink-height ratio (Ä/A 126/107, ä/a 93/69), so the body matches the plain letter.
+            character in setOf('Ä', 'Ö', 'Ü') -> 0.95f
+            character in setOf('ä', 'ö', 'ü') -> 0.74f
             character.isUpperCase() -> 0.80f
             lower in descenderChars -> 0.64f
-            lower in setOf('b', 'd', 'f', 'h', 'k', 'l', 't') -> 0.66f
+            lower in setOf('b', 'd', 'f', 'h', 'k', 'l', 't', 'ß') -> 0.66f
             else -> 0.55f
         }
         if (!isUserTemplate) return baseRatio

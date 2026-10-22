@@ -51,6 +51,20 @@ object GlyphPostProcessor {
     private const val INK_COLOR = 0xFF1A1410.toInt()
     private const val SIDE_PAD = 8
 
+    private val DIACRITIC_CHARS = setOf(
+        'ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü',
+        'á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú',
+        'à', 'è', 'ì', 'ò', 'ù', 'À', 'È', 'Ì', 'Ò', 'Ù',
+        'â', 'ê', 'î', 'ô', 'û', 'Â', 'Ê', 'Î', 'Ô', 'Û',
+        'ñ', 'Ñ', 'ç', 'Ç',
+    )
+
+    /**
+     * Whether [c] carries a separate mark that [cleanGlyph] must keep. Uppercase 'I' and 'J' have
+     * no dot, so the diacritic-recovery passes must not run on them.
+     */
+    fun expectsDiacritic(c: Char): Boolean = c == 'i' || c == 'j' || c in DIACRITIC_CHARS
+
     /**
      * Returns a cleaned, baseline-aligned 350×350 ARGB glyph bitmap.
      *
@@ -218,17 +232,22 @@ object GlyphPostProcessor {
             //    after normalization that places it well outside the ascender zone or visually
             //    detached from the letter.
             //    Target gap = 18% of body height (e.g. ~14px for an ~80px-tall i stem).
+            //    All marks move as one group, so the two dots of an umlaut keep their spacing.
             val targetGap = maxOf(2, (primaryHeight * 0.18f).toInt())
             val primaryCenterX = (body.left + body.right) / 2
+            //    Marks closer than the target gap move up, or the dilation below fuses them with
+            //    the body. Fragments far smaller than the largest mark are guide residue.
+            val found = keptComponents.filter(matchesDiacritic)
+            val largestMark = found.maxOfOrNull { it.area } ?: 0
+            val marks = found.filter { it.area * 4 >= largestMark }
+            keptComponents.removeAll { it in found && it !in marks }
+            val shiftY = marks.minOfOrNull { body.top - it.bottom - 1 - targetGap }
+                ?.coerceAtLeast(-marks.minOf { it.top }) ?: 0
+            val shiftX = if (marks.isEmpty()) 0 else primaryCenterX - (marks.minOf { it.left } + marks.maxOf { it.right }) / 2
             val toRemove = mutableListOf<InkComponent>()
             val toAdd = mutableListOf<InkComponent>()
-            for (dot in keptComponents) {
-                if (!matchesDiacritic(dot)) continue
-                val currentGap = body.top - dot.bottom - 1
-                val dotCenterX = (dot.left + dot.right) / 2
-                val shiftY = (currentGap - targetGap).coerceAtLeast(0)
-                val shiftX = primaryCenterX - dotCenterX
-                if (shiftY <= 0 && shiftX == 0) {
+            for (dot in marks) {
+                if (shiftY == 0 && shiftX == 0) {
                     // Already in position — just ensure it gets diacritic alpha treatment.
                     dot.pixels.forEach { diacriticPixelMask[it] = true }
                     continue

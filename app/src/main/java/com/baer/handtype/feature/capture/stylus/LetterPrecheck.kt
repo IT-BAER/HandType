@@ -29,16 +29,19 @@ object LetterPrecheck {
     private const val MAX_HEIGHT = GUIDE_GAP * 2f
     private const val TOP_CANDIDATES = 5
 
-    private const val ASCENDER_LOWERCASE = "bdfhkl"
+    private const val ASCENDER_LOWERCASE = "bdfhklß"
 
     // Characters whose written shapes cannot be told apart by case or digit form.
     private val lookAlikeGroups: List<Set<Char>> = "cosuvwxz".map { setOf(it, it.uppercaseChar()) } +
         listOf(setOf('0', 'O'), setOf('1', 'l', 'I'))
 
-    /** Shape checks first; [candidates] null means recognition is unavailable and is skipped. */
+    /**
+     * Shape checks first; [candidates] null means recognition is unavailable and is skipped. The
+     * en-US recognizer cannot confirm letters outside ASCII, so those get the shape checks only.
+     */
     fun evaluate(expected: Char, strokes: List<InkStroke>, candidates: List<String>?): PrecheckResult {
         val shape = shapeCheck(expected, strokes)
-        if (shape != PrecheckResult.Pass || candidates == null) return shape
+        if (shape != PrecheckResult.Pass || candidates == null || expected.code > 0x7F) return shape
         return if (candidates.take(TOP_CANDIDATES).any { matches(expected, it) }) {
             PrecheckResult.Pass
         } else {

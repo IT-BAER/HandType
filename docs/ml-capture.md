@@ -56,7 +56,7 @@ These are on-device GMS modules; the scanner and recognizer run locally. Note th
 | `PAGE_WIDTH` x `PAGE_HEIGHT` | 1240 x 1754 | A4 at ~150 dpi, ARGB_8888, white background |
 | `OUTER_MARGIN` | 60 px | |
 | `FIDUCIAL_SIZE` | 80 px (public const) | solid black square, one per corner |
-| `GRID_COLS` x `GRID_ROWS` | 8 x 8 = 64 cells | |
+| `GRID_COLS` x `GRID_ROWS` | 8 x 9 = 72 cells | `LEGACY_GRID_ROWS = 8` for sheets printed before the language row |
 | `LABEL_COLOR` | `0xFFB7B0A3` | faint, so it does not bias the user's stroke |
 | `GRID_COLOR` | `0xFFCCC4B4` | cell border, 2 px stroke |
 | `GUIDE_COLOR` | `0xFFD8D1C3` | guide ticks, 1.5 px stroke |
@@ -65,11 +65,11 @@ These are on-device GMS modules; the scanner and recognizer run locally. Note th
 | `GUIDE_BASELINE_RATIO` | 0.78 (internal) | reused by `SheetSampleProcessor` |
 | `GUIDE_MIDDLE_RATIO` | (0.32 + 0.78)/2 = 0.55 | drawn for the user, never used as an extraction signal |
 
-KDoc drift: the class comment says "Fiducial size: 60x60px" and "62 alphanumeric characters", but `FIDUCIAL_SIZE = 80` and `cellCharacters` has 64 entries. Trust the constants.
+KDoc drift: the layout comment says "Fiducial size: 60x60px", but `FIDUCIAL_SIZE = 80`. Trust the constants.
 
 ### Characters
 
-`cellCharacters` = `A-Z` (26) + `a-z` (26) + `0-9` (10) = 62 real chars, then **two trailing `' '` (space) placeholders** to fill the 8x8 grid, laid out left-to-right, top-to-bottom. Space cells get a border and guide ticks but no label, and are skipped during extraction. Punctuation is never in the sheet; for user templates it is synthesized at render time by `PunctuationSynthesizer`.
+`cellCharacters(extras, rows)` = `A-Z` (26) + `a-z` (26) + `0-9` (10) = 62 real chars, then `extras`, then `' '` (space) placeholders to fill the grid, laid out left-to-right, top-to-bottom. `extras` come from `localeCharacters(locale)`: `ÄÖÜäöüß` for German, empty otherwise. The app language decides (`cellCharacters(context)` reads the Activity configuration, which carries the in-app language override). The legacy 8-row layout has no room for extras (62 + 2 spaces). Space cells get a border and guide lines but no label, and are skipped during extraction. Punctuation is never in the sheet; for user templates it is synthesized at render time by `PunctuationSynthesizer`.
 
 ### Fiducial and grid geometry
 
@@ -244,9 +244,9 @@ Important: **blanket pixel-level guide erasure was removed.** Erasing guide pixe
 
 ### 3i. Cleanup and ink test
 
-`GlyphPostProcessor.cleanGlyph(crop, guideYsInCrop, expectsDiacritic = characterHasDiacritic(char))` cleans the glyph (section 5).
+`GlyphPostProcessor.cleanGlyph(crop, guideYsInCrop, expectsDiacritic = GlyphPostProcessor.expectsDiacritic(char))` cleans the glyph (section 5). The stylus path (`InkRasterizer`) uses the same rule.
 
-`characterHasDiacritic` is true for lowercase `i`, `j` (uppercase `I`/`J` excluded, no tittle) plus `DIACRITIC_CHARS`: ä ö ü Ä Ö Ü, the acute/grave/circumflex a-u variants, ñ Ñ ç Ç.
+`expectsDiacritic` is true for lowercase `i`, `j` (uppercase `I`/`J` excluded, no tittle) plus `DIACRITIC_CHARS`: ä ö ü Ä Ö Ü, the acute/grave/circumflex a-u variants, ñ Ñ ç Ç.
 
 `hasInk(cleaned)`: sums alpha over all pixels and keeps the glyph only if `alphaSum > 50 * 255 = 12750`. This catches thin chars (i, 1, l) while rejecting blank cells and faint residue. Kept glyphs go into `glyphs[char]`; the rest into `missing`. `MIN_OPACITY_FOR_INK = 200` is declared but unused (vestigial).
 
@@ -281,7 +281,7 @@ Pipeline:
    - Pass 1 (always): recover connected groups area `3..149` with `luma < 240` (clearly faint dots without paper grain).
    - Pass 2 (only when `expectsDiacritic`): recover the single most-compact upper blob area `1..149` with `luma < 250` (barely visible i/j dots).
 4. `extractInkComponents` (8-connected flood fill). `primary` = largest-area component. `shouldKeepComponent` filters the rest by aspect ratio, area, axis gaps, guide-band containment, and an "above primary" diacritic rule. Wide-short components in a guide band, and small tall residue above the primary, are rejected; letter arms and touching components are kept.
-5. If `expectsDiacritic`: a safety net re-adds a rejected dot/accent above the primary, and any kept dot is relocated to sit `max(2, primaryHeight*0.18)` above the body and horizontally centered (`diacriticSourceMap` remembers the original pixel luma so alpha is sourced correctly after the move).
+5. If `expectsDiacritic`: a safety net re-adds a rejected dot/accent above the primary. Marks smaller than a quarter of the largest mark are dropped as guide residue. The remaining marks move as one group (so both umlaut dots keep their spacing): the nearest sits `max(2, primaryHeight*0.18)` above the body, moving down or up (a mark too close would fuse with the body in the 3x3 dilation), and the group is horizontally centered on the body (`diacriticSourceMap` remembers the original pixel luma so alpha is sourced correctly after the move).
 6. Compute the ink bounding box. If `expectsDiacritic`, dilate diacritic seeds 3x3 and recompute. Add `padding = 4`.
 7. Build the alpha-masked crop: paper -> `TRANSPARENT`; ink -> `INK_COLOR` with alpha `((permissiveThreshold - luma) / darkSpan) * 255` (darker = more opaque); diacritic pixels alpha-boosted to `230..255` (or 240 when the source pixel is brighter than the threshold).
 8. `placeOnCanvas`: scale to `TARGET_GLYPH_HEIGHT = 199` (or to `TARGET_GUIDE_BAND_HEIGHT` when a valid guide band exists, `resolveGuideBand` needs >= 2 entries and `baseline - upper >= 8`), height-fixed 220 canvas, width trimmed to ink + `SIDE_PAD` per side, bottom aligned to `TARGET_BASELINE_Y`. `isFilterBitmap` is disabled when more than one component was kept, to preserve their separation.
@@ -359,6 +359,6 @@ When `debugContext != null` (always true in production, `applicationContext` is 
 - **Share button fails silently** if sheet rendering throws (no error, no callback).
 - **User cancel of the scanner is silent** (no message, no callback, button just re-enables).
 - **Dead code:** `PaperCornerDetector` + `rectifyPage` are unused in production; `MIN_OPACITY_FOR_INK = 200` is unused; the `rectify`/`rectifyPage` "primary/legacy" comments are inverted relative to real usage.
-- **Stale KDoc:** `FIDUCIAL_SIZE` is 80 (KDoc says 60); `cleanGlyph` canvas is 220, not "350x350"; `cellCharacters` has 64 entries (62 + 2 spaces), not 62.
+- **Stale KDoc:** `FIDUCIAL_SIZE` is 80 (KDoc says 60); `cleanGlyph` canvas is 220, not "350x350".
 - **Default `instructionText`** in `CameraCaptureScreen` is hardcoded English; only the real caller localizes it.
 - **Perspective tolerance is empirical.** There is no explicit max-skew limit; detection works only while all four fiducials are visible and dominant in their quadrants.

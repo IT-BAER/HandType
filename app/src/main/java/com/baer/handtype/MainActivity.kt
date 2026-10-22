@@ -49,6 +49,7 @@ import com.baer.handtype.billing.PremiumBilling
 import com.baer.handtype.billing.PremiumState
 import com.baer.handtype.feature.billing.PremiumPaywallSheet
 import com.baer.handtype.feature.capture.CameraCaptureScreen
+import com.baer.handtype.feature.capture.PracticeSheetGenerator
 import com.baer.handtype.feature.capture.SheetSampleProcessor
 import com.baer.handtype.feature.capture.stylus.InkRasterizer
 import com.baer.handtype.feature.capture.stylus.MlKitInkRecognizer
@@ -165,7 +166,7 @@ private fun HandTypeRoot(
     var pendingRenameTemplateId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRenameTemplateName by rememberSaveable { mutableStateOf<String?>(null) }
     // Held at the root so leaving the writing screen mid-sheet keeps the letters written so far.
-    val stylusCharacters = remember { StylusSession.sheetCharacters() }
+    val stylusCharacters = remember { StylusSession.sheetCharacters(PracticeSheetGenerator.cellCharacters(activity)) }
     val stylusSession = rememberSaveable(saver = StylusSession.saver(stylusCharacters)) {
         StylusSession(stylusCharacters)
     }
@@ -591,6 +592,9 @@ private fun PremiumCaptureRoute(
                             bitmap,
                             debugContext = context.applicationContext.takeIf { BuildConfig.DEBUG },
                             skipPageDetection = true,
+                            localeCharacters = PracticeSheetGenerator.localeCharacters(
+                                context.resources.configuration.locales[0],
+                            ),
                         )
                     }
                 }.onSuccess { result ->

@@ -12,12 +12,14 @@ import android.graphics.Typeface
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Locale
 
 /**
  * Generates the printable practice sheet that users fill out to calibrate their handwriting font.
  *
  * The sheet uses four solid black square fiducial markers (one per corner of the writable area)
- * plus a uniform 8×8 cell grid covering 62 alphanumeric characters (A-Z, a-z, 0-9). The character
+ * plus a uniform 8×9 cell grid: 62 alphanumeric characters (A-Z, a-z, 0-9), then the letters of the
+ * app language (German: ÄÖÜäöüß). Sheets printed with the older 8×8 grid still scan. The character
  * label printed in the corner of each cell is intentionally faint so it does not bias the user's
  * stroke shape but still tells them which character to write.
  *
@@ -34,7 +36,10 @@ object PracticeSheetGenerator {
     private const val OUTER_MARGIN = 60
     const val FIDUCIAL_SIZE = 80
     private const val GRID_COLS = 8
-    private const val GRID_ROWS = 8
+    const val GRID_ROWS = 9
+
+    /** Sheets printed before the language row existed; the scan still reads them. */
+    const val LEGACY_GRID_ROWS = 8
     private const val LABEL_COLOR = 0xFFB7B0A3.toInt()
     private const val GRID_COLOR = 0xFFCCC4B4.toInt()
     // Faint full-width dashed guide lines: light enough that per-cell Otsu thresholding discards
@@ -43,15 +48,26 @@ object PracticeSheetGenerator {
     internal const val GUIDE_UPPER_RATIO = 0.32f
     internal const val GUIDE_BASELINE_RATIO = 0.78f
 
-    /** Characters laid out left-to-right, top-to-bottom into the 8×8 grid. */
-    val cellCharacters: List<Char> = buildList {
-        addAll(('A'..'Z').toList())
-        addAll(('a'..'z').toList())
-        addAll(('0'..'9').toList())
-        // Fill remaining 2 cells with placeholders so the sheet stays a uniform grid.
-        add(' ')
-        add(' ')
+    private val baseCharacters: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+
+    /** Letters of [locale]'s language that the last row adds; at most one row (8 cells plus the 2 spare). */
+    fun localeCharacters(locale: Locale): List<Char> = when (locale.language) {
+        "de" -> "ÄÖÜäöüß".toList()
+        else -> emptyList()
     }
+
+    /**
+     * Characters laid out left-to-right, top-to-bottom; blank (' ') cells fill the grid. The legacy
+     * 8-row layout has no room for [extras].
+     */
+    fun cellCharacters(extras: List<Char> = emptyList(), rows: Int = GRID_ROWS): List<Char> {
+        val characters = if (rows == LEGACY_GRID_ROWS) baseCharacters else baseCharacters + extras
+        return characters + List(GRID_COLS * rows - characters.size) { ' ' }
+    }
+
+    /** [cellCharacters] for the language [context] shows, which follows the in-app language override. */
+    fun cellCharacters(context: Context): List<Char> =
+        cellCharacters(localeCharacters(context.resources.configuration.locales[0]))
 
     /** Rectangle (left, top, right, bottom) of every fiducial centre point on the generated sheet. */
     data class FiducialLayout(
@@ -82,8 +98,11 @@ object PracticeSheetGenerator {
         )
     }
 
-    /** Cell rectangles in **rectified** coordinates (0..1 over the grid bounds defined by fiducials). */
-    val normalizedCells: List<CellRect> = buildList {
+    /**
+     * Cell rectangles in **rectified** coordinates (0..1 over the grid bounds defined by fiducials),
+     * one per entry of [characters]; the row count follows from its size.
+     */
+    fun normalizedCells(characters: List<Char>): List<CellRect> = buildList {
         // Inset the grid well inside the fiducial bounding box so the writable cells never overlap
         // the printed black corner squares (each fiducial extends FIDUCIAL_SIZE/2 from its centre,
         // which is ~3.8% of the grid width on the canonical sheet).
@@ -92,10 +111,11 @@ object PracticeSheetGenerator {
         val gridTop = gridInset
         val gridRight = 1f - gridInset
         val gridBottom = 1f - gridInset
+        val rows = (characters.size + GRID_COLS - 1) / GRID_COLS
         val cellWidth = (gridRight - gridLeft) / GRID_COLS
-        val cellHeight = (gridBottom - gridTop) / GRID_ROWS
+        val cellHeight = (gridBottom - gridTop) / rows
 
-        cellCharacters.forEachIndexed { index, character ->
+        characters.forEachIndexed { index, character ->
             val col = index % GRID_COLS
             val row = index / GRID_COLS
             val left = gridLeft + cellWidth * col
@@ -117,7 +137,7 @@ object PracticeSheetGenerator {
      * shareable content URI exposed via the app's FileProvider.
      */
     fun renderToShareableUri(context: Context): android.net.Uri {
-        val bitmap = renderBitmap()
+        val bitmap = renderBitmap(cellCharacters(context))
         val sharedDir = File(context.cacheDir, "shared").apply { if (!exists()) mkdirs() }
         val file = File(sharedDir, "handtype_practice_sheet.png").apply {
             FileOutputStream(this).use { out ->
@@ -134,10 +154,13 @@ object PracticeSheetGenerator {
     /** Builds an in-memory [Bitmap] of the practice sheet. */
     private const val LABEL_X = 8f
     private const val LABEL_BASELINE_Y = 32f
-    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = LABEL_COLOR
-        textSize = 28f
-        typeface = Typeface.DEFAULT
+    // Lazy so the layout functions above stay usable in JVM unit tests, where Paint is a stub.
+    private val labelPaint by lazy {
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = LABEL_COLOR
+            textSize = 28f
+            typeface = Typeface.DEFAULT
+        }
     }
 
     /** Ink box of the printed cell label for [character], in pixels relative to the cell's top-left. */
@@ -146,7 +169,7 @@ object PracticeSheetGenerator {
         it.offset(LABEL_X.toInt(), LABEL_BASELINE_Y.toInt())
     }
 
-    fun renderBitmap(): Bitmap {
+    fun renderBitmap(characters: List<Char> = cellCharacters()): Bitmap {
         val bitmap = Bitmap.createBitmap(PAGE_WIDTH, PAGE_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
@@ -207,7 +230,7 @@ object PracticeSheetGenerator {
             pathEffect = DashPathEffect(floatArrayOf(7f, 5f), 0f)
         }
 
-        normalizedCells.forEach { cell ->
+        normalizedCells(characters).forEach { cell ->
             val rect = RectF(
                 gridLeftPx + cell.left * gridWidthPx,
                 gridTopPx + cell.top * gridHeightPx,

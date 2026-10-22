@@ -50,6 +50,20 @@ class LetterPrecheckTest {
     }
 
     @Test
+    fun eszettAndCapitalUmlautsMustReachAboveTheUpperGuide() {
+        assertEquals(PrecheckResult.ReachUp, LetterPrecheck.evaluate('ß', listOf(xHeightStroke), null))
+        assertEquals(PrecheckResult.ReachUp, LetterPrecheck.evaluate('Ä', listOf(xHeightStroke), null))
+        assertEquals(PrecheckResult.Pass, LetterPrecheck.evaluate('ä', listOf(xHeightStroke), null))
+    }
+
+    @Test
+    fun lettersOutsideAsciiSkipRecognition() {
+        // The en-US model reads a written ä as "a" or "ii"; only the shape checks can judge it.
+        assertEquals(PrecheckResult.Pass, LetterPrecheck.evaluate('ä', listOf(xHeightStroke), listOf("a", "ii")))
+        assertEquals(PrecheckResult.Pass, LetterPrecheck.evaluate('ß', listOf(tallStroke), listOf("B", "p")))
+    }
+
+    @Test
     fun shapeOnlyPassesWhenRecognitionIsUnavailable() {
         assertEquals(PrecheckResult.Pass, LetterPrecheck.evaluate('B', listOf(tallStroke), null))
     }

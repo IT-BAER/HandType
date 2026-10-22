@@ -44,7 +44,7 @@ com.baer.handtype
 └─ testing/                  HandTypeTestTags + HandTypeDebugHooks (test/debug instrumentation)
 ```
 
-Resources of note: `app/src/main/res/xml/locale_config.xml` (10 locales), `app/src/main/res/xml/file_paths.xml` (FileProvider config), `app/src/main/res/values*/strings.xml` (10 locale files, 156 strings each). The only committed runtime asset directory is `app/src/main/assets/templates/classic_script/glyphs/` (544 PNGs = 68 codepoints x 8 variants).
+Resources of note: `app/src/main/res/xml/locale_config.xml` (10 locales), `app/src/main/res/xml/file_paths.xml` (FileProvider config), `app/src/main/res/values*/strings.xml` (10 locale files, 156 strings each). The only committed runtime asset directory is `app/src/main/assets/templates/classic_script/glyphs/` (600 PNGs = 75 codepoints x 8 variants, including Ä Ö Ü ä ö ü ß).
 
 ## Layered structure
 

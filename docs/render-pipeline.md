@@ -120,10 +120,12 @@ The renderer detects this with `hasNormalizedUserCanvas` (id starts with `user_`
    | punctuation | 0.24 | 0.28 |
    | digit | 0.72 | 0.92 |
    | uppercase | 0.80 | 1.00 |
+   | umlaut Ä/Ö/Ü | 0.95 | 1.00 |
+   | umlaut ä/ö/ü | 0.74 | (in `else`) |
    | descender g/j | 0.64 | 0.94 |
    | descender p/q/y | 0.64 | 0.90 |
    | dotted i/j | (in `else`) | 0.62 |
-   | ascender b/d/f/h/k/l/t | 0.66 | 0.92 |
+   | ascender b/d/f/h/k/l/t (bundled also ß) | 0.66 | 0.92 |
    | other lowercase | 0.55 | 0.52 |
 
 6. **Layout loop.** Split normalized text on `\n`, then each line on space. Per word: word-wrap when `cursorX + spaceWidth + wordWidth(word) > safeWidth - margin`. Per character pick a variant at random (`rng.nextInt(variants.size)`), falling back to lowercase then uppercase lookup. `wordWidth` pre-measures via `glyphAdvancePx` (advance width × `scaleX` normalized / bitmap width × `scaleX` × 0.90 other, plus per-class minimum advances). A second wrap check fires if a single glyph would overflow.
