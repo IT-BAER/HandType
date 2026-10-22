@@ -145,8 +145,7 @@ So the modal stacks four actions in three palettes (green, brown, purple) with f
 
 `saveImage()`:
 - No-op if `bitmap == null`.
-- On `SDK_INT < Q` (Android 9 and below): checks `WRITE_EXTERNAL_STORAGE`; if not granted, sets `pendingSave = true` and launches `RequestPermission()`. On grant the callback calls `saveNow`; on denial it toasts `R.string.result_permission_denied`.
-- On Q+ no runtime permission is requested.
+- No runtime permission is requested (minSdk 29, MediaStore).
 - `saveNow` calls `OutputExporter.saveImageToGallery(context, bitmap, templateTag)`, which writes a PNG (quality 100) to `Pictures/HandType` (album constant `HandType`, MIME `image/png`). Success toasts `"Saved to Pictures/HandType"`; failure toasts `"Save failed: <msg>"`.
 
 ### 5.2 Share
@@ -177,7 +176,7 @@ Confirm (`TextButton`, default purple): `HistoryStore.delete(pendingEntries)`, t
 
 - Hardcoded brand literals: cream surface `Color(0xFFF5EFE4)`, card white `Color.White`, image backgrounds `Color(0xFFFFF9F2)`, selected border / Save button green `Color(0xFF23443A)`, Share button brown `Color(0xFF7C4D11)`, hamburger ink `Color(0xFF1A1410)`, decode-fail placeholder `Color(0xFFEEE)` (defective, see 4.1).
 - Everything routed through `MaterialTheme` (Checkbox, `OutlinedButton`, all `TextButton`s, `onSurfaceVariant` text) inherits the M3 baseline because `MainActivity` uses a bare `MaterialTheme { ... }` with no `colorScheme`. The result is baseline purple on the modal's Delete/Close and the delete-confirm buttons, clashing with the brand green/cream/brown.
-- Localized strings (10 locales): `history_title`, `history_empty`, `history_delete_*`, `history_deleted_*`, `history_note_desc`, `history_preview_desc`, plus shared `action_cancel`, `action_delete`, `action_save`, `action_share`, `action_close`, `result_permission_denied`.
+- Localized strings (10 locales): `history_title`, `history_empty`, `history_delete_*`, `history_deleted_*`, `history_note_desc`, `history_preview_desc`, plus shared `action_cancel`, `action_delete`, `action_save`, `action_share`, `action_close`.
 - Not localized (hardcoded English literals): `"Saved to Pictures/HandType"`, `"Save failed: <msg>"`, `"Share failed: <msg>"`. All `Toast.LENGTH_SHORT`.
 
 ---

@@ -56,7 +56,6 @@
     <string name="result_share_failed">Falha ao compartilhar: %1$s</string>
     <string name="result_pdf_saved">PDF salvo em Downloads/HandType</string>
     <string name="result_pdf_failed">Falha no PDF: %1$s</string>
-    <string name="result_permission_denied">Permissão de armazenamento negada</string>
 
     <string name="camera_section_title">Capture sua folha de caligrafia</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>

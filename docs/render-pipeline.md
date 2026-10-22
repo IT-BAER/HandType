@@ -166,9 +166,9 @@ Backgrounds are seeded (`renderSeed xor preset.id.hashCode()`), so fleck/fiber l
 
 All functions take the rendered `Bitmap`. Save/export return `Result<Uri>`; archive returns `Result<File>`.
 
-- **`saveImageToGallery`**: PNG to `Pictures/HandType` via MediaStore on API 29+, direct file (needs `WRITE_EXTERNAL_STORAGE`) on 23-28.
+- **`saveImageToGallery`**: PNG to `Pictures/HandType` via MediaStore (minSdk 29, no storage permission).
 - **`saveTransparentImageToGallery`**: runs `keyOutPaper(bitmap, paperColor)` then saves. `keyOutPaper` computes per-pixel RGB distance (0..441 range) from `paperColor`: `dist <= 30` → alpha 0, `dist >= 110` → alpha 255, linear soft edge between (keeps anti-aliased ink). Default `paperColor` is cream `0xFFF8F1E4`. **Caveat:** the key-out uses one passed paper color; if the user picked a different solid/textured background the caller must pass the matching color, otherwise the cutout halos or eats ink-adjacent tones.
-- **`exportPdf`**: A4 portrait (595x842 pt @72 dpi), 32 pt margin, scaled to width. `computePageCuts` slices tall bitmaps across pages and snaps each cut to the brightest (most paper-empty) row inside a search window of 12% of the slice height, so a page break never bisects a line of text. Row brightness is sampled every `width/64` columns using perceived-luminance weights (30/59/11). Saved to `Download/HandType` on API 29+, app cache (FileProvider) on older.
+- **`exportPdf`**: A4 portrait (595x842 pt @72 dpi), 32 pt margin, scaled to width. `computePageCuts` slices tall bitmaps across pages and snaps each cut to the brightest (most paper-empty) row inside a search window of 12% of the slice height, so a page break never bisects a line of text. Row brightness is sampled every `width/64` columns using perceived-luminance weights (30/59/11). Saved to `Download/HandType` via MediaStore.
 - **`stageBitmapForShare`** + **`buildShareIntent`**: writes a PNG to `cacheDir/shared`, returns a `FileProvider` URI (`<packageName>.fileprovider`), and builds an `ACTION_SEND` chooser (literal title `"Share handwritten note"`).
 - **`archiveBitmap`**: private history copy at `filesDir/history/<yyyyMMdd_HHmmss>__<safeTag>.png` plus an optional `.txt` (source text) and always a `.name` (display name) sidecar.
 

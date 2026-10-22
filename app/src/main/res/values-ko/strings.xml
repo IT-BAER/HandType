@@ -56,7 +56,6 @@
     <string name="result_share_failed">공유 실패: %1$s</string>
     <string name="result_pdf_saved">Download/HandType에 PDF 저장됨</string>
     <string name="result_pdf_failed">PDF 실패: %1$s</string>
-    <string name="result_permission_denied">저장 공간 권한 거부됨</string>
 
     <string name="camera_section_title">필기 시트 캡처</string>
     <string name="camera_pre_scan_title">스캔 전</string>

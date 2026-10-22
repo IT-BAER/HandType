@@ -56,7 +56,6 @@
     <string name="result_share_failed">分享失败：%1$s</string>
     <string name="result_pdf_saved">PDF 已保存至下载/HandType</string>
     <string name="result_pdf_failed">PDF 失败：%1$s</string>
-    <string name="result_permission_denied">存储权限被拒绝</string>
 
     <string name="camera_section_title">捕捉您的手写纸张</string>
     <string name="camera_pre_scan_title">扫描前</string>

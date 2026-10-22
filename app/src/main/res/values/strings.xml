@@ -64,7 +64,6 @@
     <string name="result_share_failed">Share failed: %1$s</string>
     <string name="result_pdf_saved">PDF saved to Download/HandType</string>
     <string name="result_pdf_failed">PDF failed: %1$s</string>
-    <string name="result_permission_denied">Storage permission denied</string>
 
     <!-- Camera capture screen -->
     <string name="camera_section_title">Capture your handwriting sheet</string>

@@ -40,7 +40,7 @@ Defined in `OutputExporter`:
 - Save filename pattern: `HandType_<safeTag>_<yyyyMMdd_HHmmss>.<ext>`, timestamp in `Locale.US`.
 - `safeTag`: template display name lowercased, every non-`[a-z0-9]` run collapsed to `_`, trimmed of leading/trailing `_`; empty result becomes `note`.
 - MIME types: `image/png` for PNG, `application/pdf` for PDF.
-- API split: API 29+ (`Build.VERSION_CODES.Q`) uses MediaStore with `IS_PENDING`; API 23-28 writes a file directly and requires `WRITE_EXTERNAL_STORAGE`.
+- Storage: MediaStore with `IS_PENDING` (minSdk 29), so no storage permission is requested.
 
 Save / transparent / PDF functions return `Result<Uri>`; `archiveBitmap` returns `Result<File>`. The screen reads `.onSuccess` / `.onFailure` and shows a `Toast` either way. No success state persists in the UI: after a save the screen is unchanged except for the transient toast.
 
@@ -49,10 +49,10 @@ Save / transparent / PDF functions return `Result<Uri>`; `archiveBitmap` returns
 ### 1. Save (PNG)
 
 - Control: filled `Button`, brand green `Color(0xFF23443A)`, left half of the first action row. Label `result_save_button` ("Save").
-- Handler: `saveWithPermission(false)` performs a `LongPress` haptic, then on API < 29 checks/requests `WRITE_EXTERNAL_STORAGE` (denial toasts `result_permission_denied`). On grant or API 29+ it calls `doSave(false)`.
+- Handler: `save(false)` performs a `LongPress` haptic, then calls `doSave(false)`.
 - `doSave(false)` calls `OutputExporter.saveImageToGallery(context, bitmap, templateName)`.
 - Output: opaque PNG of the rendered bitmap as-is (whatever paper background was chosen), `Bitmap.CompressFormat.PNG`, quality 100.
-- Destination: `Pictures/HandType` (MediaStore `EXTERNAL_CONTENT_URI` with `RELATIVE_PATH = Pictures/HandType` on API 29+; `Environment.DIRECTORY_PICTURES/HandType` direct file on 23-28). Visible in the Photos / gallery app.
+- Destination: `Pictures/HandType` (MediaStore `EXTERNAL_CONTENT_URI` with `RELATIVE_PATH = Pictures/HandType`). Visible in the Photos / gallery app.
 - Confirmation: toast `result_saved` ("Saved to Pictures/HandType") on success; `result_save_failed` ("Save failed: %1$s") on failure.
 
 ### 2. Share
@@ -69,13 +69,13 @@ Save / transparent / PDF functions return `Result<Uri>`; `archiveBitmap` returns
 - Control: full-width `OutlinedButton` (renders with leaked default M3 purple outline/text; see gaps). Label `result_export_pdf_button` ("Export as PDF").
 - Handler: `exportPdf()` performs a `LongPress` haptic, then `OutputExporter.exportPdf(context, bitmap, templateName)`.
 - Output: A4 portrait PDF, 595x842 pt @72dpi, 32 pt margin. The bitmap is scaled to the available width (`595 - 64 = 531` pt). Tall notes are sliced across multiple pages: `computePageCuts` snaps each page break to the brightest (most paper-empty) row inside a search window of 12% of the slice height, so cuts avoid running through a line of handwriting. The chosen paper background is included as-is (no key-out).
-- Destination: `Download/HandType` (MediaStore `Downloads` with `RELATIVE_PATH = Download/HandType` on API 29+); on older devices it writes to `cacheDir/shared` and returns a `FileProvider` URI.
+- Destination: `Download/HandType` (MediaStore `Downloads` with `RELATIVE_PATH = Download/HandType`).
 - Confirmation: toast `result_pdf_saved` ("PDF saved to Download/HandType") on success; `result_pdf_failed` ("PDF failed: %1$s") on failure.
 
 ### 4. Save without background (transparent PNG)
 
 - Control: borderless `TextButton`, centered (renders purple; styled like a hyperlink despite performing a gallery write). Label `result_save_transparent_button` ("Save without background (transparent PNG)").
-- Handler: `saveWithPermission(true)` -> `doSave(true)` -> the `onSaveTransparent` callback in `HandwritingRenderScreen`. Same `LongPress` haptic and same API < 29 permission gate as Save.
+- Handler: `save(true)` -> `doSave(true)` -> the `onSaveTransparent` callback in `HandwritingRenderScreen`. Same `LongPress` haptic as Save.
 - Implementation detail (important): this path does NOT call `OutputExporter.saveTransparentImageToGallery`. Instead it re-renders the note via `renderNote(...)` using `lastRenderedText` and `lastRenderSeed` with `backgroundId = NoteBackgroundCatalog.transparentPreset.id` (the transparent preset's style draws nothing), producing a genuinely transparent bitmap, then saves that with `saveImageToGallery` and a `_transparent` display-name suffix. The temp bitmap is recycled in a `finally`. Reusing the original seed means the transparent copy matches the visible result exactly. If `lastRenderSeed` is null or `lastRenderedText` is blank, the callback returns and nothing is saved.
 - Output: transparent PNG (ink only, no paper), filename `HandType_<safeTag>_transparent_<timestamp>.png`, quality 100.
 - Destination: `Pictures/HandType` (same path rules as Save).
@@ -116,7 +116,7 @@ On every successful generate, `HandwritingRenderScreen` best-effort calls `Outpu
 
 ## Error handling
 
-Every save/share/PDF failure surfaces only a transient `Toast` with the formatted message string (`result_save_failed`, `result_share_failed`, `result_pdf_failed`). On API 23-28 a denied storage permission toasts `result_permission_denied`. There is no retry affordance, no error state on the screen, and no logging surfaced to the user.
+Every save/share/PDF failure surfaces only a transient `Toast` with the formatted message string (`result_save_failed`, `result_share_failed`, `result_pdf_failed`). There is no retry affordance, no error state on the screen, and no logging surfaced to the user.
 
 ## Known UX gaps
 

@@ -1,14 +1,9 @@
 package com.baer.handtype.feature.template
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.text.format.DateFormat as AndroidDateFormat
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -80,7 +75,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.core.os.ConfigurationCompat
 import com.baer.handtype.R
 import com.baer.handtype.ui.animation.staggeredItemAnimation
@@ -486,28 +480,8 @@ private fun HistoryDetailDialog(
 
     fun toast(msg: String) = Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
 
-    var pendingSave by remember { mutableStateOf(false) }
-    val storagePermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        if (granted && pendingSave) {
-            saveNow(context, bitmap, entry.templateTag, ::toast)
-        } else if (!granted) toast(context.getString(R.string.result_permission_denied))
-        pendingSave = false
-    }
-
     fun saveImage() {
         if (bitmap == null) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val granted = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!granted) {
-                pendingSave = true
-                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                return
-            }
-        }
         saveNow(context, bitmap, entry.templateTag, ::toast)
     }
 

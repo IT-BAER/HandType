@@ -55,7 +55,6 @@
     <string name="result_share_failed">शेयर करने में विफल: %1$s</string>
     <string name="result_pdf_saved">Download/HandType में PDF सहेजा गया</string>
     <string name="result_pdf_failed">PDF में विफल: %1$s</string>
-    <string name="result_permission_denied">स्टोरेज अनुमति अस्वीकृत</string>
 
     <string name="camera_section_title">अपनी हस्तलेखन शीट कैप्चर करें</string>
     <string name="camera_pre_scan_title">स्कैन करने से पहले</string>

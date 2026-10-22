@@ -1,18 +1,12 @@
 package com.baer.handtype.feature.template
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.os.Build
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -893,7 +887,6 @@ private fun ResultPhaseContent(
         scope.launch { snackbarHostState.showSnackbar(msg) }
     }
 
-    var pendingTransparent by remember { mutableStateOf(false) }
     var showExportSheet by remember { mutableStateOf(false) }
 
     // Ink-reveal animation once per Generate; a resize swaps the bitmap without replaying it.
@@ -925,25 +918,9 @@ private fun ResultPhaseContent(
             .onFailure { toast(context.getString(R.string.result_save_failed, it.message ?: "unknown")) }
     }
 
-    val storagePermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        if (granted) doSave(pendingTransparent) else toast(context.getString(R.string.result_permission_denied))
-    }
-
-    fun saveWithPermission(transparent: Boolean = false) {
+    fun save(transparent: Boolean = false) {
         if (bitmap == null) return
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        pendingTransparent = transparent
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val granted = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!granted) {
-                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                return
-            }
-        }
         doSave(transparent)
     }
 
@@ -961,15 +938,9 @@ private fun ResultPhaseContent(
         val bmp = bitmap ?: return
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         OutputExporter.exportPdf(context, bmp, templateName)
-            .onSuccess { uri ->
-                onOutputSucceeded(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    toast(context.getString(R.string.result_pdf_saved))
-                } else {
-                    runCatching {
-                        context.startActivity(OutputExporter.buildShareIntent(uri, "application/pdf"))
-                    }.onFailure { toast(context.getString(R.string.result_pdf_failed, it.message ?: "unknown")) }
-                }
+            .onSuccess {
+                onOutputSucceeded(true)
+                toast(context.getString(R.string.result_pdf_saved))
             }
             .onFailure { toast(context.getString(R.string.result_pdf_failed, it.message ?: "unknown")) }
     }
@@ -1114,7 +1085,7 @@ private fun ResultPhaseContent(
 
         // Primary action: Save. Secondary: Share (tonal). Tertiary: Export (opens sheet).
         Button(
-            onClick = { saveWithPermission(false) },
+            onClick = { save(false) },
             enabled = bitmap != null,
             modifier = Modifier
                 .fillMaxWidth()
@@ -1236,7 +1207,7 @@ private fun ResultPhaseContent(
                 colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 modifier = Modifier.clickable {
                     showExportSheet = false
-                    saveWithPermission(true)
+                    save(true)
                 },
             )
             Spacer(Modifier.height(12.dp))

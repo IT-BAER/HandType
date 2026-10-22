@@ -57,7 +57,6 @@
     <string name="result_share_failed">Teilen fehlgeschlagen: %1$s</string>
     <string name="result_pdf_saved">PDF in Download/HandType gespeichert</string>
     <string name="result_pdf_failed">PDF fehlgeschlagen: %1$s</string>
-    <string name="result_permission_denied">Speicherzugriff verweigert</string>
 
     <string name="camera_section_title">Handschriftblatt aufnehmen</string>
     <string name="camera_pre_scan_title">Vor dem Scan</string>

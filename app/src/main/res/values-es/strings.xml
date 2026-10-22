@@ -56,7 +56,6 @@
     <string name="result_share_failed">Error al compartir: %1$s</string>
     <string name="result_pdf_saved">PDF guardado en Descargas/HandType</string>
     <string name="result_pdf_failed">Error al exportar PDF: %1$s</string>
-    <string name="result_permission_denied">Permiso de almacenamiento denegado</string>
 
     <string name="camera_section_title">Captura tu hoja de escritura</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>

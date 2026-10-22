@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.VisibleForTesting
@@ -23,9 +22,9 @@ import java.util.UUID
  * Android's share sheet. Three exit paths:
  *  - [saveImageToGallery]: writes a PNG to Pictures/HandType (visible in Photos app)
  *  - [shareImage]: copies a PNG into cache + returns a content:// Uri to fire ACTION_SEND
- *  - [exportPdf]: rasterises the bitmap into a single A4 PDF page, saved to Download/HandType
+ *  - [exportPdf]: rasterises the bitmap into A4 PDF pages, saved to Download/HandType
  *
- * On API 23-28 saving requires WRITE_EXTERNAL_STORAGE; on API 29+ MediaStore handles it.
+ * minSdk 29: MediaStore writes need no storage permission.
  */
 object OutputExporter {
 
@@ -105,42 +104,28 @@ object OutputExporter {
     }
 
     private fun writePngToGallery(context: Context, bitmap: Bitmap, name: String): Uri {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, name)
-                put(MediaStore.Images.Media.MIME_TYPE, PNG_MIME)
-                put(
-                    MediaStore.Images.Media.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_PICTURES}/$ALBUM",
-                )
-                put(MediaStore.Images.Media.IS_PENDING, 1)
-            }
-            val resolver = context.contentResolver
-            val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                ?: error("MediaStore insert returned null")
-            resolver.openOutputStream(uri).use { out ->
-                requireNotNull(out) { "Cannot open output stream for $uri" }
-                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-                    error("Bitmap.compress failed")
-                }
-            }
-            values.clear()
-            values.put(MediaStore.Images.Media.IS_PENDING, 0)
-            resolver.update(uri, values, null, null)
-            uri
-        } else {
-            val picturesDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES,
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, name)
+            put(MediaStore.Images.Media.MIME_TYPE, PNG_MIME)
+            put(
+                MediaStore.Images.Media.RELATIVE_PATH,
+                "${Environment.DIRECTORY_PICTURES}/$ALBUM",
             )
-            val albumDir = File(picturesDir, ALBUM).apply { mkdirs() }
-            val file = File(albumDir, name)
-            FileOutputStream(file).use { out ->
-                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-                    error("Bitmap.compress failed")
-                }
-            }
-            Uri.fromFile(file)
+            put(MediaStore.Images.Media.IS_PENDING, 1)
         }
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            ?: error("MediaStore insert returned null")
+        resolver.openOutputStream(uri).use { out ->
+            requireNotNull(out) { "Cannot open output stream for $uri" }
+            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+                error("Bitmap.compress failed")
+            }
+        }
+        values.clear()
+        values.put(MediaStore.Images.Media.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
+        return uri
     }
 
     /**
@@ -285,7 +270,7 @@ object OutputExporter {
     /**
      * Rasterises [bitmap] across one or more A4 portrait PDF pages (595x842pt @72dpi),
      * scaling to a 32pt margin and slicing tall bitmaps across pages.
-     * Saves to Download/HandType on API 29+, app-private cache on older devices.
+     * Saves to Download/HandType.
      */
     fun exportPdf(context: Context, bitmap: Bitmap, templateName: String): Result<Uri> =
         runCatching {
@@ -317,37 +302,25 @@ object OutputExporter {
                 pdf.finishPage(page)
             }
 
-            val uri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val values = ContentValues().apply {
-                    put(MediaStore.Downloads.DISPLAY_NAME, name)
-                    put(MediaStore.Downloads.MIME_TYPE, PDF_MIME)
-                    put(
-                        MediaStore.Downloads.RELATIVE_PATH,
-                        "${Environment.DIRECTORY_DOWNLOADS}/$ALBUM",
-                    )
-                    put(MediaStore.Downloads.IS_PENDING, 1)
-                }
-                val resolver = context.contentResolver
-                val target = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-                    ?: error("MediaStore insert returned null")
-                resolver.openOutputStream(target).use { out ->
-                    requireNotNull(out) { "Cannot open output stream for $target" }
-                    pdf.writeTo(out)
-                }
-                values.clear()
-                values.put(MediaStore.Downloads.IS_PENDING, 0)
-                resolver.update(target, values, null, null)
-                target
-            } else {
-                val dir = File(context.cacheDir, "shared").apply { mkdirs() }
-                val file = File(dir, name)
-                FileOutputStream(file).use { out -> pdf.writeTo(out) }
-                FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    file,
+            val values = ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, name)
+                put(MediaStore.Downloads.MIME_TYPE, PDF_MIME)
+                put(
+                    MediaStore.Downloads.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_DOWNLOADS}/$ALBUM",
                 )
+                put(MediaStore.Downloads.IS_PENDING, 1)
             }
+            val resolver = context.contentResolver
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                ?: error("MediaStore insert returned null")
+            resolver.openOutputStream(uri).use { out ->
+                requireNotNull(out) { "Cannot open output stream for $uri" }
+                pdf.writeTo(out)
+            }
+            values.clear()
+            values.put(MediaStore.Downloads.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
             pdf.close()
             uri
         }

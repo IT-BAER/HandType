@@ -56,7 +56,6 @@
     <string name="result_share_failed">共有失敗：%1$s</string>
     <string name="result_pdf_saved">Download/HandTypeにPDFを保存しました</string>
     <string name="result_pdf_failed">PDF失敗：%1$s</string>
-    <string name="result_permission_denied">ストレージ権限が拒否されました</string>
 
     <string name="camera_section_title">手書きシートをキャプチャ</string>
     <string name="camera_pre_scan_title">スキャン前</string>
