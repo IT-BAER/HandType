@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Ink specks on the handwriting sheet no longer freeze on screen when the pen moves again right after the last speck faded, and they are drawn in the ink colour instead of the theme colour.
+
 ## [1.1.0] - 2026-10-23
 
 ### Added

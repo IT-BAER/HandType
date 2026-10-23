@@ -1,6 +1,7 @@
 package com.baer.handtype
 
 import android.content.Context
+import android.provider.Settings
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertTextEquals
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.baer.handtype.feature.capture.stylus.InkParticleField
 import com.baer.handtype.feature.capture.stylus.InkRecognizer
 import com.baer.handtype.feature.capture.stylus.InkStroke
 import com.baer.handtype.feature.capture.stylus.StylusCaptureScreen
@@ -19,9 +21,11 @@ import com.baer.handtype.testing.HandTypeTestTags
 import com.baer.handtype.ui.theme.HandTypeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.random.Random
 
 @RunWith(AndroidJUnit4::class)
 class StylusCaptureTest {
@@ -50,7 +54,11 @@ class StylusCaptureTest {
 
     private fun progress(n: Int, total: Int) = context.getString(R.string.stylus_progress, n, total)
 
-    private fun setScreen(session: StylusSession, recognizer: InkRecognizer) {
+    private fun setScreen(
+        session: StylusSession,
+        recognizer: InkRecognizer,
+        particles: InkParticleField = InkParticleField(Random(1), context.resources.displayMetrics.density),
+    ) {
         rule.setContent {
             HandTypeTheme {
                 StylusCaptureScreen(
@@ -58,6 +66,7 @@ class StylusCaptureTest {
                     recognizer = recognizer,
                     onFinished = {},
                     onBack = {},
+                    particles = particles,
                 )
             }
         }
@@ -182,6 +191,31 @@ class StylusCaptureTest {
             assertEquals(1, session.glyphs[0].size)
             assertEquals(0, session.glyphs[1].size)
         }
+    }
+
+    // The pen moves again in the frame in which the last speck expired; the specks must still fade.
+    @Test fun specksFadeWhenThePenMovesRightAfterTheLastOneExpired() {
+        val scale = Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        assumeTrue("specks are off with animations off", scale > 0f)
+        val particles = InkParticleField(Random(7), context.resources.displayMetrics.density)
+        rule.mainClock.autoAdvance = false
+        setScreen(StylusSession(characters), inOrder(), particles)
+        val cell = rule.onNodeWithTag(HandTypeTestTags.stylusCell(0))
+
+        cell.performTouchInput {
+            down(Offset(width * 0.3f, height * 0.2f))
+            moveTo(Offset(width * 0.6f, height * 0.6f))
+        }
+        assertTrue("the first move spawns specks", rule.runOnIdle { particles.count } > 0)
+        var frames = 0
+        while (rule.runOnIdle { particles.count } > 0 && frames++ < 200) rule.mainClock.advanceTimeByFrame()
+        // delayMillis = 0: the default 16 ms would run a frame, and its recomposition, before the move.
+        cell.performTouchInput { moveTo(Offset(width * 0.3f, height * 0.8f), delayMillis = 0) }
+        assertTrue("the second move spawns specks", rule.runOnIdle { particles.count } > 0)
+
+        rule.mainClock.advanceTimeBy(1_000)
+        rule.runOnIdle { assertEquals("specks left on screen", 0, particles.count) }
+        cell.performTouchInput { up() }
     }
 
     @Test fun clearEmptiesTheCellWrittenInLast() {

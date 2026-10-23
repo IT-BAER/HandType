@@ -153,6 +153,9 @@ fun StylusCaptureScreen(
     isSaving: Boolean = false,
     errorText: String? = null,
     geometry: CellGeometry = remember { CellGeometry.printed() },
+    particles: InkParticleField = LocalDensity.current.density.let { density ->
+        remember(density) { InkParticleField(Random(System.nanoTime()), density) }
+    },
 ) {
     val scope = rememberCoroutineScope()
     val currentOnFinished by rememberUpdatedState(onFinished)
@@ -185,25 +188,25 @@ fun StylusCaptureScreen(
     val particlesEnabled = remember(context) {
         Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f
     }
-    val density = LocalDensity.current.density
-    val particles = remember(density) { InkParticleField(Random(System.nanoTime()), density) }
-    var particlesActive by remember { mutableStateOf(false) }
+    // A pen move bumps the key while no loop runs. A true/false key could flip back to true before the
+    // next recomposition, so the finished loop would not restart and the specks would freeze.
+    var particleWake by remember { mutableIntStateOf(0) }
+    val particleLoopRunning = remember { booleanArrayOf(false) }
     var particleFrame by remember { mutableIntStateOf(0) }
-    val particleColor = MaterialTheme.colorScheme.primary
     val errorColor = MaterialTheme.colorScheme.error
 
-    LaunchedEffect(particlesActive) {
-        if (particlesActive) {
-            var lastFrame = 0L
-            while (particles.count > 0) {
-                withFrameMillis { now ->
-                    if (lastFrame != 0L) particles.step((now - lastFrame).coerceAtMost(50L))
-                    lastFrame = now
-                    particleFrame++
-                }
+    LaunchedEffect(particleWake) {
+        if (particleWake == 0) return@LaunchedEffect
+        particleLoopRunning[0] = true
+        var lastFrame = 0L
+        while (particles.count > 0) {
+            withFrameMillis { now ->
+                if (lastFrame != 0L) particles.step((now - lastFrame).coerceAtMost(50L))
+                lastFrame = now
+                particleFrame++
             }
-            particlesActive = false
         }
+        particleLoopRunning[0] = false
     }
 
     LaunchedEffect(recognizer) { recognizer.prepare() }
@@ -263,7 +266,7 @@ fun StylusCaptureScreen(
                 val pxX = (point.x - last.x) * cellPx[0]
                 val pxY = (point.y - last.y) * cellPx[1]
                 particles.emit(x, y, kotlin.math.sqrt(pxX * pxX + pxY * pxY))
-                if (particles.count > 0) particlesActive = true
+                if (particles.count > 0 && !particleLoopRunning[0]) particleWake++
             }
         }
         livePoints.add(point)
@@ -567,7 +570,7 @@ fun StylusCaptureScreen(
                         if (particleFrame >= 0) {
                             for (i in 0 until particles.count) {
                                 drawCircle(
-                                    particleColor,
+                                    InkColor,
                                     radius = particles.size(i),
                                     center = Offset(particles.x(i), particles.y(i)),
                                     alpha = particles.alpha(i) * PARTICLE_PEAK_ALPHA,
