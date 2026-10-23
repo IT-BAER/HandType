@@ -11,7 +11,7 @@
     <string name="template_card_captured">Capturado el %1$s</string>
 
     <string name="onboarding_title">Bienvenido a HandType</string>
-    <string name="onboarding_body">Escribe cualquier texto y HandType lo convierte en una escritura que parece hecha a mano. Los estilos integrados funcionan sin conexión. Con Premium puedes capturar tu propia letra a partir de una foto de una hoja de práctica.</string>
+    <string name="onboarding_body">Escribe cualquier texto y HandType lo convierte en una escritura que parece hecha a mano. Los estilos integrados funcionan sin conexión. Con Premium puedes capturar tu propia letra a partir de una foto de una hoja de escritura.</string>
     <string name="onboarding_cta">Empezar</string>
 
     <string name="render_instruction">Escribe tu mensaje abajo y toca Generar para crear una nota manuscrita única.</string>
@@ -59,12 +59,13 @@
 
     <string name="camera_section_title">Captura tu hoja de escritura</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>
-    <string name="camera_pre_scan_step_1">Imprime la hoja de práctica.</string>
+    <string name="camera_pre_scan_step_1">Imprime la hoja de escritura.</string>
     <string name="camera_pre_scan_step_2">Escribe el carácter correspondiente en cada casilla y mantenlo sobre la línea guía.</string>
     <string name="camera_pre_scan_step_3">Captura toda la página y mantén los cuatro cuadrados negros completamente visibles.</string>
     <string name="camera_pre_scan_step_4">Usa luz uniforme y evita desenfoque, reflejos y sombras duras.</string>
-    <string name="camera_sheet_button">Compartir o imprimir la hoja de práctica</string>
-    <string name="camera_scan_button">Escanear o importar hoja de práctica</string>
+    <string name="camera_sheet_button">Compartir la hoja de escritura</string>
+    <string name="camera_print_button">Imprimir la hoja de escritura</string>
+    <string name="camera_scan_button">Escanear o importar hoja de escritura</string>
     <string name="camera_gallery_button">Elegir foto de la galería</string>
     <string name="camera_opening_scanner">Abriendo escáner…</string>
     <string name="camera_processing_button">Procesando…</string>
@@ -90,12 +91,12 @@
     <string name="loading_template_title">Cargando plantilla</string>
     <string name="loading_template_body">Preparando glifos de mapa de bits integrados para el flujo de escritura predeterminado.</string>
 
-    <string name="premium_instruction">Escribe A-Z, a-z y 0-9 en la hoja de práctica y luego escanea la página completa con los cuatro cuadrados negros visibles para crear tu plantilla personal.</string>
+    <string name="premium_instruction">Escribe A-Z, a-z y 0-9 en la hoja de escritura y luego escanea la página completa con los cuatro cuadrados negros visibles para crear tu plantilla personal.</string>
     <string name="premium_processing">Procesando muestra de escritura con ML Kit…</string>
     <string name="premium_no_glyphs">No se detectaron glifos alfanuméricos. Intenta con mejor iluminación o un bolígrafo más oscuro y vuelve a escanear. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_complete">Captura premium completa. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Usa atrás para volver a las plantillas.</string>
     <string name="premium_capture_failed_focus">El reconocimiento de texto falló. Intenta otra captura con más nitidez.</string>
-    <string name="premium_marker_detection_failed">Ese escaneo no parecía la hoja de práctica de HandType. Asegúrate de que la hoja impresa llene la mayor parte del escaneo y los cuatro cuadrados negros sean visibles.</string>
+    <string name="premium_marker_detection_failed">Ese escaneo no parecía la hoja de escritura de HandType. Asegúrate de que la hoja impresa llene la mayor parte del escaneo y los cuatro cuadrados negros sean visibles.</string>
     <string name="premium_save_failed">No se pudo guardar la plantilla de escritura. Inténtalo de nuevo.</string>
     <string name="premium_process_failed">No se pudo procesar la hoja. Vuelve a escanear con los cuatro marcadores de esquina visibles.</string>
     <string name="premium_camera_failed">Error al capturar con la cámara. Inténtalo de nuevo.</string>
@@ -177,7 +178,7 @@
     <string name="template_flowing_cursive_name">Cursiva fluida</string>
     <string name="template_flowing_cursive_description">Un estilo cursivo suave con letras unidas y ritmo natural.</string>
     <string name="template_premium_sample">Captura tu propio estilo</string>
-    <string name="template_premium_description">Extrae tu escritura personal de una hoja de práctica fotografiada.</string>
+    <string name="template_premium_description">Extrae tu escritura personal de una hoja de escritura fotografiada.</string>
     <string name="template_delete_title">¿Eliminar plantilla?</string>
     <string name="template_delete_body">“%1$s” se eliminará permanentemente de tu dispositivo.</string>
     <string name="result_tip_share">💡 Consejo: pellizca para hacer zoom en la nota, toca dos veces para restablecer.</string>
@@ -210,8 +211,8 @@
 
     <!-- Camera screen -->
     <string name="camera_title">Capturar escritura</string>
-    <string name="camera_share_sheet_title">Compartir hoja de práctica</string>
-    <string name="camera_share_sheet_subject">Hoja de práctica HandType</string>
+    <string name="camera_share_sheet_title">Compartir hoja de escritura</string>
+    <string name="camera_share_sheet_subject">Hoja de escritura HandType</string>
     <string name="camera_priming">Esto abre el escáner de documentos. Tu foto se procesa en el dispositivo y nunca lo abandona.</string>
 
     <!-- History screen (new) -->
@@ -240,7 +241,7 @@
     <string name="settings_language_system">Predeterminado del sistema</string>
     <!-- Premium -->
     <string name="premium_paywall_title">Desbloquear Premium</string>
-    <string name="premium_paywall_benefit_capture">Captura tu propia letra a partir de una hoja de práctica impresa</string>
+    <string name="premium_paywall_benefit_capture">Captura tu propia letra a partir de una hoja de escritura impresa</string>
     <string name="premium_paywall_benefit_papers">Cinco estilos de papel adicionales: pergamino, reciclado, kraft, rayado y cuadriculado</string>
     <string name="premium_paywall_buy">Desbloquear por %1$s</string>
     <string name="premium_paywall_restore">Restaurar compra</string>
@@ -264,7 +265,7 @@
     <string name="onboarding_skip">Omitir</string>
     <string name="help_show_intro">Mostrar la introducción de nuevo</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Escribir en la pantalla</string>
     <string name="stylus_title">Escribir en la pantalla</string>
     <string name="stylus_instruction">Escribe el carácter tenue en la casilla. Apóyalo en la línea inferior; las minúsculas llegan a la superior.</string>

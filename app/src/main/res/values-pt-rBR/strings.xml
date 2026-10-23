@@ -11,7 +11,7 @@
     <string name="template_card_captured">Capturado em %1$s</string>
 
     <string name="onboarding_title">Bem-vindo ao HandType</string>
-    <string name="onboarding_body">Digite qualquer texto e o HandType o transforma em uma caligrafia que parece feita à mão. Os estilos integrados funcionam offline. Com o Premium, você pode capturar sua própria caligrafia a partir de uma foto de uma folha de prática.</string>
+    <string name="onboarding_body">Digite qualquer texto e o HandType o transforma em uma caligrafia que parece feita à mão. Os estilos integrados funcionam offline. Com o Premium, você pode capturar sua própria caligrafia a partir de uma foto de uma folha de caligrafia.</string>
     <string name="onboarding_cta">Começar</string>
 
     <string name="render_instruction">Digite sua mensagem abaixo e toque em Gerar para criar uma nota manuscrita única.</string>
@@ -59,12 +59,13 @@
 
     <string name="camera_section_title">Capture sua folha de caligrafia</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>
-    <string name="camera_pre_scan_step_1">Imprima a folha de prática.</string>
+    <string name="camera_pre_scan_step_1">Imprima a folha de caligrafia.</string>
     <string name="camera_pre_scan_step_2">Escreva o caractere correspondente em cada caixa e mantenha-o sobre a linha guia.</string>
     <string name="camera_pre_scan_step_3">Capture a página inteira e mantenha os quatro quadrados pretos totalmente visíveis.</string>
     <string name="camera_pre_scan_step_4">Use luz uniforme e evite desfoque, reflexos e sombras duras.</string>
-    <string name="camera_sheet_button">Compartilhar ou imprimir a folha de prática</string>
-    <string name="camera_scan_button">Escanear ou importar folha de prática</string>
+    <string name="camera_sheet_button">Compartilhar a folha de caligrafia</string>
+    <string name="camera_print_button">Imprimir a folha de caligrafia</string>
+    <string name="camera_scan_button">Escanear ou importar folha de caligrafia</string>
     <string name="camera_gallery_button">Escolher foto da galeria</string>
     <string name="camera_opening_scanner">Abrindo scanner…</string>
     <string name="camera_processing_button">Processando…</string>
@@ -90,12 +91,12 @@
     <string name="loading_template_title">Carregando modelo</string>
     <string name="loading_template_body">Preparando glifos de bitmap integrados para o fluxo de caligrafia padrão.</string>
 
-    <string name="premium_instruction">Escreva A-Z, a-z e 0-9 na folha de prática e escaneie a página inteira com os quatro quadrados pretos visíveis para criar seu modelo pessoal.</string>
+    <string name="premium_instruction">Escreva A-Z, a-z e 0-9 na folha de caligrafia e escaneie a página inteira com os quatro quadrados pretos visíveis para criar seu modelo pessoal.</string>
     <string name="premium_processing">Processando amostra de caligrafia com ML Kit…</string>
     <string name="premium_no_glyphs">Nenhum glifo alfanumérico foi detectado. Tente com iluminação mais forte ou uma caneta mais escura e escaneie novamente. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_complete">Captura premium concluída. %1$d recortes de glifos extraídos de %2$d caracteres únicos. Use voltar para retornar aos modelos.</string>
     <string name="premium_capture_failed_focus">O reconhecimento de texto falhou. Tente outra captura com foco mais nítido.</string>
-    <string name="premium_marker_detection_failed">Esse escaneamento não parecia a folha de prática do HandType. Certifique-se de que a folha impressa preencha a maior parte do escaneamento e os quatro quadrados pretos estejam visíveis.</string>
+    <string name="premium_marker_detection_failed">Esse escaneamento não parecia a folha de caligrafia do HandType. Certifique-se de que a folha impressa preencha a maior parte do escaneamento e os quatro quadrados pretos estejam visíveis.</string>
     <string name="premium_save_failed">Não foi possível salvar o modelo de caligrafia. Tente novamente.</string>
     <string name="premium_process_failed">Não foi possível processar a folha. Re-escaneie com os quatro marcadores de canto visíveis.</string>
     <string name="premium_camera_failed">Falha na captura da câmera. Tente novamente.</string>
@@ -177,7 +178,7 @@
     <string name="template_flowing_cursive_name">Cursiva fluente</string>
     <string name="template_flowing_cursive_description">Um estilo cursivo suave com letras conectadas e ritmo natural.</string>
     <string name="template_premium_sample">Capture seu próprio estilo</string>
-    <string name="template_premium_description">Extraia sua escrita pessoal de uma folha de prática fotografada.</string>
+    <string name="template_premium_description">Extraia sua escrita pessoal de uma folha de caligrafia fotografada.</string>
     <string name="template_delete_title">Excluir modelo?</string>
     <string name="template_delete_body">“%1$s” será removido permanentemente do seu dispositivo.</string>
     <string name="result_tip_share">💡 Dica: use dois dedos para dar zoom na nota e toque duplo para redefinir.</string>
@@ -210,8 +211,8 @@
 
     <!-- Camera screen -->
     <string name="camera_title">Capturar escrita</string>
-    <string name="camera_share_sheet_title">Compartilhar folha de prática</string>
-    <string name="camera_share_sheet_subject">Folha de prática HandType</string>
+    <string name="camera_share_sheet_title">Compartilhar folha de caligrafia</string>
+    <string name="camera_share_sheet_subject">Folha de caligrafia HandType</string>
     <string name="camera_priming">Isso abre o scanner de documentos. Sua foto é processada no dispositivo e nunca o abandona.</string>
 
     <!-- History screen (new) -->
@@ -240,7 +241,7 @@
     <string name="settings_language_system">Padrão do sistema</string>
     <!-- Premium -->
     <string name="premium_paywall_title">Desbloquear Premium</string>
-    <string name="premium_paywall_benefit_capture">Capture sua própria caligrafia a partir de uma folha de prática impressa</string>
+    <string name="premium_paywall_benefit_capture">Capture sua própria caligrafia a partir de uma folha de caligrafia impressa</string>
     <string name="premium_paywall_benefit_papers">Cinco estilos de papel extras: pergaminho, reciclado, kraft, pautado e quadriculado</string>
     <string name="premium_paywall_buy">Desbloquear por %1$s</string>
     <string name="premium_paywall_restore">Restaurar compra</string>
@@ -264,7 +265,7 @@
     <string name="onboarding_skip">Pular</string>
     <string name="help_show_intro">Mostrar a introdução novamente</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Escrever na tela</string>
     <string name="stylus_title">Escrever na tela</string>
     <string name="stylus_instruction">Escreva o caractere claro na caixa. Apoie-o na linha inferior; as minúsculas chegam à linha superior.</string>

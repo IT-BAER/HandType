@@ -14,7 +14,7 @@
 
     <!-- Onboarding -->
     <string name="onboarding_title">Welcome to HandType</string>
-    <string name="onboarding_body">Type anything and HandType turns it into handwriting that looks written by hand. The built-in styles work offline. With Premium you can capture your own handwriting from a photo of a practice sheet.</string>
+    <string name="onboarding_body">Type anything and HandType turns it into handwriting that looks written by hand. The built-in styles work offline. With Premium you can capture your own handwriting from a photo of a handwriting sheet.</string>
     <string name="onboarding_cta">Get started</string>
 
     <!-- Render screen: compose phase -->
@@ -68,12 +68,13 @@
     <!-- Camera capture screen -->
     <string name="camera_section_title">Capture your handwriting sheet</string>
     <string name="camera_pre_scan_title">Before you scan</string>
-    <string name="camera_pre_scan_step_1">Print the practice sheet.</string>
+    <string name="camera_pre_scan_step_1">Print the handwriting sheet.</string>
     <string name="camera_pre_scan_step_2">Write the matching character in each box, resting on the lower guide line and filling up to the upper one.</string>
     <string name="camera_pre_scan_step_3">Capture the whole page and keep all four black squares fully visible.</string>
     <string name="camera_pre_scan_step_4">Use even light and avoid blur, glare, and hard shadows.</string>
-    <string name="camera_sheet_button">Share or print practice sheet</string>
-    <string name="camera_scan_button">Scan or import practice sheet</string>
+    <string name="camera_sheet_button">Share handwriting sheet</string>
+    <string name="camera_print_button">Print handwriting sheet</string>
+    <string name="camera_scan_button">Scan or import handwriting sheet</string>
     <string name="camera_gallery_button">Choose photo from gallery</string>
     <string name="camera_opening_scanner">Opening scanner...</string>
     <string name="camera_processing_button">Processing...</string>
@@ -101,11 +102,11 @@
     <string name="loading_template_body">Preparing bundled bitmap glyphs for the default handwriting flow.</string>
 
     <!-- Premium capture flow -->
-    <string name="premium_instruction">Write A-Z, a-z, and 0-9 on the practice sheet, then scan the whole page with all four black squares visible to create your personal template.</string>
+    <string name="premium_instruction">Write A-Z, a-z, and 0-9 on the handwriting sheet, then scan the whole page with all four black squares visible to create your personal template.</string>
     <string name="premium_processing">Processing handwriting sample with ML Kit…</string>
     <string name="premium_no_glyphs">No alphanumeric glyphs were detected. Try brighter lighting or a darker pen, then scan again. Use system back to return to templates.</string>
     <string name="premium_capture_complete">Handwriting capture complete. %1$d glyph crops extracted across %2$d unique characters. Use back to return to templates.</string>
-    <string name="premium_marker_detection_failed">That scan did not look like the HandType practice sheet. Make sure the printed sheet fills most of the scan and all four black squares are visible.</string>
+    <string name="premium_marker_detection_failed">That scan did not look like the HandType handwriting sheet. Make sure the printed sheet fills most of the scan and all four black squares are visible.</string>
     <string name="premium_save_failed">Could not save the handwriting template. Try again.</string>
     <string name="premium_process_failed">Could not process the sheet. Re-scan with all four corner markers visible.</string>
     <string name="premium_capture_failed_focus">Text recognition failed. Try another capture with sharper focus.</string>
@@ -119,7 +120,7 @@
     <string name="template_flowing_cursive_name">Flowing Cursive</string>
     <string name="template_flowing_cursive_description">A smooth cursive style with connected letters and natural rhythm.</string>
     <string name="template_premium_sample">Capture your own style</string>
-    <string name="template_premium_description">Extract your personal handwriting from a photographed practice sheet.</string>
+    <string name="template_premium_description">Extract your personal handwriting from a photographed handwriting sheet.</string>
 
     <!-- Template delete dialog -->
     <string name="template_delete_title">Delete template?</string>
@@ -153,7 +154,7 @@
     <string name="settings_language_system">System default</string>
     <!-- Premium -->
     <string name="premium_paywall_title">Unlock Premium</string>
-    <string name="premium_paywall_benefit_capture">Capture your own handwriting from a printed practice sheet</string>
+    <string name="premium_paywall_benefit_capture">Capture your own handwriting from a printed handwriting sheet</string>
     <string name="premium_paywall_benefit_papers">Five extra paper styles: parchment, recycled, kraft, ruled and graph</string>
     <string name="premium_paywall_buy">Unlock for %1$s</string>
     <string name="premium_paywall_restore">Restore purchase</string>
@@ -210,7 +211,7 @@
     <string name="faq_q5">What does the History screen actually keep?</string>
     <string name="faq_a5">A private copy of every generated note plus the source text. Nothing is uploaded; deleting an entry removes the on-device copy only.</string>
     <string name="faq_q6">How does personal handwriting capture work?</string>
-    <string name="faq_a6">You fill out the practice sheet, scan it, and HandType builds a personal template from your handwriting. The capture runs on-device with ML Kit; nothing leaves the phone.</string>
+    <string name="faq_a6">You fill out the handwriting sheet, scan it, and HandType builds a personal template from your handwriting. The capture runs on-device with ML Kit; nothing leaves the phone.</string>
 
     <!-- About screen -->
     <string name="about_title">About</string>
@@ -246,8 +247,8 @@
 
     <!-- UX overhaul: capture -->
     <string name="camera_title">Capture handwriting</string>
-    <string name="camera_share_sheet_title">Share practice sheet</string>
-    <string name="camera_share_sheet_subject">HandType practice sheet</string>
+    <string name="camera_share_sheet_title">Share handwriting sheet</string>
+    <string name="camera_share_sheet_subject">HandType handwriting sheet</string>
     <string name="camera_priming">This opens the document scanner. Your photo is processed on your device and never leaves it.</string>
 
     <!-- UX overhaul: history -->
@@ -277,7 +278,7 @@
     <string name="onboarding_skip">Skip</string>
     <string name="help_show_intro">Show the intro again</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Write on screen instead</string>
     <string name="stylus_title">Write on screen</string>
     <string name="stylus_instruction">Write the faint character in the box. Rest it on the lower line; small letters reach the upper line.</string>

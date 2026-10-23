@@ -12,7 +12,7 @@
     <string name="template_card_captured">Aufgenommen am %1$s</string>
 
     <string name="onboarding_title">Willkommen bei HandType</string>
-    <string name="onboarding_body">Tippe einfach los, und HandType verwandelt deinen Text in eine Handschrift, die aussieht, als hättest du sie selbst geschrieben. Die integrierten Stile funktionieren offline. Mit Premium kannst du deine eigene Handschrift von einem Foto einer Übungsvorlage aufnehmen.</string>
+    <string name="onboarding_body">Tippe einfach los, und HandType verwandelt deinen Text in eine Handschrift, die aussieht, als hättest du sie selbst geschrieben. Die integrierten Stile funktionieren offline. Mit Premium kannst du deine eigene Handschrift von einem Foto einer Schriftprobe aufnehmen.</string>
     <string name="onboarding_cta">Loslegen</string>
 
     <string name="render_instruction">Gib unten deine Nachricht ein und tippe auf „Erstellen“, um eine einzigartige handgeschriebene Notiz zu erzeugen.</string>
@@ -60,12 +60,13 @@
 
     <string name="camera_section_title">Handschriftblatt aufnehmen</string>
     <string name="camera_pre_scan_title">Vor dem Scan</string>
-    <string name="camera_pre_scan_step_1">Drucke das Übungsblatt.</string>
+    <string name="camera_pre_scan_step_1">Drucke die Schriftprobe.</string>
     <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld, auf der unteren Hilfslinie stehend und bis zur oberen reichend.</string>
     <string name="camera_pre_scan_step_3">Erfasse die ganze Seite und halte alle vier schwarzen Quadrate vollständig sichtbar.</string>
     <string name="camera_pre_scan_step_4">Nutze gleichmäßiges Licht und vermeide Unschärfe, Spiegelungen und harte Schatten.</string>
-    <string name="camera_sheet_button">Übungsblatt teilen oder drucken</string>
-    <string name="camera_scan_button">Übungsblatt scannen oder importieren</string>
+    <string name="camera_sheet_button">Schriftprobe teilen</string>
+    <string name="camera_print_button">Schriftprobe drucken</string>
+    <string name="camera_scan_button">Schriftprobe scannen oder importieren</string>
     <string name="camera_gallery_button">Foto aus der Galerie wählen</string>
     <string name="camera_opening_scanner">Scanner wird geöffnet…</string>
     <string name="camera_processing_button">Wird verarbeitet…</string>
@@ -91,11 +92,11 @@
     <string name="loading_template_title">Vorlage wird geladen</string>
     <string name="loading_template_body">Bitmap-Glyphen für den Standard-Handschriftablauf werden vorbereitet.</string>
 
-    <string name="premium_instruction">Schreibe A–Z, a–z, 0–9 und ÄÖÜäöüß auf das Übungsblatt und scanne dann die ganze Seite mit allen vier schwarzen Quadraten, um deine persönliche Vorlage zu erstellen.</string>
+    <string name="premium_instruction">Schreibe A–Z, a–z, 0–9 und ÄÖÜäöüß auf die Schriftprobe und scanne dann die ganze Seite mit allen vier schwarzen Quadraten, um deine persönliche Vorlage zu erstellen.</string>
     <string name="premium_processing">Handschriftprobe wird mit ML Kit verarbeitet…</string>
     <string name="premium_no_glyphs">Keine alphanumerischen Glyphen erkannt. Versuche es mit besserer Beleuchtung oder einem dunkleren Stift und scanne erneut. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
     <string name="premium_capture_complete">Handschrift-Aufnahme abgeschlossen. %1$d Glyphen aus %2$d einzigartigen Zeichen extrahiert. Verwende Zurück, um zu den Vorlagen zurückzukehren.</string>
-    <string name="premium_marker_detection_failed">Dieser Scan sah nicht wie das HandType-Übungsblatt aus. Stelle sicher, dass das gedruckte Blatt den Großteil des Scans füllt und alle vier schwarzen Quadrate sichtbar sind.</string>
+    <string name="premium_marker_detection_failed">Dieser Scan sah nicht wie die HandType-Schriftprobe aus. Stelle sicher, dass das gedruckte Blatt den Großteil des Scans füllt und alle vier schwarzen Quadrate sichtbar sind.</string>
     <string name="premium_save_failed">Die Handschriftvorlage konnte nicht gespeichert werden. Versuche es erneut.</string>
     <string name="premium_process_failed">Das Blatt konnte nicht verarbeitet werden. Scanne erneut mit allen vier sichtbaren Eckmarkierungen.</string>
     <string name="premium_capture_failed_focus">Texterkennung fehlgeschlagen. Versuche eine weitere Aufnahme mit schärferem Fokus.</string>
@@ -162,7 +163,7 @@
     <string name="faq_q5">Was hält der Verlaufsbildschirm eigentlich?</string>
     <string name="faq_a5">Eine private Kopie jeder generierten Notiz plus den Quelltext. Nichts wird hochgeladen; das Löschen eines Eintrags entfernt nur die lokale Kopie.</string>
     <string name="faq_q6">Wie funktioniert die Aufnahme deiner Handschrift?</string>
-    <string name="faq_a6">Du füllst das Übungsblatt aus, scannst es und HandType erstellt daraus eine persönliche Vorlage. Die Erkennung läuft lokal mit ML Kit; nichts verlässt das Telefon.</string>
+    <string name="faq_a6">Du füllst die Schriftprobe aus, scannst sie und HandType erstellt daraus eine persönliche Vorlage. Die Erkennung läuft lokal mit ML Kit; nichts verlässt das Telefon.</string>
 
     <!-- About screen -->
     <string name="about_title">Über</string>
@@ -176,7 +177,7 @@
     <string name="template_flowing_cursive_name">Fließende Kursivschrift</string>
     <string name="template_flowing_cursive_description">Ein flüssiger Kursivstil mit verbundenen Buchstaben und natürlichem Rhythmus.</string>
     <string name="template_premium_sample">Erfasse deinen eigenen Stil</string>
-    <string name="template_premium_description">Extrahiere deine persönliche Handschrift aus einem fotografierten Übungsblatt.</string>
+    <string name="template_premium_description">Extrahiere deine persönliche Handschrift aus einer fotografierten Schriftprobe.</string>
     <string name="template_delete_title">Vorlage löschen?</string>
     <string name="template_delete_body">„%1$s“ wird dauerhaft von deinem Gerät entfernt.</string>
     <string name="result_tip_share">💡 Tipp: Mit zwei Fingern zoomen, doppeltippen setzt zurück.</string>
@@ -198,8 +199,8 @@
     <string name="result_export_transparent">Transparentes PNG</string>
     <string name="result_export_transparent_desc">Handschrift ohne Papierhintergrund</string>
     <string name="camera_title">Handschrift aufnehmen</string>
-    <string name="camera_share_sheet_title">Übungsblatt teilen</string>
-    <string name="camera_share_sheet_subject">HandType Übungsblatt</string>
+    <string name="camera_share_sheet_title">Schriftprobe teilen</string>
+    <string name="camera_share_sheet_subject">HandType Schriftprobe</string>
     <string name="camera_priming">Öffnet den Dokumentenscanner. Dein Foto wird auf deinem Gerät verarbeitet und verlässt es nie.</string>
     <string name="history_empty_title">Noch keine Notizen</string>
     <string name="history_rename_title">Notiz umbenennen</string>
@@ -222,7 +223,7 @@
     <string name="settings_language_system">Systemstandard</string>
     <!-- Premium -->
     <string name="premium_paywall_title">Premium freischalten</string>
-    <string name="premium_paywall_benefit_capture">Erfasse deine eigene Handschrift von einem gedruckten Übungsblatt</string>
+    <string name="premium_paywall_benefit_capture">Erfasse deine eigene Handschrift von einer gedruckten Schriftprobe</string>
     <string name="premium_paywall_benefit_papers">Fünf zusätzliche Papierstile: Pergament, Recyclingpapier, Kraftpapier, liniert und kariert</string>
     <string name="premium_paywall_buy">Für %1$s freischalten</string>
     <string name="premium_paywall_restore">Kauf wiederherstellen</string>
@@ -246,7 +247,7 @@
     <string name="onboarding_skip">Überspringen</string>
     <string name="help_show_intro">Einführung erneut anzeigen</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Stattdessen auf dem Bildschirm schreiben</string>
     <string name="stylus_title">Auf dem Bildschirm schreiben</string>
     <string name="stylus_instruction">Schreibe das blasse Zeichen in das Feld. Es steht auf der unteren Linie, Kleinbuchstaben reichen bis zur oberen.</string>

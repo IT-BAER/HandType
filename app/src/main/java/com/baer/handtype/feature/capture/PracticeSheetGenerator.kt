@@ -181,7 +181,7 @@ object PracticeSheetGenerator {
         paint.textSize = 36f
         paint.typeface = Typeface.DEFAULT_BOLD
         canvas.drawText(
-            "HandType practice sheet",
+            "HandType handwriting sheet",
             OUTER_MARGIN.toFloat(),
             OUTER_MARGIN - 18f,
             paint,

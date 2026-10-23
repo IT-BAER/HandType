@@ -11,7 +11,7 @@
     <string name="template_card_captured">Capturé le %1$s</string>
 
     <string name="onboarding_title">Bienvenue sur HandType</string>
-    <string name="onboarding_body">Tapez n\'importe quel texte et HandType le transforme en une écriture qui semble faite à la main. Les styles intégrés fonctionnent hors ligne. Avec Premium, vous pouvez capturer votre propre écriture à partir d\'une photo d\'une feuille d\'entraînement.</string>
+    <string name="onboarding_body">Tapez n\'importe quel texte et HandType le transforme en une écriture qui semble faite à la main. Les styles intégrés fonctionnent hors ligne. Avec Premium, vous pouvez capturer votre propre écriture à partir d\'une photo d\'une feuille d\'écriture.</string>
     <string name="onboarding_cta">Commencer</string>
 
     <string name="render_instruction">Tapez votre message ci-dessous, puis appuyez sur Générer pour créer une note manuscrite unique.</string>
@@ -59,12 +59,13 @@
 
     <string name="camera_section_title">Photographiez votre feuille d\'écriture</string>
     <string name="camera_pre_scan_title">Avant de scanner</string>
-    <string name="camera_pre_scan_step_1">Imprimez la feuille d\'entraînement.</string>
+    <string name="camera_pre_scan_step_1">Imprimez la feuille d\'écriture.</string>
     <string name="camera_pre_scan_step_2">Écrivez le caractère correspondant dans chaque case et maintenez-le sur la ligne de guide.</string>
     <string name="camera_pre_scan_step_3">Capturez la page entière et gardez les quatre carrés noirs entièrement visibles.</string>
     <string name="camera_pre_scan_step_4">Utilisez une lumière uniforme et évitez le flou, les reflets et les ombres dures.</string>
-    <string name="camera_sheet_button">Partager ou imprimer la feuille d\'entraînement</string>
-    <string name="camera_scan_button">Scanner ou importer la feuille d\'entraînement</string>
+    <string name="camera_sheet_button">Partager la feuille d\'écriture</string>
+    <string name="camera_print_button">Imprimer la feuille d\'écriture</string>
+    <string name="camera_scan_button">Scanner ou importer la feuille d\'écriture</string>
     <string name="camera_gallery_button">Choisir une photo dans la galerie</string>
     <string name="camera_opening_scanner">Ouverture du scanner…</string>
     <string name="camera_processing_button">Traitement…</string>
@@ -90,12 +91,12 @@
     <string name="loading_template_title">Chargement du modèle</string>
     <string name="loading_template_body">Préparation des glyphes bitmap intégrés pour le flux d\'écriture par défaut.</string>
 
-    <string name="premium_instruction">Écrivez A–Z, a–z et 0–9 sur la feuille d\'entraînement, puis scannez la page entière avec les quatre carrés noirs visibles pour créer votre modèle personnel.</string>
+    <string name="premium_instruction">Écrivez A–Z, a–z et 0–9 sur la feuille d\'écriture, puis scannez la page entière avec les quatre carrés noirs visibles pour créer votre modèle personnel.</string>
     <string name="premium_processing">Traitement de l\'échantillon d\'écriture avec ML Kit…</string>
     <string name="premium_no_glyphs">Aucun glyphe alphanumérique détecté. Essayez avec un meilleur éclairage ou un stylo plus foncé, puis scannez à nouveau. Utilisez le bouton retour pour revenir aux modèles.</string>
     <string name="premium_capture_complete">Capture premium terminée. %1$d découpes de glyphes extraites pour %2$d caractères uniques. Utilisez retour pour revenir aux modèles.</string>
     <string name="premium_capture_failed_focus">La reconnaissance de texte a échoué. Essayez une autre capture avec une mise au point plus nette.</string>
-    <string name="premium_marker_detection_failed">Ce scan ne ressemblait pas à la feuille d\'entraînement HandType. Assurez-vous que la feuille imprimée remplit la majeure partie du scan et que les quatre carrés noirs sont visibles.</string>
+    <string name="premium_marker_detection_failed">Ce scan ne ressemblait pas à la feuille d\'écriture HandType. Assurez-vous que la feuille imprimée remplit la majeure partie du scan et que les quatre carrés noirs sont visibles.</string>
     <string name="premium_save_failed">Impossible d\'enregistrer le modèle d\'écriture. Réessayez.</string>
     <string name="premium_process_failed">Impossible de traiter la feuille. Re-scan avec les quatre marqueurs d\'angle visibles.</string>
     <string name="premium_camera_failed">La capture de la caméra a échoué. Réessayez.</string>
@@ -177,7 +178,7 @@
     <string name="template_flowing_cursive_name">Cursive fluide</string>
     <string name="template_flowing_cursive_description">Un style cursif fluide avec des lettres liées et un rythme naturel.</string>
     <string name="template_premium_sample">Capturez votre propre style</string>
-    <string name="template_premium_description">Extrayez votre écriture personnelle d’une feuille d’exercice photographiée.</string>
+    <string name="template_premium_description">Extrayez votre écriture personnelle d’une feuille d’écriture photographiée.</string>
     <string name="template_delete_title">Supprimer le modèle ?</string>
     <string name="template_delete_body">« %1$s » sera définitivement supprimé de votre appareil.</string>
     <string name="result_tip_share">💡 Astuce : pincez pour zoomer sur la note, double-appuyez pour réinitialiser.</string>
@@ -210,8 +211,8 @@
 
     <!-- Camera screen -->
     <string name="camera_title">Capturer l\'écriture</string>
-    <string name="camera_share_sheet_title">Partager la feuille d\'entraînement</string>
-    <string name="camera_share_sheet_subject">Feuille d\'entraînement HandType</string>
+    <string name="camera_share_sheet_title">Partager la feuille d\'écriture</string>
+    <string name="camera_share_sheet_subject">Feuille d\'écriture HandType</string>
     <string name="camera_priming">Ceci ouvre le scanner de documents. Votre photo est traitée sur votre appareil et ne le quitte jamais.</string>
 
     <!-- History screen (new) -->
@@ -240,7 +241,7 @@
     <string name="settings_language_system">Par défaut du système</string>
     <!-- Premium -->
     <string name="premium_paywall_title">Débloquer Premium</string>
-    <string name="premium_paywall_benefit_capture">Capturez votre propre écriture à partir d’une feuille d’exercice imprimée</string>
+    <string name="premium_paywall_benefit_capture">Capturez votre propre écriture à partir d’une feuille d’écriture imprimée</string>
     <string name="premium_paywall_benefit_papers">Cinq styles de papier supplémentaires : parchemin, recyclé, kraft, ligné et quadrillé</string>
     <string name="premium_paywall_buy">Débloquer pour %1$s</string>
     <string name="premium_paywall_restore">Restaurer l’achat</string>
@@ -264,7 +265,7 @@
     <string name="onboarding_skip">Passer</string>
     <string name="help_show_intro">Afficher à nouveau l\'introduction</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Écrire à l\'écran</string>
     <string name="stylus_title">Écrire à l\'écran</string>
     <string name="stylus_instruction">Écrivez le caractère pâle dans la case. Posez-le sur la ligne inférieure ; les minuscules montent jusqu\'à la ligne supérieure.</string>

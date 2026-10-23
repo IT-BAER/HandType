@@ -8,6 +8,7 @@ object HandTypeTestTags {
     const val TEMPLATE_PAGER = "template_pager"
     const val CAMERA_SCAN_BUTTON = "camera_scan_button"
     const val CAMERA_WRITE_BUTTON = "camera_write_button"
+    const val CAMERA_PRINT_BUTTON = "camera_print_button"
 
     const val STYLUS_CANVAS = "stylus_canvas"
     const val STYLUS_PROGRESS = "stylus_progress"

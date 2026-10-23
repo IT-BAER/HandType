@@ -11,7 +11,7 @@
     <string name="template_card_captured">Захвачено %1$s</string>
 
     <string name="onboarding_title">Добро пожаловать в HandType</string>
-    <string name="onboarding_body">Введите любой текст, и HandType превратит его в почерк, похожий на настоящий рукописный. Встроенные стили работают офлайн. С премиум-версией вы можете захватить свой собственный почерк с фото тренировочного листа.</string>
+    <string name="onboarding_body">Введите любой текст, и HandType превратит его в почерк, похожий на настоящий рукописный. Встроенные стили работают офлайн. С премиум-версией вы можете захватить свой собственный почерк с фото листа почерка.</string>
     <string name="onboarding_cta">Начать</string>
 
     <string name="render_instruction">Введите сообщение ниже и нажмите «Создать», чтобы сгенерировать уникальную рукописную заметку.</string>
@@ -59,12 +59,13 @@
 
     <string name="camera_section_title">Сфотографируйте лист почерка</string>
     <string name="camera_pre_scan_title">Перед сканированием</string>
-    <string name="camera_pre_scan_step_1">Распечатайте лист для практики.</string>
+    <string name="camera_pre_scan_step_1">Распечатайте лист почерка.</string>
     <string name="camera_pre_scan_step_2">Напишите соответствующий символ в каждой ячейке и держите его на линии-ориентире.</string>
     <string name="camera_pre_scan_step_3">Сфотографируйте всю страницу и держите все четыре чёрных квадрата полностью видимыми.</string>
     <string name="camera_pre_scan_step_4">Используйте равномерный свет и избегайте размытия, бликов и жёстких теней.</string>
-    <string name="camera_sheet_button">Поделиться или распечатать лист для практики</string>
-    <string name="camera_scan_button">Сканировать или импортировать лист для практики</string>
+    <string name="camera_sheet_button">Поделиться листом почерка</string>
+    <string name="camera_print_button">Распечатать лист почерка</string>
+    <string name="camera_scan_button">Сканировать или импортировать лист почерка</string>
     <string name="camera_gallery_button">Выбрать фото из галереи</string>
     <string name="camera_opening_scanner">Открытие сканера…</string>
     <string name="camera_processing_button">Обработка…</string>
@@ -90,12 +91,12 @@
     <string name="loading_template_title">Загрузка шаблона</string>
     <string name="loading_template_body">Подготовка встроенных растровых глифов для стандартного потока рукописного ввода.</string>
 
-    <string name="premium_instruction">Напишите A–Z, a–z и 0–9 на листе для практики, затем отсканируйте всю страницу так, чтобы все четыре чёрных квадрата были видны, и создайте личный шаблон.</string>
+    <string name="premium_instruction">Напишите A–Z, a–z и 0–9 на листе почерка, затем отсканируйте всю страницу так, чтобы все четыре чёрных квадрата были видны, и создайте личный шаблон.</string>
     <string name="premium_processing">Обработка образца почерка в ML Kit…</string>
     <string name="premium_no_glyphs">Буквенно-цифровые глифы не обнаружены. Попробуйте улучшить освещение или писать более тёмной ручкой, затем отсканируйте снова. Нажмите «Назад» для возврата к шаблонам.</string>
     <string name="premium_capture_complete">Захват завершён. Извлечено %1$d глифов для %2$d уникальных символов. Нажмите «Назад» для возврата к шаблонам.</string>
     <string name="premium_capture_failed_focus">Распознавание текста не удалось. Попробуйте ещё раз с более чётким фокусом.</string>
-    <string name="premium_marker_detection_failed">Этот скан не похож на лист для практики HandType. Убедитесь, что распечатанный лист заполняет большую часть скана и все четыре чёрных квадрата видны.</string>
+    <string name="premium_marker_detection_failed">Этот скан не похож на лист почерка HandType. Убедитесь, что распечатанный лист заполняет большую часть скана и все четыре чёрных квадрата видны.</string>
     <string name="premium_save_failed">Не удалось сохранить шаблон почерка. Попробуйте ещё раз.</string>
     <string name="premium_process_failed">Не удалось обработать лист. Пересканируйте с видимыми четырьмя угловыми маркерами.</string>
     <string name="premium_camera_failed">Ошибка камеры. Попробуйте ещё раз.</string>
@@ -177,7 +178,7 @@
     <string name="template_flowing_cursive_name">Плавный курсив</string>
     <string name="template_flowing_cursive_description">Плавный курсивный стиль с связанными буквами и естественным ритмом.</string>
     <string name="template_premium_sample">Зафиксируйте свой стиль</string>
-    <string name="template_premium_description">Извлеките ваш личный почерк из сфотографированного упражнения.</string>
+    <string name="template_premium_description">Извлеките ваш личный почерк из сфотографированного листа почерка.</string>
     <string name="template_delete_title">Удалить шаблон?</string>
     <string name="template_delete_body">«%1$s» будет навсегда удалён с вашего устройства.</string>
     <string name="result_tip_share">💡 Совет: сведите два пальца для масштабирования заметки, двойное касание сбрасывает вид.</string>
@@ -199,8 +200,8 @@
     <string name="result_export_transparent">Прозрачный PNG</string>
     <string name="result_export_transparent_desc">Почерк без фона бумаги</string>
     <string name="camera_title">Захват почерка</string>
-    <string name="camera_share_sheet_title">Поделиться листом для практики</string>
-    <string name="camera_share_sheet_subject">Лист для практики HandType</string>
+    <string name="camera_share_sheet_title">Поделиться листом почерка</string>
+    <string name="camera_share_sheet_subject">Лист почерка HandType</string>
     <string name="camera_priming">Открывается сканер документов. Ваше фото обрабатывается на устройстве и никогда его не покидает.</string>
     <string name="history_empty_title">Пока нет заметок</string>
     <string name="history_rename_title">Переименовать заметку</string>
@@ -223,7 +224,7 @@
     <string name="settings_language_system">Системная</string>
     <!-- Premium -->
     <string name="premium_paywall_title">Разблокировать Премиум</string>
-    <string name="premium_paywall_benefit_capture">Захватите свой собственный почерк с распечатанного тренировочного листа</string>
+    <string name="premium_paywall_benefit_capture">Захватите свой собственный почерк с распечатанного листа почерка</string>
     <string name="premium_paywall_benefit_papers">Пять дополнительных стилей бумаги: пергамент, переработанная, крафт, линованная и клетчатая</string>
     <string name="premium_paywall_buy">Разблокировать за %1$s</string>
     <string name="premium_paywall_restore">Восстановить покупку</string>
@@ -247,7 +248,7 @@
     <string name="onboarding_skip">Пропустить</string>
     <string name="help_show_intro">Показать вступление снова</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Написать на экране</string>
     <string name="stylus_title">Написать на экране</string>
     <string name="stylus_instruction">Напишите бледный символ в ячейке. Поставьте его на нижнюю линию; строчные буквы доходят до верхней.</string>

@@ -89,7 +89,7 @@ def render() -> Image.Image:
     body_font = load_font(22)
     label_font = load_font(28)
 
-    draw.text((OUTER_MARGIN, OUTER_MARGIN - 50), "HandType practice sheet", fill=INK_COLOR, font=title_font)
+    draw.text((OUTER_MARGIN, OUTER_MARGIN - 50), "HandType handwriting sheet", fill=INK_COLOR, font=title_font)
     draw.text(
         (OUTER_MARGIN, PAGE_HEIGHT - OUTER_MARGIN + 10),
         "Write each letter resting on the lower guide line, filling up to the upper line. Keep the four black squares visible.",

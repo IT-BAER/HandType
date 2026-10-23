@@ -11,7 +11,7 @@
     <string name="template_card_captured">%1$s को कैप्चर किया गया</string>
 
     <string name="onboarding_title">HandType में आपका स्वागत है</string>
-    <string name="onboarding_body">कुछ भी टाइप करें और HandType उसे हाथ से लिखी हुई दिखने वाली हस्तलिपि में बदल देता है। अंतर्निहित शैलियाँ ऑफ़लाइन काम करती हैं। प्रीमियम के साथ आप अभ्यास शीट की फ़ोटो से अपनी खुद की हस्तलिपि कैप्चर कर सकते हैं।</string>
+    <string name="onboarding_body">कुछ भी टाइप करें और HandType उसे हाथ से लिखी हुई दिखने वाली हस्तलिपि में बदल देता है। अंतर्निहित शैलियाँ ऑफ़लाइन काम करती हैं। प्रीमियम के साथ आप हस्तलेखन शीट की फ़ोटो से अपनी खुद की हस्तलिपि कैप्चर कर सकते हैं।</string>
     <string name="onboarding_cta">शुरू करें</string>
 
     <string name="render_instruction">नीचे अपना संदेश टाइप करें, फिर एक अनूठी हस्तलिखित नोट बनाने के लिए जेनरेट पर टैप करें।</string>
@@ -58,12 +58,13 @@
 
     <string name="camera_section_title">अपनी हस्तलेखन शीट कैप्चर करें</string>
     <string name="camera_pre_scan_title">स्कैन करने से पहले</string>
-    <string name="camera_pre_scan_step_1">अभ्यास शीट प्रिंट करें।</string>
+    <string name="camera_pre_scan_step_1">हस्तलेखन शीट प्रिंट करें।</string>
     <string name="camera_pre_scan_step_2">प्रत्येक बॉक्स में मिलान वर्ण लिखें और उसे गाइड लाइन पर रखें।</string>
     <string name="camera_pre_scan_step_3">पूरे पृष्ठ को कैप्चर करें और सभी चार काले वर्ग पूरी तरह दृश्यमान रखें।</string>
     <string name="camera_pre_scan_step_4">समान प्रकाश का उपयोग करें और धुंधलापन, चमक और कठोर छायाओं से बचें।</string>
-    <string name="camera_sheet_button">अभ्यास शीट शेयर करें या प्रिंट करें</string>
-    <string name="camera_scan_button">अभ्यास शीट स्कैन या आयात करें</string>
+    <string name="camera_sheet_button">हस्तलेखन शीट शेयर करें</string>
+    <string name="camera_print_button">हस्तलेखन शीट प्रिंट करें</string>
+    <string name="camera_scan_button">हस्तलेखन शीट स्कैन या आयात करें</string>
     <string name="camera_gallery_button">गैलरी से फोटो चुनें</string>
     <string name="camera_opening_scanner">स्कैनर खोल रहा है…</string>
     <string name="camera_processing_button">प्रसंस्करण हो रहा है…</string>
@@ -89,12 +90,12 @@
     <string name="loading_template_title">टेम्पलेट लोड हो रहा है</string>
     <string name="loading_template_body">डिफ़ॉल्ट हस्तलेखन प्रवाह के लिए बंडल बिटमैप ग्लिफ़ तैयार किए जा रहे हैं।</string>
 
-    <string name="premium_instruction">अभ्यास शीट पर A-Z, a-z और 0-9 लिखें, फिर अपना व्यक्तिगत टेम्पलेट बनाने के लिए सभी चार काले वर्ग दृश्यमान रखते हुए पूरा पृष्ठ स्कैन करें।</string>
+    <string name="premium_instruction">हस्तलेखन शीट पर A-Z, a-z और 0-9 लिखें, फिर अपना व्यक्तिगत टेम्पलेट बनाने के लिए सभी चार काले वर्ग दृश्यमान रखते हुए पूरा पृष्ठ स्कैन करें।</string>
     <string name="premium_processing">ML Kit के साथ हस्तलेखन नमूना प्रसंस्करण हो रहा है…</string>
     <string name="premium_no_glyphs">कोई अल्फ़ान्यूमेरिक ग्लिफ़ नहीं मिला। बेहतर प्रकाश व्यवस्था या गहरे रंग का पेन आज़माएं, फिर दोबारा स्कैन करें। टेम्पलेट पर वापस जाने के लिए सिस्टम बैक उपयोग करें।</string>
     <string name="premium_capture_complete">प्रीमियम कैप्चर पूर्ण। %2$d अनूठे अक्षरों में से %1$d ग्लिफ़ निकाले गए। टेम्पलेट पर वापस जाने के लिए बैक उपयोग करें।</string>
     <string name="premium_capture_failed_focus">टेक्स्ट पहचान विफल। अधिक तेज़ फ़ोकस के साथ दूसरा कैप्चर आज़माएं।</string>
-    <string name="premium_marker_detection_failed">वह स्कैन HandType अभ्यास शीट जैसा नहीं लगा। सुनिश्चित करें कि प्रिंटेड शीट स्कैन का अधिकांश भाग भरे और सभी चार काले वर्ग दृश्यमान हों।</string>
+    <string name="premium_marker_detection_failed">वह स्कैन HandType हस्तलेखन शीट जैसा नहीं लगा। सुनिश्चित करें कि प्रिंटेड शीट स्कैन का अधिकांश भाग भरे और सभी चार काले वर्ग दृश्यमान हों।</string>
     <string name="premium_save_failed">हस्तलेखन टेम्पलेट सहेजने में विफल। फिर से प्रयास करें।</string>
     <string name="premium_process_failed">शीट प्रसंस्करण में विफल। सभी चार कोने मार्कर दृश्यमान होने पर पुनः स्कैन करें।</string>
     <string name="premium_camera_failed">कैमरा कैप्चर विफल। फिर से प्रयास करें।</string>
@@ -176,7 +177,7 @@
     <string name="template_flowing_cursive_name">प्रवाहमय कर्सिव</string>
     <string name="template_flowing_cursive_description">जुड़े हुए अक्षरों और प्राकृतिक लय के साथ एक सुंदर कर्सिव शैली।</string>
     <string name="template_premium_sample">अपनी शैली कैप्चर करें</string>
-    <string name="template_premium_description">एक फोटोग्राफ किए गए अभ्यास पत्रक से अपनी व्यक्तिगत लिखावट निकालें।</string>
+    <string name="template_premium_description">एक फोटोग्राफ किए गए हस्तलेखन शीट से अपनी व्यक्तिगत लिखावट निकालें।</string>
     <string name="template_delete_title">टेम्पलेट हटाएं?</string>
     <string name="template_delete_body">“%1$s” आपके डिवाइस से स्थायी रूप से हटा दिया जाएगा।</string>
     <string name="result_tip_share">💡 सुझाव: नोट ज़ूम करने के लिए चुटकी लें, रीसेट करने के लिए डबल-टैप करें।</string>
@@ -198,8 +199,8 @@
     <string name="result_export_transparent">पारदर्शी PNG</string>
     <string name="result_export_transparent_desc">कागज़ की पृष्ठभूमि के बिना हस्तलेखन</string>
     <string name="camera_title">हस्तलेखन कैप्चर करें</string>
-    <string name="camera_share_sheet_title">अभ्यास शीट शेयर करें</string>
-    <string name="camera_share_sheet_subject">HandType अभ्यास शीट</string>
+    <string name="camera_share_sheet_title">हस्तलेखन शीट शेयर करें</string>
+    <string name="camera_share_sheet_subject">HandType हस्तलेखन शीट</string>
     <string name="camera_priming">यह दस्तावेज़ स्कैनर खोलता है। आपकी फ़ोटो आपके डिवाइस पर संसाधित होती है और कभी इसे नहीं छोड़ती।</string>
     <string name="history_empty_title">अभी कोई नोट नहीं</string>
     <string name="history_rename_title">नोट का नाम बदलें</string>
@@ -222,7 +223,7 @@
     <string name="settings_language_system">सिस्टम डिफ़ॉल्ट</string>
     <!-- Premium -->
     <string name="premium_paywall_title">प्रीमियम अनलॉक करें</string>
-    <string name="premium_paywall_benefit_capture">प्रिंटेड प्रैक्टिस शीट से अपनी खुद की लिखावट कैप्चर करें</string>
+    <string name="premium_paywall_benefit_capture">प्रिंटेड हस्तलेखन शीट से अपनी खुद की लिखावट कैप्चर करें</string>
     <string name="premium_paywall_benefit_papers">पांच अतिरिक्त पेपर स्टाइल: पार्चमेंट, रीसाइक्ल्ड, क्राफ्ट, रूल्ड और ग्राफ</string>
     <string name="premium_paywall_buy">%1$s में अनलॉक करें</string>
     <string name="premium_paywall_restore">खरीद पुनर्स्थापित करें</string>
@@ -246,7 +247,7 @@
     <string name="onboarding_skip">छोड़ें</string>
     <string name="help_show_intro">परिचय दोबारा दिखाएं</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">इसके बजाय स्क्रीन पर लिखें</string>
     <string name="stylus_title">स्क्रीन पर लिखें</string>
     <string name="stylus_instruction">बॉक्स में हल्का दिख रहा वर्ण लिखें। उसे निचली लाइन पर रखें; छोटे अक्षर ऊपरी लाइन तक जाते हैं।</string>

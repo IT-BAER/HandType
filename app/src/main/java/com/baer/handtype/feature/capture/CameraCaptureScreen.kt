@@ -96,7 +96,9 @@ fun CameraCaptureScreen(
         stringResource(R.string.camera_pre_scan_step_4),
     )
     val sheetButtonText = stringResource(R.string.camera_sheet_button)
-    val scanButtonText = stringResource(R.string.camera_scan_button)
+    val printButtonText = stringResource(R.string.camera_print_button)
+    val printJobName = stringResource(R.string.camera_share_sheet_subject)
+    val scanButtonText =stringResource(R.string.camera_scan_button)
     val writeButtonText = stringResource(R.string.camera_write_button)
     val openingText = stringResource(R.string.camera_opening_scanner)
     val processingText = stringResource(R.string.camera_processing_button)
@@ -291,11 +293,21 @@ fun CameraCaptureScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    TextButton(
-                        onClick = { context.shareTemplateSheet() },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(text = sheetButtonText)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(
+                            onClick = { context.shareTemplateSheet() },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(text = sheetButtonText, textAlign = TextAlign.Center)
+                        }
+                        TextButton(
+                            onClick = { SheetPrint.print(context, printJobName) },
+                            modifier = Modifier
+                                .testTag(HandTypeTestTags.CAMERA_PRINT_BUTTON)
+                                .weight(1f),
+                        ) {
+                            Text(text = printButtonText, textAlign = TextAlign.Center)
+                        }
                     }
                 }
             }

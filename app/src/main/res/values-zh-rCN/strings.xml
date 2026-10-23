@@ -11,7 +11,7 @@
     <string name="template_card_captured">捕捉于 %1$s</string>
 
     <string name="onboarding_title">欢迎使用 HandType</string>
-    <string name="onboarding_body">输入任意文字，HandType 会将其转换为看起来像手写的字迹。内置样式可离线使用。使用高级版，您可以通过拍摄练习表来捕捉您自己的笔迹。</string>
+    <string name="onboarding_body">输入任意文字，HandType 会将其转换为看起来像手写的字迹。内置样式可离线使用。使用高级版，您可以通过拍摄手写纸来捕捉您自己的笔迹。</string>
     <string name="onboarding_cta">开始使用</string>
 
     <string name="render_instruction">在下方输入您的消息，然后点击“生成”以创建独特的手写便条。</string>
@@ -57,14 +57,15 @@
     <string name="result_pdf_saved">PDF 已保存至下载/HandType</string>
     <string name="result_pdf_failed">PDF 失败：%1$s</string>
 
-    <string name="camera_section_title">捕捉您的手写纸张</string>
+    <string name="camera_section_title">捕捉您的手写纸</string>
     <string name="camera_pre_scan_title">扫描前</string>
-    <string name="camera_pre_scan_step_1">打印练习纸。</string>
+    <string name="camera_pre_scan_step_1">打印手写纸。</string>
     <string name="camera_pre_scan_step_2">在每个方框中写入对应的字符，并保持在引导线上。</string>
     <string name="camera_pre_scan_step_3">拍摄整页，并确保四个黑色方块完全可见。</string>
     <string name="camera_pre_scan_step_4">使用均匀的光线，避免模糊、眩光和硬阴影。</string>
-    <string name="camera_sheet_button">分享或打印练习纸</string>
-    <string name="camera_scan_button">扫描或导入练习纸</string>
+    <string name="camera_sheet_button">分享手写纸</string>
+    <string name="camera_print_button">打印手写纸</string>
+    <string name="camera_scan_button">扫描或导入手写纸</string>
     <string name="camera_gallery_button">从相册选择照片</string>
     <string name="camera_opening_scanner">正在打开扫描器…</string>
     <string name="camera_processing_button">正在处理…</string>
@@ -90,12 +91,12 @@
     <string name="loading_template_title">正在加载模板</string>
     <string name="loading_template_body">正在为默认手写流程准备内置位图字形。</string>
 
-    <string name="premium_instruction">在练习纸上写 A-Z、a-z 和 0-9，然后扫描整页并确保四个黑色方块可见，以创建您的个人模板。</string>
+    <string name="premium_instruction">在手写纸上写 A-Z、a-z 和 0-9，然后扫描整页并确保四个黑色方块可见，以创建您的个人模板。</string>
     <string name="premium_processing">正在使用 ML Kit 处理手写样本…</string>
     <string name="premium_no_glyphs">未检测到字母数字字形。请尝试改善光线或使用颜色更深的笔，然后重新扫描。使用系统返回键回到模板。</string>
     <string name="premium_capture_complete">高级捕捉完成。已从 %2$d 个唯一字符中提取 %1$d 个字形。使用返回键回到模板。</string>
     <string name="premium_capture_failed_focus">文本识别失败。请尝试对焦更清晰地重新拍摄。</string>
-    <string name="premium_marker_detection_failed">该扫描看起来不像 HandType 练习纸。请确保打印的纸张占据扫描的大部分，且四个黑色方块可见。</string>
+    <string name="premium_marker_detection_failed">该扫描看起来不像 HandType 手写纸。请确保打印的纸张占据扫描的大部分，且四个黑色方块可见。</string>
     <string name="premium_save_failed">无法保存手写模板。请重试。</string>
     <string name="premium_process_failed">无法处理纸张。请重新扫描并确保四个角标记可见。</string>
     <string name="premium_camera_failed">相机捕捉失败。请重试。</string>
@@ -177,7 +178,7 @@
     <string name="template_flowing_cursive_name">流畅草体</string>
     <string name="template_flowing_cursive_description">字母相互连接、具有自然韵律感的光滑草体风格。</string>
     <string name="template_premium_sample">捕捉您自己的风格</string>
-    <string name="template_premium_description">从拍摄的练习表中提取您的个人笔迹。</string>
+    <string name="template_premium_description">从拍摄的手写纸中提取您的个人笔迹。</string>
     <string name="template_delete_title">删除模板？</string>
     <string name="template_delete_body">“%1$s”将永久从您的设备中删除。</string>
     <string name="result_tip_share">💡 提示：双指缩放查看便条，双击可重置。</string>
@@ -210,8 +211,8 @@
 
     <!-- Camera screen -->
     <string name="camera_title">捕捉手写</string>
-    <string name="camera_share_sheet_title">分享练习纸</string>
-    <string name="camera_share_sheet_subject">HandType 练习纸</string>
+    <string name="camera_share_sheet_title">分享手写纸</string>
+    <string name="camera_share_sheet_subject">HandType 手写纸</string>
     <string name="camera_priming">这将打开文档扫描仪。您的照片在设备上处理，不会离开设备。</string>
 
     <!-- History screen (additional) -->
@@ -240,7 +241,7 @@
     <string name="settings_language_system">系统默认</string>
     <!-- Premium -->
     <string name="premium_paywall_title">解锁高级版</string>
-    <string name="premium_paywall_benefit_capture">从打印的练习纸中捕获你自己的笔迹</string>
+    <string name="premium_paywall_benefit_capture">从打印的手写纸中捕获你自己的笔迹</string>
     <string name="premium_paywall_benefit_papers">五种额外纸张样式：羊皮纸、再生纸、牛皮纸、横线和方格</string>
     <string name="premium_paywall_buy">以 %1$s 解锁</string>
     <string name="premium_paywall_restore">恢复购买</string>
@@ -264,7 +265,7 @@
     <string name="onboarding_skip">跳过</string>
     <string name="help_show_intro">再次查看介绍</string>
 
-    <!-- Write the practice sheet on screen -->
+    <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">改为在屏幕上书写</string>
     <string name="stylus_title">在屏幕上书写</string>
     <string name="stylus_instruction">在方框中写出浅色显示的字符。让它落在下方线上，小写字母写到上方线。</string>
