@@ -68,14 +68,14 @@ class AppTourE2eTest {
         shot("settings")
 
         for (theme in listOf(ThemePreference.Dark, ThemePreference.Light, original.themePreference)) {
-            composeRule.onNodeWithText(themeLabel(theme)).performClick()
+            composeRule.onNodeWithTag(HandTypeTestTags.settingsThemeOption(theme.name)).performClick()
             composeRule.waitForIdle()
             assertEquals(theme, AppSettingsStore(baseContext).read().themePreference)
             shot("settings_theme_${theme.name.lowercase()}")
         }
 
         for (language in listOf(LanguagePreference.English, original.languagePreference)) {
-            composeRule.onNodeWithText(languageLabel(language)).performScrollTo().performClick()
+            composeRule.onNodeWithTag(HandTypeTestTags.settingsLanguageOption(language.name)).performScrollTo().performClick()
             composeRule.waitForIdle()
             assertEquals(language, AppSettingsStore(baseContext).read().languagePreference)
             // The recreated activity keeps the route and shows Settings in the new language.

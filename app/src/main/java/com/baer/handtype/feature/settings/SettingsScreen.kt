@@ -93,6 +93,7 @@ fun SettingsScreen(
                 themePreferences.forEachIndexed { index: Int, preference: ThemePreference ->
                     PreferenceRow(
                         label = themePreferenceLabel(preference),
+                        modifier = Modifier.testTag(HandTypeTestTags.settingsThemeOption(preference.name)),
                         selected = settings.themePreference == preference,
                         onClick = {
                             onSettingsChanged(settings.copy(themePreference = preference))
@@ -112,6 +113,7 @@ fun SettingsScreen(
                 languagePreferences.forEachIndexed { index: Int, preference: LanguagePreference ->
                     PreferenceRow(
                         label = languagePreferenceLabel(preference),
+                        modifier = Modifier.testTag(HandTypeTestTags.settingsLanguageOption(preference.name)),
                         selected = settings.languagePreference == preference,
                         onClick = {
                             onSettingsChanged(settings.copy(languagePreference = preference))
@@ -235,9 +237,10 @@ private fun PreferenceRow(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
