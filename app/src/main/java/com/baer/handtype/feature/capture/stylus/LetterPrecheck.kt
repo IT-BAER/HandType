@@ -29,6 +29,11 @@ object LetterPrecheck {
     private const val MAX_HEIGHT = GUIDE_GAP * 2f
     private const val TOP_CANDIDATES = 5
 
+    // Strokes may end this far (in cell sizes) past an edge; the rasterizer clips that ink.
+    private const val EDGE_TOLERANCE = 0.1f
+    private const val MIN_EDGE = -EDGE_TOLERANCE
+    private const val MAX_EDGE = 1f + EDGE_TOLERANCE
+
     private const val ASCENDER_LOWERCASE = "bdfhklß"
 
     // Characters whose written shapes cannot be told apart by case or digit form.
@@ -52,7 +57,9 @@ object LetterPrecheck {
     fun shapeCheck(expected: Char, strokes: List<InkStroke>): PrecheckResult {
         val points = strokes.flatMap { it.points }
         if (points.isEmpty()) return PrecheckResult.Empty
-        if (points.any { it.x < 0f || it.x > 1f || it.y < 0f || it.y > 1f }) return PrecheckResult.OutsideBox
+        if (points.any { it.x < MIN_EDGE || it.x > MAX_EDGE || it.y < MIN_EDGE || it.y > MAX_EDGE }) {
+            return PrecheckResult.OutsideBox
+        }
         val top = points.minOf { it.y }
         val height = points.maxOf { it.y } - top
         return when {

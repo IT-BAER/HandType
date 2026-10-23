@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Writing the handwriting sheet on the screen now shows nine letters per page (3 x 3), so the letters come out smaller and more natural. Next checks the whole page and marks the cells that need another try.
+- A stroke may end up to 10% of the cell past its edge before the letter counts as outside; ink past the edge is cut from the saved letter.
 - The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
 - Compose 1.7.8 and Material 3 1.3.2.
 
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Writing the handwriting sheet on the screen now shows nine letters per page (3 x 3), so the letters come out smaller and more natural. Next checks the whole page and marks the cells that need another try.
+- A stroke may end up to 10% of the cell past its edge before the letter counts as outside; ink past the edge is cut from the saved letter.
 - The practice sheet has 9 rows instead of 8, so each cell is slightly shorter.
 - Removed the unused ML Kit text recognition library and its install-time OCR model download.
 - Removed the `WRITE_EXTERNAL_STORAGE` permission, which applied only up to Android 9.

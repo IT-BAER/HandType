@@ -23,9 +23,17 @@ class LetterPrecheckTest {
     }
 
     @Test
-    fun pointOutsideTheCellFails() {
-        val outside = stroke(0.5f, 0.15f, 0.5f, 0.78f, 1.05f, 0.78f)
+    fun pointFarOutsideTheCellFails() {
+        val outside = stroke(0.5f, 0.15f, 0.5f, 0.78f, 1.15f, 0.78f)
         assertEquals(PrecheckResult.OutsideBox, LetterPrecheck.evaluate('A', listOf(outside), null))
+        val above = stroke(0.5f, -0.12f, 0.5f, 0.78f)
+        assertEquals(PrecheckResult.OutsideBox, LetterPrecheck.evaluate('A', listOf(above), null))
+    }
+
+    @Test
+    fun barsOvershootingAnEdgeByUpToTenPercentPass() {
+        val bars = listOf(tallStroke, stroke(-0.08f, 0.2f, 1.08f, 0.2f), stroke(0.1f, 0.78f, 1.09f, 0.78f))
+        assertEquals(PrecheckResult.Pass, LetterPrecheck.evaluate('E', bars, null))
     }
 
     @Test
