@@ -7,26 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-23
+
 ### Added
 - Premium: print the handwriting sheet directly from the capture screen (one A4 page through the Android print dialog), next to Share.
 - Premium: small ink specks follow the pen while you write the sheet on the screen. They are only drawn on screen and do not change the saved letters; they are off when system animations are off.
 - Stylus handwriting in the message box on Android 14 and newer, when the keyboard supports it.
-
-### Changed
-- Writing the handwriting sheet on the screen now shows nine letters per page (3 x 3), so the letters come out smaller and more natural. Next checks the whole page and marks the cells that need another try.
-- A stroke may end up to 10% of the cell past its edge before the letter counts as outside; ink past the edge is cut from the saved letter.
-- The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
-- Compose 1.7.8 and Material 3 1.3.2.
-- Generate animation: the screen fades into the "Generating" card, the pen draws the whole sign including its cross and underline, and the finished note appears on its paper at once and is then written in line by line.
-- Text size slider: the note grows or shrinks while you drag, and the lines re-wrap a moment later in the new size.
-
-### Fixed
-- The Android share sheet shows a preview of the note instead of an empty thumbnail.
-- Printing the handwriting sheet on a phone without the Android print service shows a message instead of closing the app.
-
-## [1.1.0] - 2026-10-22
-
-### Added
 - Text size slider on the result screen: the note is drawn again in the same handwriting, smaller or larger (0.7x to 1.5x). Regenerate and transparent export keep the chosen size.
 - Premium: write the practice sheet directly on the screen, one character at a time (stylus or finger). Each letter is checked for size, position and, with Google's on-device handwriting recognition, for the expected character before the next one appears.
 - German letters: Ink Script now writes Ä Ö Ü ä ö ü ß, and with German as the app language the practice sheet (printed or on screen) adds a row for them, and the capture instructions name them. Sheets printed before this update still scan.
@@ -35,13 +21,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Writing the handwriting sheet on the screen now shows nine letters per page (3 x 3), so the letters come out smaller and more natural. Next checks the whole page and marks the cells that need another try.
 - A stroke may end up to 10% of the cell past its edge before the letter counts as outside; ink past the edge is cut from the saved letter.
+- The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
+- Compose 1.7.8 and Material 3 1.3.2.
+- Generate animation: the screen fades into the "Generating" card, the pen draws the whole sign including its cross and underline, and the finished note appears on its paper at once and is then written in line by line.
+- Text size slider: the note grows or shrinks while you drag, and the lines re-wrap a moment later in the new size.
 - The practice sheet has 9 rows instead of 8, so each cell is slightly shorter.
 - Removed the unused ML Kit text recognition library and its install-time OCR model download.
 - Removed the `WRITE_EXTERNAL_STORAGE` permission, which applied only up to Android 9.
 - Capture diagnostics are logged only in debug builds.
-- Version 1.1.0 (versionCode 5).
+- Version 1.1.0 (versionCode 6).
 
 ### Fixed
+- The Android share sheet shows a preview of the note instead of an empty thumbnail.
+- Printing the handwriting sheet on a phone without the Android print service shows a message instead of closing the app.
+- Scanning a filled-in handwriting sheet takes the cells from the printed grid, so pen strokes no longer pass as guide lines, cell borders or corner squares.
 - Ink Script splits a word wider than one line with a hyphen instead of breaking it mid-word without one, at a syllable where it can ("Öster-reich", not "Österre-ich").
 - "!" and "?" no longer merge into a preceding letter that ends in a vertical stroke ("Tom!").
 - The result screen shows a long note at full width and scrolls it, instead of shrinking it into a narrow strip.
