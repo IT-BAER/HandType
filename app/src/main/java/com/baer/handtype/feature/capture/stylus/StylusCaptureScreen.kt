@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
@@ -68,6 +69,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -77,9 +80,11 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.provider.Settings
 import com.baer.handtype.R
 import com.baer.handtype.feature.capture.PracticeSheetGenerator
 import com.baer.handtype.testing.HandTypeTestTags
+import kotlin.random.Random
 import kotlinx.coroutines.launch
 
 /** Strokes written for every sheet character plus the current position; accepted = before [index]. */
@@ -125,6 +130,8 @@ private val InkColor = Color(0xFF1A1410)
 private val GuideColor = Color(0xFFCEC6B4)
 private val BorderColor = Color(0xFFCCC4B4)
 
+private const val PARTICLE_PEAK_ALPHA = 0.7f
+
 // Points closer than this (in cell heights) to the previous sample are dropped to keep saved state small.
 private const val MIN_POINT_STEP = 0.003f
 
@@ -158,6 +165,32 @@ fun StylusCaptureScreen(
     val stripState = rememberLazyListState()
     val canAct = !checking && !isSaving
 
+    // Display-only specks; they never touch livePoints or InkStroke data.
+    val context = LocalContext.current
+    val particlesEnabled = remember(context) {
+        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f
+    }
+    val density = LocalDensity.current.density
+    val particles = remember(density) { InkParticleField(Random(System.nanoTime()), density) }
+    val canvasSize = remember { FloatArray(2) }
+    var particlesActive by remember { mutableStateOf(false) }
+    var particleFrame by remember { mutableIntStateOf(0) }
+    val particleColor = MaterialTheme.colorScheme.primary
+
+    LaunchedEffect(particlesActive) {
+        if (particlesActive) {
+            var lastFrame = 0L
+            while (particles.count > 0) {
+                withFrameMillis { now ->
+                    if (lastFrame != 0L) particles.step((now - lastFrame).coerceAtMost(50L))
+                    lastFrame = now
+                    particleFrame++
+                }
+            }
+            particlesActive = false
+        }
+    }
+
     LaunchedEffect(recognizer) { recognizer.prepare() }
     LaunchedEffect(index) { if (index > 0) stripState.animateScrollToItem(index - 1) }
 
@@ -172,6 +205,16 @@ fun StylusCaptureScreen(
             val dx = (point.x - last.x) * geometry.aspectRatio
             val dy = point.y - last.y
             if (dx * dx + dy * dy < MIN_POINT_STEP * MIN_POINT_STEP) return
+            if (particlesEnabled) {
+                val pxX = (point.x - last.x) * canvasSize[0]
+                val pxY = (point.y - last.y) * canvasSize[1]
+                particles.emit(
+                    point.x * canvasSize[0],
+                    point.y * canvasSize[1],
+                    kotlin.math.sqrt(pxX * pxX + pxY * pxY),
+                )
+                if (particles.count > 0) particlesActive = true
+            }
         }
         livePoints.add(point)
     }
@@ -449,6 +492,18 @@ fun StylusCaptureScreen(
                         val penWidth = size.height * InkRasterizer.PEN_WIDTH_PX / geometry.cellHeightPx
                         strokes.forEach { drawInk(it.points, penWidth) }
                         drawInk(livePoints, penWidth)
+                        canvasSize[0] = size.width
+                        canvasSize[1] = size.height
+                        if (particleFrame >= 0) {
+                            for (i in 0 until particles.count) {
+                                drawCircle(
+                                    particleColor,
+                                    radius = particles.size(i),
+                                    center = Offset(particles.x(i), particles.y(i)),
+                                    alpha = particles.alpha(i) * PARTICLE_PEAK_ALPHA,
+                                )
+                            }
+                        }
                         drawRect(BorderColor, style = Stroke(width = 1.dp.toPx()))
                     }
                 }
