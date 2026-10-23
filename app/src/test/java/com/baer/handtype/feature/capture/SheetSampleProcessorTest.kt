@@ -54,6 +54,71 @@ class SheetSampleProcessorTest {
         }
     }
 
+    @Test
+    fun fiducialsMustOutlineTheSheet() {
+        val sheet = SheetSampleProcessor.Fiducials(100f to 100f, 1140f to 100f, 1140f to 1654f, 100f to 1654f)
+        val tilted = SheetSampleProcessor.Fiducials(160f to 120f, 1080f to 120f, 1180f to 1640f, 60f to 1640f)
+        // Four handwriting strokes picked from a scan cropped to the grid (measured on a user sheet).
+        val strokes = SheetSampleProcessor.Fiducials(44f to 68f, 497f to 177f, 347f to 845f, 190f to 850f)
+
+        assertTrue("flat sheet", SheetSampleProcessor.plausibleFiducials(sheet))
+        assertTrue("phone tilted towards the top", SheetSampleProcessor.plausibleFiducials(tilted))
+        assertFalse("handwriting strokes", SheetSampleProcessor.plausibleFiducials(strokes))
+    }
+
+    @Test
+    fun guideSnapIgnoresPenStrokeNearTheGuide() {
+        val width = 120
+        val height = 100
+        val luma = IntArray(width * height) { PAPER }
+        // A photographed guide: only the core of each dash stays below the guide threshold.
+        for (x in 0 until width) if (x % 12 < 4) luma[40 * width + x] = GUIDE
+        // The flat top of a 'D': darker and denser than the dashed guide but only over half the cell.
+        for (y in 52..55) for (x in 20 until 80) luma[y * width + x] = INK
+
+        assertEquals(40, SheetSampleProcessor.snapLine(luma, width, nominal = 45, limit = height, span = 0 until width, horizontal = true))
+    }
+
+    @Test
+    fun borderSnapIgnoresLetterStemNearTheBorder() {
+        val width = 100
+        val height = 160
+        val luma = IntArray(width * height) { PAPER }
+        for (y in 0 until height) { luma[y * width + 10] = BORDER; luma[y * width + 11] = BORDER }
+        // The stem of a 'D' written close to the left border.
+        for (y in 40 until 120) for (x in 22..25) luma[y * width + x] = INK
+
+        assertEquals(10, SheetSampleProcessor.snapLine(luma, width, nominal = 18, limit = width, span = 0 until height, horizontal = false))
+    }
+
+    @Test
+    fun gridLinesAreFoundWhereverTheSheetPrintedThem() {
+        // A filled-in sheet whose grid sits closer to the corner squares than the generator's
+        // (measured on a user's sheet): columns 133..1109, rows 188..1602.
+        val xs = List(9) { 133 + it * 122 }
+        val ys = List(9) { 188 + it * 1414 / 8 }
+        val luma = IntArray(WIDTH * HEIGHT) { PAPER }
+        for (x in xs) for (y in ys.first()..ys.last()) { luma[y * WIDTH + x] = BORDER; luma[y * WIDTH + x + 1] = BORDER }
+        for (y in ys) for (x in xs.first()..xs.last()) { luma[y * WIDTH + x] = BORDER; luma[(y + 1) * WIDTH + x] = BORDER }
+        for ((top, bottom) in ys.zipWithNext()) {
+            val guide = top + (bottom - top) / 3
+            for (x in xs.first()..xs.last()) if (x % 12 < 7) luma[guide * WIDTH + x] = GUIDE
+        }
+
+        val (foundXs, foundYs) = SheetSampleProcessor.detectGridLines(luma) ?: error("no grid found")
+
+        assertEquals(xs.size, foundXs.size)
+        assertEquals(ys.size, foundYs.size)
+        // Lines are 2 px thick, so the centre may sit on either pixel.
+        xs.zip(foundXs).forEach { (x, f) -> assertTrue("column $x found at $f", f in x..x + 1) }
+        ys.zip(foundYs).forEach { (y, f) -> assertTrue("row $y found at $f", f in y..y + 1) }
+    }
+
+    @Test
+    fun noGridLinesOnBlankPaper() {
+        assertEquals(null, SheetSampleProcessor.detectGridLines(IntArray(WIDTH * HEIGHT) { PAPER }))
+    }
+
     /** Luma of a rectified blank sheet: paper, solid cell borders and dashed guides at the generator's rows. */
     private fun rectifiedSheet(rows: Int, bow: (Int) -> Int = { it }): IntArray {
         val luma = IntArray(WIDTH * HEIGHT) { PAPER }
@@ -82,6 +147,7 @@ class SheetSampleProcessorTest {
         const val PAPER = 253
         const val BORDER = 197
         const val GUIDE = 206
+        const val INK = 40
         // Fiducial centres of the generated sheet (outer margin 60 + half of the 80 px fiducial).
         const val GRID_LEFT = 100f
         const val GRID_TOP = 100f

@@ -12,6 +12,8 @@ import com.baer.handtype.BuildConfig
 import com.baer.handtype.ml.GlyphPostProcessor
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.math.abs
+import kotlin.math.hypot
 
 /**
  * Detects the four black corner fiducials on a printed [PracticeSheetGenerator] sheet, rectifies
@@ -52,6 +54,22 @@ object SheetSampleProcessor {
     // Covers the ~15 px bow near the page bottom but stays below the 19 px that separates the
     // nearest 8-row and 9-row borders.
     private const val BORDER_SEARCH_RADIUS = 15
+
+    // snapLine(): a printed rule darkens at least 5 of 6 segments of its span, by at least this
+    // much below the window's paper level.
+    private const val LINE_SEGMENTS = 6
+    private const val LINE_SEGMENTS_MIN = 5
+    private const val LINE_CONTRAST = 15
+
+    // detectGridLines(): a solid border darkens nearly all of the central band (a dashed guide
+    // about 60%), and printed cells are equal within this fraction of the mean gap.
+    private const val GRID_LINE_COVERAGE = 0.8f
+    private const val GRID_GAP_TOLERANCE = 0.1f
+
+    // plausibleFiducials(): opposite sides of the fiducial quad may differ by this factor (phone
+    // tilt), and its height/width may deviate this much from the printed layout.
+    private const val FIDUCIAL_SIDE_RATIO_MAX = 1.5f
+    private const val FIDUCIAL_ASPECT_TOLERANCE = 0.35f
 
     data class SheetExtractionResult(
         val glyphs: Map<Char, Bitmap>,
@@ -127,7 +145,7 @@ object SheetSampleProcessor {
         val mask = thresholdMaskInRect(luma, working.width, working.height, pageRect, paperMask)
         debugContext?.let { dumpDebugMask(it, working, mask) }
 
-        val fiducials = findFiducials(mask, working.width, working.height, pageRect)
+        val fiducials = findFiducials(mask, working.width, working.height, pageRect)?.takeIf(::plausibleFiducials)
         if (fiducials == null) {
             Log.e(TAG, "Failed to locate 4 fiducials.")
             return SheetExtractionResult(
@@ -156,17 +174,20 @@ object SheetSampleProcessor {
         val gridHeightPx = gridBottomPx - gridTopPx
 
         val rectifiedLuma = computeLuma(rectified)
-        val rows = detectGridRows(rectifiedLuma)
-        Log.i(TAG, "Detected $rows grid rows")
+        val gridLines = detectGridLines(rectifiedLuma)
+        val rows = gridLines?.let { it.second.size - 1 } ?: detectGridRows(rectifiedLuma)
+        Log.i(TAG, "Detected $rows grid rows, printed lines ${if (gridLines != null) "found" else "not found"}")
         val cells = PracticeSheetGenerator.normalizedCells(PracticeSheetGenerator.cellCharacters(localeCharacters, rows))
         cells.forEachIndexed { index, cell ->
             if (cell.character == ' ') return@forEachIndexed
-            // The nominal cell from the grid geometry, then snapped onto the printed borders:
-            // rectification bow moves a border by up to ~15 px near the bottom of the page.
-            val nominalLeft = (gridLeftPx + cell.left * gridWidthPx).toInt().coerceIn(0, RECTIFIED_WIDTH - 2)
-            val nominalTop = (gridTopPx + cell.top * gridHeightPx).toInt().coerceIn(0, RECTIFIED_HEIGHT - 2)
-            val nominalRight = (gridLeftPx + cell.right * gridWidthPx).toInt().coerceIn(nominalLeft + 1, RECTIFIED_WIDTH)
-            val nominalBottom = (gridTopPx + cell.bottom * gridHeightPx).toInt().coerceIn(nominalTop + 1, RECTIFIED_HEIGHT)
+            // The nominal cell from the printed lines (or the grid geometry), then snapped onto the
+            // printed borders: rectification bow moves a border by up to ~15 px near the page bottom.
+            val col = index % PracticeSheetGenerator.GRID_COLS
+            val row = index / PracticeSheetGenerator.GRID_COLS
+            val nominalLeft = (gridLines?.first?.get(col) ?: (gridLeftPx + cell.left * gridWidthPx).toInt()).coerceIn(0, RECTIFIED_WIDTH - 2)
+            val nominalTop = (gridLines?.second?.get(row) ?: (gridTopPx + cell.top * gridHeightPx).toInt()).coerceIn(0, RECTIFIED_HEIGHT - 2)
+            val nominalRight = (gridLines?.first?.get(col + 1) ?: (gridLeftPx + cell.right * gridWidthPx).toInt()).coerceIn(nominalLeft + 1, RECTIFIED_WIDTH)
+            val nominalBottom = (gridLines?.second?.get(row + 1) ?: (gridTopPx + cell.bottom * gridHeightPx).toInt()).coerceIn(nominalTop + 1, RECTIFIED_HEIGHT)
             val cellTop = snapBorderRow(rectifiedLuma, nominalTop, nominalLeft, nominalRight)
             val cellBottom = snapBorderRow(rectifiedLuma, nominalBottom, nominalLeft, nominalRight)
             val cellLeft = snapBorderColumn(rectifiedLuma, nominalLeft, cellTop, cellBottom)
@@ -241,33 +262,8 @@ object SheetSampleProcessor {
      * [GUIDE_SEARCH_RADIUS] rows away from where the grid geometry puts it. Returns [nominalY]
      * unchanged when no row in range looks like a printed line.
      */
-    private fun snapGuideRow(crop: Bitmap, nominalY: Int): Int {
-        val width = crop.width
-        val from = (nominalY - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)
-        val to = (nominalY + GUIDE_SEARCH_RADIUS).coerceAtMost(crop.height - 1)
-        if (from > to || width <= 0) return nominalY
-
-        val row = IntArray(width)
-        var bestY = nominalY
-        var bestCount = 0
-        for (y in from..to) {
-            crop.getPixels(row, 0, width, 0, y, width, 1)
-            var count = 0
-            for (p in row) {
-                val luma = (
-                    ((p shr 16) and 0xFF) * 299 + ((p shr 8) and 0xFF) * 587 + (p and 0xFF) * 114
-                    ) / 1000
-                if (luma <= GUIDE_LUMA_MAX) count++
-            }
-            if (count > bestCount) {
-                bestCount = count
-                bestY = y
-            }
-        }
-        // The guides are dashed, so a real one darkens roughly a quarter of the row. Below that
-        // the search only found paper and the nominal position is the better guess.
-        return if (bestCount >= width / 4) bestY else nominalY
-    }
+    private fun snapGuideRow(crop: Bitmap, nominalY: Int): Int =
+        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true)
 
     /**
      * Rescales [cellCrop] so its own paper level maps to luma 255. A photographed sheet has an
@@ -324,6 +320,52 @@ object SheetSampleProcessor {
         listOf(PracticeSheetGenerator.GRID_ROWS, PracticeSheetGenerator.LEGACY_GRID_ROWS)
             .minBy { rows -> interiorBorderLuma(luma, rows) }
 
+    /**
+     * The printed cell borders of the rectified sheet in [luma] as (column xs, row ys), or null
+     * when they do not form a clean, evenly spaced 8-column grid of a known row count. Sheets
+     * printed by other generators put the grid elsewhere relative to the corner squares, beyond
+     * what snapping a nominal border can reach. Coverage is measured over the central half of
+     * the page only, where rectification bow cannot tilt a line out of one pixel column or row.
+     */
+    internal fun detectGridLines(luma: IntArray): Pair<List<Int>, List<Int>>? {
+        val w = RECTIFIED_WIDTH
+        val h = RECTIFIED_HEIGHT
+        val bandX = w / 4 until w * 3 / 4
+        val bandY = h / 4 until h * 3 / 4
+        val sample = IntArray(bandX.count() * bandY.count() / 16)
+        var i = 0
+        for (y in bandY step 4) for (x in bandX step 4) if (i < sample.size) sample[i++] = luma[y * w + x]
+        sample.sort()
+        val darkMax = minOf(sample[i / 2] - LINE_CONTRAST, GUIDE_LUMA_MAX)
+
+        fun lines(count: Int, coverage: (Int) -> Float): List<Int> {
+            val centres = mutableListOf<Int>()
+            var runStart = -1
+            for (p in 0..count) {
+                val dark = p < count && coverage(p) >= GRID_LINE_COVERAGE
+                if (dark && runStart < 0) runStart = p
+                if (!dark && runStart >= 0) {
+                    centres += (runStart + p - 1) / 2
+                    runStart = -1
+                }
+            }
+            return centres
+        }
+        fun evenlySpaced(lines: List<Int>): Boolean {
+            val gaps = lines.zipWithNext { a, b -> b - a }
+            val mean = gaps.average()
+            return gaps.all { abs(it - mean) <= mean * GRID_GAP_TOLERANCE }
+        }
+
+        val xs = lines(w) { x -> bandY.count { y -> luma[y * w + x] <= darkMax }.toFloat() / bandY.count() }
+        val ys = lines(h) { y -> bandX.count { x -> luma[y * w + x] <= darkMax }.toFloat() / bandX.count() }
+        if (xs.size != PracticeSheetGenerator.GRID_COLS + 1 || !evenlySpaced(xs)) return null
+        if (ys.size - 1 !in setOf(PracticeSheetGenerator.GRID_ROWS, PracticeSheetGenerator.LEGACY_GRID_ROWS) || !evenlySpaced(ys)) {
+            return null
+        }
+        return xs to ys
+    }
+
     /** Mean, over the interior horizontal borders of a [rows]-row grid, of the darkest row near each. */
     private fun interiorBorderLuma(luma: IntArray, rows: Int): Float {
         val fl = PracticeSheetGenerator.fiducialLayout
@@ -344,39 +386,47 @@ object SheetSampleProcessor {
         }.average().toFloat()
     }
 
-    /** Darkest row within [GUIDE_SEARCH_RADIUS] of [nominalY] across [x0, x1): the printed border. */
-    private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int {
-        var bestY = nominalY
-        var bestSum = Int.MAX_VALUE
-        val from = (nominalY - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)
-        val to = (nominalY + GUIDE_SEARCH_RADIUS).coerceAtMost(RECTIFIED_HEIGHT - 1)
-        for (y in from..to) {
-            var sum = 0
-            for (x in x0 until x1) sum += luma[y * RECTIFIED_WIDTH + x]
-            if (sum < bestSum) {
-                bestSum = sum
-                bestY = y
+    /**
+     * Snaps a nominal line (a row when [horizontal], else a column, of an image with row [stride])
+     * onto the printed rule within [GUIDE_SEARCH_RADIUS], measured along [span]. A rule, solid or
+     * dashed, darkens every part of the span; a pen stroke only part of it, however dark, so a
+     * candidate must reach [LINE_SEGMENTS_MIN] of [LINE_SEGMENTS] segments. Among those the line
+     * with the most dark pixels wins; with none, [nominal] is the better guess.
+     */
+    internal fun snapLine(luma: IntArray, stride: Int, nominal: Int, limit: Int, span: IntRange, horizontal: Boolean): Int {
+        val lines = (nominal - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)..(nominal + GUIDE_SEARCH_RADIUS).coerceAtMost(limit - 1)
+        if (lines.isEmpty() || span.isEmpty()) return nominal
+        fun at(line: Int, p: Int) = luma[if (horizontal) line * stride + p else p * stride + line]
+        // Paper level from the window itself: a dim photo has paper well below a printed sheet's.
+        val window = IntArray(lines.count() * span.count())
+        var i = 0
+        for (line in lines) for (p in span) window[i++] = at(line, p)
+        window.sort()
+        val darkMax = minOf(window[window.size / 2] - LINE_CONTRAST, GUIDE_LUMA_MAX)
+        val segmentLength = span.count().toFloat() / LINE_SEGMENTS
+        var best = nominal
+        var bestCount = 0
+        for (line in lines) {
+            var count = 0
+            val hit = BooleanArray(LINE_SEGMENTS)
+            for (p in span) {
+                if (at(line, p) > darkMax) continue
+                count++
+                hit[((p - span.first) / segmentLength).toInt().coerceAtMost(LINE_SEGMENTS - 1)] = true
+            }
+            if (hit.count { it } >= LINE_SEGMENTS_MIN && count > bestCount) {
+                bestCount = count
+                best = line
             }
         }
-        // A border darkens the whole span; a lighter average is paper plus some ink.
-        return if (bestSum / (x1 - x0).coerceAtLeast(1) <= GUIDE_LUMA_MAX) bestY else nominalY
+        return best
     }
 
-    private fun snapBorderColumn(luma: IntArray, nominalX: Int, y0: Int, y1: Int): Int {
-        var bestX = nominalX
-        var bestSum = Int.MAX_VALUE
-        val from = (nominalX - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)
-        val to = (nominalX + GUIDE_SEARCH_RADIUS).coerceAtMost(RECTIFIED_WIDTH - 1)
-        for (x in from..to) {
-            var sum = 0
-            for (y in y0 until y1) sum += luma[y * RECTIFIED_WIDTH + x]
-            if (sum < bestSum) {
-                bestSum = sum
-                bestX = x
-            }
-        }
-        return if (bestSum / (y1 - y0).coerceAtLeast(1) <= GUIDE_LUMA_MAX) bestX else nominalX
-    }
+    private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int =
+        snapLine(luma, RECTIFIED_WIDTH, nominalY, RECTIFIED_HEIGHT, x0 until x1, horizontal = true)
+
+    private fun snapBorderColumn(luma: IntArray, nominalX: Int, y0: Int, y1: Int): Int =
+        snapLine(luma, RECTIFIED_WIDTH, nominalX, RECTIFIED_WIDTH, y0 until y1, horizontal = false)
 
     /**
      * Whites out the printed furniture the crop still contains: the cell label at [labelBox]
@@ -652,12 +702,31 @@ object SheetSampleProcessor {
     // Fiducial localisation
     // ---------------------------------------------------------------------------------------------
 
-    private data class Fiducials(
+    internal data class Fiducials(
         val tl: Pair<Float, Float>,
         val tr: Pair<Float, Float>,
         val br: Pair<Float, Float>,
         val bl: Pair<Float, Float>,
     )
+
+    /**
+     * Whether the four picked centres outline the printed sheet. On a photo without the squares
+     * (a scan cropped to the grid) the picks are pen strokes, and rectifying onto them yields
+     * nothing but rule pieces and smeared ink.
+     */
+    internal fun plausibleFiducials(f: Fiducials): Boolean {
+        fun dist(a: Pair<Float, Float>, b: Pair<Float, Float>) = hypot(a.first - b.first, a.second - b.second)
+        fun similar(a: Float, b: Float) = a > 0f && b > 0f && maxOf(a, b) / minOf(a, b) <= FIDUCIAL_SIDE_RATIO_MAX
+        val top = dist(f.tl, f.tr)
+        val bottom = dist(f.bl, f.br)
+        val left = dist(f.tl, f.bl)
+        val right = dist(f.tr, f.br)
+        if (!similar(top, bottom) || !similar(left, right)) return false
+        val fl = PracticeSheetGenerator.fiducialLayout
+        val expected = (fl.bottomLeft.second - fl.topLeft.second) / (fl.topRight.first - fl.topLeft.first)
+        val aspect = (left + right) / (top + bottom)
+        return abs(aspect / expected - 1f) <= FIDUCIAL_ASPECT_TOLERANCE
+    }
 
     /** Locate the best fiducial-shaped dark component in each quadrant; return their centroids. */
     private fun findFiducials(mask: BooleanArray, width: Int, height: Int, pageRect: PageRect? = null): Fiducials? {
