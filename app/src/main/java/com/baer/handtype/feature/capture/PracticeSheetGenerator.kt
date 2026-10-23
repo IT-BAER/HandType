@@ -35,7 +35,7 @@ object PracticeSheetGenerator {
     private const val PAGE_HEIGHT = 1754
     private const val OUTER_MARGIN = 60
     const val FIDUCIAL_SIZE = 80
-    private const val GRID_COLS = 8
+    const val GRID_COLS = 8
     const val GRID_ROWS = 9
 
     /** Sheets printed before the language row existed; the scan still reads them. */
