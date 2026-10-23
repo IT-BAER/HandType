@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stylus handwriting in the message box on Android 14 and newer, when the keyboard supports it.
 
 ### Changed
+- Writing the handwriting sheet on the screen now shows nine letters per page (3 x 3), so the letters come out smaller and more natural. Next checks the whole page and marks the cells that need another try.
 - The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
 - Compose 1.7.8 and Material 3 1.3.2.
 
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accented letters: Ink Script and your own handwriting now write é è ê ë à â á ã ñ ç ô ó õ î í ï û ú ù å and their capitals. The base letter is drawn with the accent added in the same pen.
 
 ### Changed
+- Writing the handwriting sheet on the screen now shows nine letters per page (3 x 3), so the letters come out smaller and more natural. Next checks the whole page and marks the cells that need another try.
 - The practice sheet has 9 rows instead of 8, so each cell is slightly shorter.
 - Removed the unused ML Kit text recognition library and its install-time OCR model download.
 - Removed the `WRITE_EXTERNAL_STORAGE` permission, which applied only up to Android 9.
