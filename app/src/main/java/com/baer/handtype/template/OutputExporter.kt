@@ -1,5 +1,6 @@
 package com.baer.handtype.template
 
+import android.content.ClipData
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -262,6 +263,8 @@ object OutputExporter {
         val send = Intent(Intent.ACTION_SEND).apply {
             type = mime
             putExtra(Intent.EXTRA_STREAM, uri)
+            // The Sharesheet draws its thumbnail from ClipData; createChooser passes it on with the grant.
+            clipData = ClipData.newRawUri(null, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         return Intent.createChooser(send, null)
