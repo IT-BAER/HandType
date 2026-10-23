@@ -30,7 +30,7 @@ After your third successful save, share or export, HandType may ask Google Play 
 
 ## Premium handwriting capture
 
-The optional "use my handwriting" feature opens Google's document scanner, where you can scan or select a practice-sheet photo. HandType extracts the characters from that sheet locally and saves a personal template. The app does not upload your photo or handwriting. Google Play services may need to download the scanner component before its first use.
+The optional "use my handwriting" feature opens Google's document scanner, where you can scan or select a photo of the handwriting sheet. HandType extracts the characters from that sheet locally and saves a personal template. The app does not upload your photo or handwriting. Google Play services may need to download the scanner component before its first use.
 
 ## Permissions
 

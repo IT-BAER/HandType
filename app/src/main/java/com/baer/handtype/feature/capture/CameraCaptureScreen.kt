@@ -98,7 +98,7 @@ fun CameraCaptureScreen(
     val sheetButtonText = stringResource(R.string.camera_sheet_button)
     val printButtonText = stringResource(R.string.camera_print_button)
     val printJobName = stringResource(R.string.camera_share_sheet_subject)
-    val scanButtonText =stringResource(R.string.camera_scan_button)
+    val scanButtonText = stringResource(R.string.camera_scan_button)
     val writeButtonText = stringResource(R.string.camera_write_button)
     val openingText = stringResource(R.string.camera_opening_scanner)
     val processingText = stringResource(R.string.camera_processing_button)

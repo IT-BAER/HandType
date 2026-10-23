@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Premium: print the handwriting sheet directly from the capture screen (one A4 page through the Android print dialog), next to Share.
+- Premium: small ink specks follow the pen while you write the sheet on the screen. They are only drawn on screen and do not change the saved letters; they are off when system animations are off.
+- Stylus handwriting in the message box on Android 14 and newer, when the keyboard supports it.
+
+### Changed
+- The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
+- Compose 1.7.8 and Material 3 1.3.2.
+
 ## [1.1.0] - 2026-10-22
 
 ### Added
