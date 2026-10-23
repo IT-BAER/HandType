@@ -1,5 +1,6 @@
 package com.baer.handtype.feature.capture
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
@@ -35,12 +36,18 @@ object SheetPrint {
         return Fit(margin + (availableWidth - width) / 2f, margin + (availableHeight - height) / 2f, width, height)
     }
 
-    fun print(context: Context, jobName: String) {
-        val manager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return
+    /** False when the phone has no print framework, e.g. a Print Spooler removed by the vendor or user. */
+    fun print(context: Context, jobName: String): Boolean {
+        val manager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return false
         val attributes = PrintAttributes.Builder()
             .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
             .build()
-        manager.print(jobName, SheetAdapter(context, jobName), attributes)
+        return try {
+            manager.print(jobName, SheetAdapter(context, jobName), attributes)
+            true
+        } catch (e: ActivityNotFoundException) {
+            false
+        }
     }
 
     private class SheetAdapter(private val context: Context, private val name: String) : PrintDocumentAdapter() {

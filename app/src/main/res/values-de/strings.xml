@@ -66,6 +66,7 @@
     <string name="camera_pre_scan_step_4">Nutze gleichmäßiges Licht und vermeide Unschärfe, Spiegelungen und harte Schatten.</string>
     <string name="camera_sheet_button">Schriftprobe teilen</string>
     <string name="camera_print_button">Schriftprobe drucken</string>
+    <string name="camera_print_unavailable">Drucken nicht verfügbar. Teile die Schriftprobe.</string>
     <string name="camera_scan_button">Schriftprobe scannen oder importieren</string>
     <string name="camera_gallery_button">Foto aus der Galerie wählen</string>
     <string name="camera_opening_scanner">Scanner wird geöffnet…</string>

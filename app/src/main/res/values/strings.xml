@@ -74,6 +74,7 @@
     <string name="camera_pre_scan_step_4">Use even light and avoid blur, glare, and hard shadows.</string>
     <string name="camera_sheet_button">Share handwriting sheet</string>
     <string name="camera_print_button">Print handwriting sheet</string>
+    <string name="camera_print_unavailable">Printing is not available. Share the sheet instead.</string>
     <string name="camera_scan_button">Scan or import handwriting sheet</string>
     <string name="camera_gallery_button">Choose photo from gallery</string>
     <string name="camera_opening_scanner">Opening scanner...</string>

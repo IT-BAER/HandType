@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">균일한 조명을 사용하고 흐림, 눈부심, 강한 그림자를 피하세요.</string>
     <string name="camera_sheet_button">필기 시트 공유</string>
     <string name="camera_print_button">필기 시트 인쇄</string>
+    <string name="camera_print_unavailable">인쇄를 사용할 수 없습니다. 시트를 공유하세요.</string>
     <string name="camera_scan_button">필기 시트 스캔 또는 가져오기</string>
     <string name="camera_gallery_button">갤러리에서 사진 선택</string>
     <string name="camera_opening_scanner">스캐너 여는 중…</string>

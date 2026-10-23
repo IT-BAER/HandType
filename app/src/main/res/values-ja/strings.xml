@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">均一な光を使用し、ぼかし、グレア、硬い影を避けてください。</string>
     <string name="camera_sheet_button">手書きシートを共有</string>
     <string name="camera_print_button">手書きシートを印刷</string>
+    <string name="camera_print_unavailable">印刷を利用できません。シートを共有してください。</string>
     <string name="camera_scan_button">手書きシートをスキャンまたはインポート</string>
     <string name="camera_gallery_button">ギャラリーから写真を選択</string>
     <string name="camera_opening_scanner">スキャナーを開いています…</string>

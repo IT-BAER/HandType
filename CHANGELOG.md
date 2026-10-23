@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - The Android share sheet shows a preview of the note instead of an empty thumbnail.
+- Printing the handwriting sheet on a phone without the Android print service shows a message instead of closing the app.
 
 ## [1.1.0] - 2026-10-22
 

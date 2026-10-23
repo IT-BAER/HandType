@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">使用均匀的光线，避免模糊、眩光和硬阴影。</string>
     <string name="camera_sheet_button">分享手写纸</string>
     <string name="camera_print_button">打印手写纸</string>
+    <string name="camera_print_unavailable">无法打印。请分享手写纸。</string>
     <string name="camera_scan_button">扫描或导入手写纸</string>
     <string name="camera_gallery_button">从相册选择照片</string>
     <string name="camera_opening_scanner">正在打开扫描器…</string>

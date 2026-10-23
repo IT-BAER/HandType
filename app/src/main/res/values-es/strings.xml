@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">Usa luz uniforme y evita desenfoque, reflejos y sombras duras.</string>
     <string name="camera_sheet_button">Compartir la hoja de escritura</string>
     <string name="camera_print_button">Imprimir la hoja de escritura</string>
+    <string name="camera_print_unavailable">No se puede imprimir. Comparte la hoja.</string>
     <string name="camera_scan_button">Escanear o importar hoja de escritura</string>
     <string name="camera_gallery_button">Elegir foto de la galería</string>
     <string name="camera_opening_scanner">Abriendo escáner…</string>

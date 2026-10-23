@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">Используйте равномерный свет и избегайте размытия, бликов и жёстких теней.</string>
     <string name="camera_sheet_button">Поделиться листом почерка</string>
     <string name="camera_print_button">Распечатать лист почерка</string>
+    <string name="camera_print_unavailable">Печать недоступна. Поделитесь листом.</string>
     <string name="camera_scan_button">Сканировать или импортировать лист почерка</string>
     <string name="camera_gallery_button">Выбрать фото из галереи</string>
     <string name="camera_opening_scanner">Открытие сканера…</string>

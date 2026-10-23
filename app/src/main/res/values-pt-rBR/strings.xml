@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">Use luz uniforme e evite desfoque, reflexos e sombras duras.</string>
     <string name="camera_sheet_button">Compartilhar a folha de caligrafia</string>
     <string name="camera_print_button">Imprimir a folha de caligrafia</string>
+    <string name="camera_print_unavailable">Impressão indisponível. Compartilhe a folha.</string>
     <string name="camera_scan_button">Escanear ou importar folha de caligrafia</string>
     <string name="camera_gallery_button">Escolher foto da galeria</string>
     <string name="camera_opening_scanner">Abrindo scanner…</string>

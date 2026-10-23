@@ -65,6 +65,7 @@
     <string name="camera_pre_scan_step_4">Utilisez une lumière uniforme et évitez le flou, les reflets et les ombres dures.</string>
     <string name="camera_sheet_button">Partager la feuille d\'écriture</string>
     <string name="camera_print_button">Imprimer la feuille d\'écriture</string>
+    <string name="camera_print_unavailable">Impression indisponible. Partagez la feuille.</string>
     <string name="camera_scan_button">Scanner ou importer la feuille d\'écriture</string>
     <string name="camera_gallery_button">Choisir une photo dans la galerie</string>
     <string name="camera_opening_scanner">Ouverture du scanner…</string>

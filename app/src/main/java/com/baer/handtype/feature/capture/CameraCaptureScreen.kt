@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.compose.foundation.rememberScrollState
@@ -98,6 +99,7 @@ fun CameraCaptureScreen(
     val sheetButtonText = stringResource(R.string.camera_sheet_button)
     val printButtonText = stringResource(R.string.camera_print_button)
     val printJobName = stringResource(R.string.camera_share_sheet_subject)
+    val printUnavailableText = stringResource(R.string.camera_print_unavailable)
     val scanButtonText = stringResource(R.string.camera_scan_button)
     val writeButtonText = stringResource(R.string.camera_write_button)
     val openingText = stringResource(R.string.camera_opening_scanner)
@@ -301,7 +303,11 @@ fun CameraCaptureScreen(
                             Text(text = sheetButtonText, textAlign = TextAlign.Center)
                         }
                         TextButton(
-                            onClick = { SheetPrint.print(context, printJobName) },
+                            onClick = {
+                                if (!SheetPrint.print(context, printJobName)) {
+                                    Toast.makeText(context, printUnavailableText, Toast.LENGTH_LONG).show()
+                                }
+                            },
                             modifier = Modifier
                                 .testTag(HandTypeTestTags.CAMERA_PRINT_BUTTON)
                                 .weight(1f),
