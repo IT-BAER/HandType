@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
 - Compose 1.7.8 and Material 3 1.3.2.
 - Generate animation: the screen fades into the "Generating" card, the pen draws the whole sign including its cross and underline, and the finished note appears on its paper at once and is then written in line by line.
+- Text size slider: the note grows or shrinks while you drag, and the lines re-wrap a moment later in the new size.
+
+### Fixed
+- The Android share sheet shows a preview of the note instead of an empty thumbnail.
 
 ## [1.1.0] - 2026-10-22
 

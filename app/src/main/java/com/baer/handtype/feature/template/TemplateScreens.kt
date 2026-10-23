@@ -66,7 +66,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -121,6 +120,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -172,6 +172,7 @@ import com.baer.handtype.ui.theme.BrandColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
@@ -483,7 +484,8 @@ fun HandwritingRenderScreen(
     var lastRenderedText by rememberSaveable { mutableStateOf("") }
     var lastRenderSeed by rememberSaveable { mutableStateOf<Long?>(null) }
     var textScale by rememberSaveable { mutableFloatStateOf(TextSizeScale.DEFAULT) }
-    var resizing by remember { mutableStateOf(false) }
+    // Text scale the shown result bitmap was rendered with.
+    var renderedScale by remember { mutableFloatStateOf(textScale) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(externallySelectedBackgroundId) {
@@ -564,6 +566,7 @@ fun HandwritingRenderScreen(
                     resultPaper = result.paper
                     resultRows = result.inkRows
                     missingChars = result.missingCharacters
+                    renderedScale = textScale
                     lastRenderedText = text
                     lastRenderSeed = seed
                     phase = RenderPhase.Result.name
@@ -580,22 +583,24 @@ fun HandwritingRenderScreen(
             }
 
             // Same text, paper and seed, so only the size changes; history keeps the first render.
-            fun resize(scale: Float) {
-                val seed = lastRenderSeed ?: return
-                val inputText = lastRenderedText.ifBlank { return }
-                textScale = scale
-                resizing = true
-                scope.launch {
-                    try {
-                        val result = renderNote(inputText, selectedBackgroundId, seed)
-                        resultBitmap = result.bitmap
-                        resultPaper = null
-                        resultRows = result.inkRows
-                        missingChars = result.missingCharacters
-                    } finally {
-                        resizing = false
-                    }
+            // Each render takes the newest slider value, so a fast drag skips the sizes in between.
+            val requestedScale = remember { MutableStateFlow(textScale) }
+            LaunchedEffect(requestedScale) {
+                requestedScale.collect { scale ->
+                    val seed = lastRenderSeed ?: return@collect
+                    val inputText = lastRenderedText.ifBlank { return@collect }
+                    if (resultBitmap == null || scale == renderedScale) return@collect
+                    textScale = scale
+                    val result = renderNote(inputText, selectedBackgroundId, seed)
+                    resultBitmap = result.bitmap
+                    resultPaper = null
+                    resultRows = result.inkRows
+                    missingChars = result.missingCharacters
+                    renderedScale = scale
                 }
+            }
+            fun resize(scale: Float) {
+                requestedScale.value = scale
             }
 
             AnimatedContent(
@@ -647,7 +652,7 @@ fun HandwritingRenderScreen(
                         missingCharacters = missingChars,
                         snackbarHostState = snackbarHostState,
                         textScale = textScale,
-                        resizing = resizing,
+                        bitmapScale = renderedScale,
                         onTextScaleChanged = ::resize,
                         onOutputSucceeded = onOutputSucceeded,
                         onSaveTransparent = {
@@ -906,7 +911,7 @@ private fun ResultPhaseContent(
     missingCharacters: Set<Char>,
     snackbarHostState: SnackbarHostState,
     textScale: Float,
-    resizing: Boolean,
+    bitmapScale: Float,
     onTextScaleChanged: (Float) -> Unit,
     onSaveTransparent: () -> Unit,
     onOutputSucceeded: (askAllowed: Boolean) -> Unit,
@@ -1006,6 +1011,7 @@ private fun ResultPhaseContent(
             }
         }
 
+        var sliderValue by remember { mutableFloatStateOf(textScale) }
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -1026,7 +1032,8 @@ private fun ResultPhaseContent(
                     Card(
                         shape = RoundedCornerShape(20.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        // The paper's bottom-edge colour, so a note shrunk by the slider shows no white edge.
+                        colors = CardDefaults.cardColors(containerColor = Color(bitmap.getPixel(0, bitmap.height - 1))),
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(bitmap.width.toFloat() / bitmap.height)
@@ -1039,6 +1046,13 @@ private fun ResultPhaseContent(
                                 .testTag(HandTypeTestTags.RENDER_RESULT_IMAGE)
                                 .fillMaxSize()
                                 .padding(4.dp)
+                                // Until the resized note arrives, the shown one follows the slider at once.
+                                .graphicsLayer {
+                                    val k = sliderValue / bitmapScale
+                                    scaleX = k
+                                    scaleY = k
+                                    transformOrigin = TransformOrigin(0f, 0f)
+                                }
                                 .graphicsLayer(
                                     scaleX = imageScale,
                                     scaleY = imageScale,
@@ -1086,11 +1100,9 @@ private fun ResultPhaseContent(
                     }
                 }
             }
-            if (resizing) CircularProgressIndicator()
         }
 
         val textSizeLabel = stringResource(R.string.result_text_size_label)
-        var sliderValue by remember(textScale) { mutableFloatStateOf(textScale) }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -1104,10 +1116,12 @@ private fun ResultPhaseContent(
             )
             Slider(
                 value = sliderValue,
-                onValueChange = { sliderValue = it },
-                onValueChangeFinished = { onTextScaleChanged(sliderValue) },
+                onValueChange = {
+                    sliderValue = it
+                    onTextScaleChanged(it)
+                },
                 valueRange = TextSizeScale.MIN..TextSizeScale.MAX,
-                enabled = bitmap != null && !resizing,
+                enabled = bitmap != null,
                 modifier = Modifier
                     .weight(1f)
                     .testTag(HandTypeTestTags.RESULT_TEXT_SIZE_SLIDER)

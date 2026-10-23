@@ -249,6 +249,31 @@ class ProductionReadinessTest {
         )
     }
 
+    @Test fun textSizeSliderRerendersWhileTheFingerIsStillDown() {
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        rule.setContent {
+            HandTypeTheme {
+                HandwritingRenderScreen(
+                    template = template,
+                    onBackToTemplates = {},
+                    onPremiumSelected = {},
+                    premiumUnlocked = true,
+                    onLockedPresetTapped = {},
+                )
+            }
+        }
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_MESSAGE_INPUT)
+            .performTextReplacement("Dear Anna,\nthank you for the lovely evening.\nSee you on Sunday!")
+        Espresso.closeSoftKeyboard()
+        rule.onNodeWithTag(HandTypeTestTags.RENDER_GENERATE_BUTTON).performScrollTo().performClick()
+        val defaultRatio = waitForResultRatio { it > 0f }
+
+        val slider = rule.onNodeWithTag(HandTypeTestTags.RESULT_TEXT_SIZE_SLIDER)
+        slider.performTouchInput { down(center); moveTo(centerRight) }
+        waitForResultRatio { it > defaultRatio * 1.2f }
+        slider.performTouchInput { up() }
+    }
+
     /** Height/width of the result preview; it follows the bitmap's aspect ratio. */
     private fun waitForResultRatio(accept: (Float) -> Boolean): Float {
         var ratio = 0f

@@ -2,6 +2,7 @@ package com.baer.handtype
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -10,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.baer.handtype.template.OutputExporter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -20,6 +22,15 @@ class OutputPersistenceTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         assertFalse("Private notes must follow the on-device-only promise",
             context.applicationInfo.flags and ApplicationInfo.FLAG_ALLOW_BACKUP != 0)
+    }
+
+    @Test fun shareChooserCarriesTheImageForItsPreview() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
+        val uri = OutputExporter.stageBitmapForShare(context, bitmap, "Preview")
+        val chooser = OutputExporter.buildShareIntent(uri)
+        assertEquals("The Sharesheet thumbnail comes from ClipData", uri, chooser.clipData?.getItemAt(0)?.uri)
+        assertTrue(chooser.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
     }
 
     @Test fun rapidNotesNeverOverwriteEarlierHistory() {
