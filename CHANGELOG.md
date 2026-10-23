@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Ink specks on the handwriting sheet no longer freeze on screen when the pen moves again right after the last speck faded, and they are drawn in the ink colour instead of the theme colour.
-
 ## [1.1.0] - 2026-10-23
 
 ### Added
@@ -32,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the unused ML Kit text recognition library and its install-time OCR model download.
 - Removed the `WRITE_EXTERNAL_STORAGE` permission, which applied only up to Android 9.
 - Capture diagnostics are logged only in debug builds.
-- Version 1.1.0 (versionCode 6).
+- Version 1.1.0 (versionCode 7).
 
 ### Fixed
 - The Android share sheet shows a preview of the note instead of an empty thumbnail.
