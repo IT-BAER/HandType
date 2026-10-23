@@ -46,7 +46,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             buildConfigField("boolean", "FAKE_BILLING", "false")
             val releaseSigningConfig = signingConfigs.getByName("release")
             if (releaseSigningConfig.storeFile?.exists() == true) {

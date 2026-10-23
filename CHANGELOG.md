@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Smaller app: release builds are now optimized and shrunk with R8 (APK 78 MB to 36 MB).
+
 ## [1.1.0] - 2026-10-23
 
 ### Added
