@@ -263,7 +263,7 @@ fun TemplateChooserScreen(
                     ),
                 ),
             ) { page ->
-                val pageOffset = pagerState.getOffsetFractionForPage(page)
+                val pageOffset = pagerState.getOffsetDistanceInPages(page)
                 val scale = lerp(0.95f, 1f, 1f - abs(pageOffset).coerceIn(0f, 1f))
                 Box(
                     modifier = Modifier
