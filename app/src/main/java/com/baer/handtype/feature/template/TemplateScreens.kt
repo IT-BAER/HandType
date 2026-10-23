@@ -148,8 +148,13 @@ import kotlin.math.abs
 import androidx.compose.ui.util.lerp
 import kotlin.math.cos
 import kotlin.math.sin
-import com.baer.handtype.ui.animation.stripReveal
+import com.baer.handtype.ui.animation.EaseOutCubic
+import com.baer.handtype.ui.animation.NoteWriteOn
+import com.baer.handtype.ui.animation.PenPass
+import com.baer.handtype.ui.animation.PhaseFade
 import com.baer.handtype.ui.animation.PenWritingAnimation
+import com.baer.handtype.ui.animation.lineWriteOn
+import com.baer.handtype.template.InkRow
 import com.baer.handtype.ui.animation.pressScale
 import com.baer.handtype.ui.animation.selectionBounceScale
 import com.baer.handtype.template.HandwritingBitmapRenderer
@@ -440,9 +445,6 @@ fun TemplateChooserScreen(
 
 private enum class RenderPhase { Compose, Generating, Result }
 
-// The Generating card stays for at least one full pen pass, even when the render is faster.
-private const val PEN_PASS_MILLIS = 1000
-
 @Composable
 fun HandwritingRenderScreen(
     template: HandwritingTemplate,
@@ -463,6 +465,9 @@ fun HandwritingRenderScreen(
     }
     var phase by rememberSaveable { mutableStateOf(RenderPhase.Compose.name) }
     var resultBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    // Ink-free copy of the note, held only until the result's write-on has played.
+    var resultPaper by remember { mutableStateOf<Bitmap?>(null) }
+    var resultRows by remember { mutableStateOf<List<InkRow>>(emptyList()) }
     var missingChars by remember { mutableStateOf<Set<Char>>(emptySet()) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -490,6 +495,7 @@ fun HandwritingRenderScreen(
 
     fun backToCompose() {
         resultBitmap = null
+        resultPaper = null
         missingChars = emptySet()
         phase = RenderPhase.Compose.name
     }
@@ -516,7 +522,12 @@ fun HandwritingRenderScreen(
                 with(density) { 76.dp.roundToPx() }
             }
 
-            suspend fun renderNote(inputText: String, backgroundId: String, seed: Long) = withContext(Dispatchers.Default) {
+            suspend fun renderNote(
+                inputText: String,
+                backgroundId: String,
+                seed: Long,
+                keepPaper: Boolean = false,
+            ) = withContext(Dispatchers.Default) {
                 val config = HandwritingRenderConfig(
                     maxWidthPx = renderWidthPx,
                     targetLineHeightPx = TextSizeScale.lineHeightPx(targetLineHeightPx, textScale),
@@ -528,6 +539,7 @@ fun HandwritingRenderScreen(
                         strokeData = template.strokeData!!,
                         config = config,
                         seed = seed,
+                        keepPaper = keepPaper,
                     )
                 } else {
                     HandwritingBitmapRenderer.render(
@@ -535,6 +547,7 @@ fun HandwritingRenderScreen(
                         template = template,
                         config = config,
                         seed = seed,
+                        keepPaper = keepPaper,
                     )
                 }
             }
@@ -543,10 +556,13 @@ fun HandwritingRenderScreen(
                 phase = RenderPhase.Generating.name
                 scope.launch {
                     val seed = System.nanoTime()
-                    val rendering = async { renderNote(text, selectedBackgroundId, seed) }
-                    delay(PEN_PASS_MILLIS.toLong())
+                    val rendering = async { renderNote(text, selectedBackgroundId, seed, keepPaper = true) }
+                    // The Generating card stays at least as long as in the promo, even when the render is faster.
+                    delay(PenPass.RESULT_AT_MILLIS.toLong())
                     val result = rendering.await()
                     resultBitmap = result.bitmap
+                    resultPaper = result.paper
+                    resultRows = result.inkRows
                     missingChars = result.missingCharacters
                     lastRenderedText = text
                     lastRenderSeed = seed
@@ -573,6 +589,8 @@ fun HandwritingRenderScreen(
                     try {
                         val result = renderNote(inputText, selectedBackgroundId, seed)
                         resultBitmap = result.bitmap
+                        resultPaper = null
+                        resultRows = result.inkRows
                         missingChars = result.missingCharacters
                     } finally {
                         resizing = false
@@ -582,9 +600,19 @@ fun HandwritingRenderScreen(
 
             AnimatedContent(
                 targetState = phase,
+                // Into and out of Generating as in the promo: the new opaque layer fades in on top.
                 transitionSpec = {
-                    (fadeIn(tween(300)) + slideInVertically { it / 12 })
-                        .togetherWith(fadeOut(tween(250)))
+                    when {
+                        targetState == RenderPhase.Generating.name ->
+                            fadeIn(tween(PhaseFade.GENERATING_IN_MILLIS, easing = EaseOutCubic))
+                                .togetherWith(fadeOut(PhaseFade.holdOldLayer))
+                        initialState == RenderPhase.Generating.name ->
+                            fadeIn(tween(200, easing = EaseOutCubic))
+                                .togetherWith(fadeOut(tween(150, delayMillis = 120)))
+                        else ->
+                            (fadeIn(tween(300)) + slideInVertically { it / 12 })
+                                .togetherWith(fadeOut(tween(250)))
+                    }
                 },
                 label = "phaseTransition",
             ) { currentPhase ->
@@ -612,6 +640,9 @@ fun HandwritingRenderScreen(
 
                     RenderPhase.Result.name -> ResultPhaseContent(
                         bitmap = resultBitmap,
+                        paper = resultPaper,
+                        inkRows = resultRows,
+                        onWriteOnFinished = { resultPaper = null },
                         templateName = template.descriptor.displayName,
                         missingCharacters = missingChars,
                         snackbarHostState = snackbarHostState,
@@ -655,6 +686,7 @@ fun HandwritingRenderScreen(
                         },
                         onNewNote = {
                             resultBitmap = null
+                            resultPaper = null
                             missingChars = emptySet()
                             selectedBackgroundId = defaultBackgroundId
                             text = ""
@@ -824,12 +856,13 @@ private fun GeneratingOverlay() {
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
+        // The layer's own fade carries the card; the card only grows.
         AnimatedVisibility(
             visible = true,
             enter = scaleIn(
                 initialScale = 0.92f,
-                animationSpec = tween(220, easing = FastOutSlowInEasing),
-            ) + fadeIn(tween(220, easing = FastOutSlowInEasing)),
+                animationSpec = tween(220, easing = EaseOutCubic),
+            ),
         ) {
             Card(
                 shape = RoundedCornerShape(28.dp),
@@ -845,7 +878,7 @@ private fun GeneratingOverlay() {
                         modifier = Modifier.size(140.dp),
                         inkColor = MaterialTheme.colorScheme.onSurface,
                         traceColor = MaterialTheme.colorScheme.primary,
-                        passMillis = PEN_PASS_MILLIS,
+                        progress = PenPass::progress,
                     )
                     Text(
                         text = stringResource(R.string.render_generating_title),
@@ -866,6 +899,9 @@ private fun GeneratingOverlay() {
 @Composable
 private fun ResultPhaseContent(
     bitmap: Bitmap?,
+    paper: Bitmap?,
+    inkRows: List<InkRow>,
+    onWriteOnFinished: () -> Unit,
     templateName: String,
     missingCharacters: Set<Char>,
     snackbarHostState: SnackbarHostState,
@@ -889,19 +925,15 @@ private fun ResultPhaseContent(
 
     var showExportSheet by remember { mutableStateOf(false) }
 
-    // Ink-reveal animation once per Generate; a resize swaps the bitmap without replaying it.
-    val inkRevealProgress = remember { androidx.compose.animation.core.Animatable(0f) }
+    // Write-on once per Generate; a resize swaps the bitmap without replaying it.
+    val paperImage = remember(paper) { paper?.asImageBitmap() }
+    val writeOnMillis = remember { androidx.compose.animation.core.Animatable(0f) }
     LaunchedEffect(Unit) {
-        if (bitmap != null) {
-            inkRevealProgress.snapTo(0f)
-            inkRevealProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(
-                    durationMillis = 750,
-                    easing = androidx.compose.animation.core.LinearEasing,
-                ),
-            )
+        if (bitmap != null && paper != null) {
+            val total = NoteWriteOn.totalMillis(inkRows.size)
+            writeOnMillis.animateTo(total.toFloat(), tween(durationMillis = total, easing = LinearEasing))
         }
+        onWriteOnFinished()
     }
 
     fun doSave(transparent: Boolean) {
@@ -946,9 +978,11 @@ private fun ResultPhaseContent(
     }
 
     // The preview takes the space left over, so every action stays on screen for any note length.
+    // Opaque, so the Generating card does not show through while the result fades in over it.
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -1040,7 +1074,13 @@ private fun ResultPhaseContent(
                                         } while (event.changes.any { it.pressed })
                                     }
                                 }
-                                .stripReveal(progress = inkRevealProgress.value),
+                                .lineWriteOn(
+                                    paper = paperImage,
+                                    bitmapWidth = bitmap.width,
+                                    bitmapHeight = bitmap.height,
+                                    rows = inkRows,
+                                    elapsedMillis = writeOnMillis.value.toLong(),
+                                ),
                             contentScale = ContentScale.Fit,
                         )
                     }

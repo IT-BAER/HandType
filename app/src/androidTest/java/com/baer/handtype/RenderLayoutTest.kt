@@ -8,6 +8,7 @@ import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
 import com.baer.handtype.template.HandwritingTemplate
 import com.baer.handtype.template.NoteBackgroundCatalog
+import com.baer.handtype.ui.animation.NoteWriteOn
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
@@ -53,6 +54,44 @@ class RenderLayoutTest {
             if (gap < MIN_GAP_PX) failures += "$word!/$seed gap=$gap"
         }
         assertTrue("${failures.size} renders glue '!' to the letter: $failures", failures.isEmpty())
+    }
+
+    @Test fun inkRowsHoldEveryInkPixelAndThePaperHasNone() {
+        val text = "Dear Anna,\nthank you for the lovely evening!\n\nSee you on Sunday, gladly.\nLove, Mia"
+        val failures = mutableListOf<String>()
+        for (seed in 1L..SEEDS) for (cursive in listOf(false, true)) {
+            val config = HandwritingRenderConfig(
+                maxWidthPx = WIDTH_PX,
+                targetLineHeightPx = 214,
+                noteBackground = NoteBackgroundCatalog.transparentPreset,
+            )
+            val result = if (cursive) {
+                HandwritingBitmapRenderer.renderCursive(text, emptyMap(), config, seed, keepPaper = true)
+            } else {
+                HandwritingBitmapRenderer.render(text, template, config, seed, keepPaper = true)
+            }
+            val bmp = result.bitmap
+            val rows = result.inkRows
+            val label = "seed $seed cursive=$cursive"
+            if (rows.size < 4) failures += "$label: ${rows.size} rows"
+            if (rows.firstOrNull()?.top != 0 || rows.lastOrNull()?.bottom != bmp.height ||
+                rows.zipWithNext().any { (a, b) -> a.bottom != b.top }
+            ) failures += "$label: rows do not tile the height: $rows"
+            val pixels = IntArray(bmp.width * bmp.height).also { bmp.getPixels(it, 0, bmp.width, 0, 0, bmp.width, bmp.height) }
+            val written = NoteWriteOn.revealBoxes(rows, NoteWriteOn.totalMillis(rows.size).toLong())
+            var outside = 0
+            for (y in 0 until bmp.height) for (x in 0 until bmp.width) {
+                if ((pixels[y * bmp.width + x] ushr 24) == 0) continue
+                if (written.none { x >= it.left && x < it.right && y >= it.top && y < it.bottom }) outside++
+            }
+            if (outside > 0) failures += "$label: $outside ink pixels never written"
+            val paper = result.paper!!
+            val paperPixels = IntArray(paper.width * paper.height).also { paper.getPixels(it, 0, paper.width, 0, 0, paper.width, paper.height) }
+            if (paperPixels.any { (it ushr 24) != 0 }) failures += "$label: paper has ink"
+            bmp.recycle()
+            paper.recycle()
+        }
+        assertTrue("${failures.size} bad renders:\n${failures.joinToString("\n")}", failures.isEmpty())
     }
 
     /** Null when [lines] spell [words] in order, any word split only as "ab-" + "cde" pieces. */

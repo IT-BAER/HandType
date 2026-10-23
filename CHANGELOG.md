@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A stroke may end up to 10% of the cell past its edge before the letter counts as outside; ink past the edge is cut from the saved letter.
 - The practice sheet is now called the handwriting sheet (German: Schriftprobe) in all 10 languages, on the printed sheet and in the privacy policy.
 - Compose 1.7.8 and Material 3 1.3.2.
+- Generate animation: the screen fades into the "Generating" card, the pen draws the whole sign including its cross and underline, and the finished note appears on its paper at once and is then written in line by line.
 
 ## [1.1.0] - 2026-10-22
 
