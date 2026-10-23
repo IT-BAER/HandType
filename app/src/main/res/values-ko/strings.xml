@@ -281,6 +281,7 @@
     <string name="stylus_hint_too_small">너무 작습니다 - 가이드 라인을 사용하세요.</string>
     <string name="stylus_hint_too_large">너무 큽니다 - 가이드 라인에 더 가깝게 쓰세요.</string>
     <string name="stylus_hint_reach_up">너무 짧습니다 - 이 문자는 위 선보다 위로 올라갑니다.</string>
+    <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">“%1$s”처럼 보입니다. 예상 문자는 “%2$s”입니다. 그대로 쓰려면 다음을 다시 누르세요.</string>
     <string name="stylus_hint_unrecognized">아직 “%1$s”처럼 보이지 않습니다. 그대로 쓰려면 다음을 다시 누르세요.</string>
     <string name="stylus_note_shape_only">문자 인식이 아직 준비되지 않아(한 번만 다운로드됨) 크기와 위치만 확인합니다.</string>

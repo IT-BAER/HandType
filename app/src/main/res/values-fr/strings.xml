@@ -281,6 +281,7 @@
     <string name="stylus_hint_too_small">Trop petit : utilisez les lignes de guide.</string>
     <string name="stylus_hint_too_large">Trop grand : restez plus près des lignes de guide.</string>
     <string name="stylus_hint_reach_up">Trop court : ce caractère dépasse la ligne supérieure.</string>
+    <string name="stylus_hint_cell">« %1$s » : %2$s</string>
     <string name="stylus_hint_wrong">Cela ressemble à « %1$s », « %2$s » attendu. Touchez à nouveau Suivant pour le garder.</string>
     <string name="stylus_hint_unrecognized">Cela ne ressemble pas encore à « %1$s ». Touchez à nouveau Suivant pour le garder.</string>
     <string name="stylus_note_shape_only">La reconnaissance des lettres n\'est pas encore prête (téléchargée une seule fois) : seules la taille et la position sont vérifiées.</string>

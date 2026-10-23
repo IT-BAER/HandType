@@ -279,6 +279,7 @@
     <string name="stylus_hint_too_small">小さすぎます - ガイドラインを使ってください。</string>
     <string name="stylus_hint_too_large">大きすぎます - ガイドラインに近づけてください。</string>
     <string name="stylus_hint_reach_up">短すぎます - この文字は上の線より上まで届きます。</string>
+    <string name="stylus_hint_cell">「%1$s」：%2$s</string>
     <string name="stylus_hint_wrong">「%1$s」に見えます（期待値:「%2$s」）。もう一度「次へ」をタップするとそのまま使えます。</string>
     <string name="stylus_hint_unrecognized">まだ「%1$s」に見えません。もう一度「次へ」をタップするとそのまま使えます。</string>
     <string name="stylus_note_shape_only">文字認識はまだ準備できていません（初回のみダウンロード）。サイズと位置だけを確認します。</string>

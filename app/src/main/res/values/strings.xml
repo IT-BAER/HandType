@@ -294,6 +294,7 @@
     <string name="stylus_hint_too_small">Too small - use the guide lines.</string>
     <string name="stylus_hint_too_large">Too big - stay closer to the guide lines.</string>
     <string name="stylus_hint_reach_up">Too short - this character reaches above the upper line.</string>
+    <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">Looks like “%1$s”, expected “%2$s”. Tap Next again to keep it.</string>
     <string name="stylus_hint_unrecognized">That does not look like “%1$s” yet. Tap Next again to keep it.</string>
     <string name="stylus_note_shape_only">Letter recognition is not ready yet (it downloads once), so only size and position are checked.</string>

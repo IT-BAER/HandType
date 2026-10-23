@@ -264,6 +264,7 @@
     <string name="stylus_hint_too_small">Слишком мелко - ориентируйтесь на линии.</string>
     <string name="stylus_hint_too_large">Слишком крупно - держитесь ближе к линиям.</string>
     <string name="stylus_hint_reach_up">Слишком низко - этот символ выходит выше верхней линии.</string>
+    <string name="stylus_hint_cell">«%1$s»: %2$s</string>
     <string name="stylus_hint_wrong">Похоже на «%1$s», ожидалось «%2$s». Нажмите «Далее» ещё раз, чтобы оставить.</string>
     <string name="stylus_hint_unrecognized">Пока не похоже на «%1$s». Нажмите «Далее» ещё раз, чтобы оставить.</string>
     <string name="stylus_note_shape_only">Распознавание букв ещё не готово (загружается один раз), поэтому проверяются только размер и положение.</string>

@@ -133,25 +133,37 @@ class LocaleE2eTest {
         if (german) assertTrue("German sheet has ÄÖÜäöüß", cells.containsAll("ÄÖÜäöüß".toList()))
 
         val overridden = mutableListOf<String>()
-        for ((index, character) in cells.withIndex()) {
-            drawGlyph(character)
-            if (index == 0 || character.code > 0x7F || index == cells.lastIndex) shot("stylus_cell_$character")
-            val last = index == cells.lastIndex
+        var start = 0
+        while (start < cells.size) {
+            // The page shows the cells that exist on screen: 9, or 6 on a short screen.
+            val page = (start until cells.size).takeWhile {
+                composeRule.onAllNodesWithTag(HandTypeTestTags.stylusCell(it)).fetchSemanticsNodes().isNotEmpty()
+            }
+            assertTrue("page at $start shows cells", page.isNotEmpty())
+            page.forEach { drawGlyph(it, cells[it]) }
+            val pageText = page.map { cells[it] }.joinToString("")
+            if (start == 0 || pageText.any { it.code > 0x7F } || page.last() == cells.lastIndex) shot("stylus_page_$start")
+            val end = page.last() + 1
+            val last = end == cells.size
             fun advanced() = if (last) {
                 composeRule.onAllNodesWithTag(HandTypeTestTags.RENAME_HANDWRITING_INPUT).fetchSemanticsNodes().isNotEmpty()
             } else {
-                stylusText(HandTypeTestTags.STYLUS_PROGRESS) == context.getString(R.string.stylus_progress, index + 1, cells.size)
+                stylusText(HandTypeTestTags.STYLUS_PROGRESS) == context.getString(R.string.stylus_progress, end, cells.size)
             }
+            fun shapeWarning() = stylusWarning()?.takeIf { warning -> shapeHints().any { warning.contains(it) } }
             composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
             composeRule.waitUntil(TIMEOUT_MS) { advanced() || stylusWarning() != null }
-            if (advanced()) continue
-            val warning = stylusWarning()!!
-            // Shape hints mean the drawn letter is wrong; only a recognizer mismatch may be kept.
-            assertTrue("'$character': $warning", warning !in shapeHints())
-            overridden += "$character: $warning"
-            shot("stylus_override_$character")
-            composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
-            composeRule.waitUntil(TIMEOUT_MS) { advanced() }
+            if (!advanced()) {
+                val warning = stylusWarning()!!
+                // Shape hints mean a drawn letter is wrong; only recognizer mismatches may be kept.
+                assertTrue("'$pageText': $warning", shapeWarning() == null)
+                overridden += "$pageText: $warning"
+                shot("stylus_override_$start")
+                composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
+                composeRule.waitUntil(TIMEOUT_MS) { advanced() || shapeWarning() != null }
+                assertTrue("'$pageText': ${stylusWarning()}", advanced())
+            }
+            start = end
         }
         android.util.Log.i("LocaleE2eTest", "${overridden.size} of ${cells.size} cells kept after a mismatch: $overridden")
         shot("stylus_rename")
@@ -188,9 +200,9 @@ class LocaleE2eTest {
         R.string.stylus_hint_reach_up,
     ).map(context::getString)
 
-    /** Writes [character] as its font outline, one touch stroke per contour. */
-    private fun drawGlyph(character: Char) {
-        composeRule.onNodeWithTag(HandTypeTestTags.STYLUS_CANVAS).performTouchInput {
+    /** Writes [character] into sheet cell [index] as its font outline, one touch stroke per contour. */
+    private fun drawGlyph(index: Int, character: Char) {
+        composeRule.onNodeWithTag(HandTypeTestTags.stylusCell(index)).performTouchInput {
             for (stroke in outlineStrokes(character, width.toFloat(), height.toFloat())) {
                 down(stroke.first())
                 stroke.drop(1).forEach { moveTo(it) }

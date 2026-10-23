@@ -263,6 +263,7 @@
     <string name="stylus_hint_too_small">बहुत छोटा - गाइड लाइनों का उपयोग करें।</string>
     <string name="stylus_hint_too_large">बहुत बड़ा - गाइड लाइनों के पास रहें।</string>
     <string name="stylus_hint_reach_up">बहुत छोटा - यह वर्ण ऊपरी लाइन से ऊपर तक जाता है।</string>
+    <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">यह “%1$s” जैसा दिखता है, अपेक्षित “%2$s”। इसे रखने के लिए फिर से आगे पर टैप करें।</string>
     <string name="stylus_hint_unrecognized">यह अभी “%1$s” जैसा नहीं दिखता। इसे रखने के लिए फिर से आगे पर टैप करें।</string>
     <string name="stylus_note_shape_only">अक्षर पहचान अभी तैयार नहीं है (एक बार डाउनलोड होती है), इसलिए केवल आकार और स्थिति जाँची जाती है।</string>

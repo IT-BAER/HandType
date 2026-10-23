@@ -281,6 +281,7 @@
     <string name="stylus_hint_too_small">太小了 - 请参照引导线。</string>
     <string name="stylus_hint_too_large">太大了 - 请更贴近引导线。</string>
     <string name="stylus_hint_reach_up">太矮了 - 这个字符应高过上方线。</string>
+    <string name="stylus_hint_cell">“%1$s”：%2$s</string>
     <string name="stylus_hint_wrong">看起来像“%1$s”，应为“%2$s”。再次点按“下一步”即可保留。</string>
     <string name="stylus_hint_unrecognized">还不像“%1$s”。再次点按“下一步”即可保留。</string>
     <string name="stylus_note_shape_only">字母识别尚未就绪（只需下载一次），因此仅检查大小和位置。</string>

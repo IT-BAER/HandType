@@ -39,4 +39,7 @@ object HandTypeTestTags {
 
     fun templateDeleteButton(templateId: String): String = "template_delete_$templateId"
     fun backgroundPresetCard(id: String): String = "bg_preset_$id"
+
+    /** Writing cell for sheet character [index] (absolute position in the sheet, not on the page). */
+    fun stylusCell(index: Int): String = "stylus_cell_$index"
 }

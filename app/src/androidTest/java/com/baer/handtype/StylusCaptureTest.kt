@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
@@ -27,14 +28,24 @@ class StylusCaptureTest {
     @get:Rule val rule = createComposeRule()
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
-    private class FakeRecognizer(var candidates: List<String>?) : InkRecognizer {
+    /** [answer] gets the 0-based recognition call number; the screen recognizes cells in order. */
+    private class FakeRecognizer(val answer: (Int) -> List<String>?) : InkRecognizer {
         var calls = 0
-        override suspend fun prepare(): Boolean = candidates != null
-        override suspend fun recognize(strokes: List<InkStroke>, aspectRatio: Float): List<String>? {
-            calls++
-            return candidates
-        }
+        override suspend fun prepare(): Boolean = answer(-1) != null
+        override suspend fun recognize(strokes: List<InkStroke>, aspectRatio: Float): List<String>? =
+            answer(calls++)
         override fun close() {}
+    }
+
+    private val characters = StylusSession.sheetCharacters()
+
+    /** Recognizes call n as sheet character n, so a fully written first page passes. */
+    private fun inOrder(wrongAt: Int = -1, seen: String = "H") = FakeRecognizer { call ->
+        when {
+            call < 0 -> emptyList()
+            call == wrongAt -> listOf(seen)
+            else -> listOf(characters[call].toString())
+        }
     }
 
     private fun progress(n: Int, total: Int) = context.getString(R.string.stylus_progress, n, total)
@@ -52,9 +63,14 @@ class StylusCaptureTest {
         }
     }
 
-    // A tall vertical stroke from above the x-height guide down to the baseline: passes the shape check for 'A'.
-    private fun drawTallStroke() {
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_CANVAS).performTouchInput {
+    /** Sheet indices of the cells shown on the current page (9, or 6 on a short screen). */
+    private fun pageCells(start: Int): List<Int> = (start until characters.size).takeWhile {
+        rule.onAllNodesWithTag(HandTypeTestTags.stylusCell(it)).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    // A tall vertical stroke from above the x-height guide down to the baseline: passes the shape check for any character.
+    private fun drawTallStroke(cell: Int) {
+        rule.onNodeWithTag(HandTypeTestTags.stylusCell(cell)).performTouchInput {
             down(Offset(width * 0.3f, height * 0.15f))
             moveTo(Offset(width * 0.4f, height * 0.45f))
             moveTo(Offset(width * 0.5f, height * 0.75f))
@@ -62,63 +78,146 @@ class StylusCaptureTest {
         }
     }
 
-    @Test fun acceptedLetterAdvancesProgress() {
-        val session = StylusSession(StylusSession.sheetCharacters())
-        val total = session.characters.size
-        setScreen(session, FakeRecognizer(listOf("A")))
+    private fun writePage(start: Int = 0, skip: Int = -1): List<Int> {
+        val cells = pageCells(start)
+        cells.filter { it != skip }.forEach { drawTallStroke(it) }
+        return cells
+    }
 
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(0, total))
-        drawTallStroke()
-        rule.runOnIdle { assertEquals(1, session.glyphs[0].size) }
+    private fun next() {
         rule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).assertIsEnabled().performClick()
         rule.waitForIdle()
+    }
 
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(1, total))
-        rule.runOnIdle { assertEquals(1, session.index) }
+    @Test fun acceptedPageAdvancesProgress() {
+        val session = StylusSession(characters)
+        val total = session.characters.size
+        val recognizer = inOrder()
+        setScreen(session, recognizer)
+
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(0, total))
+        val cells = writePage()
+        assertTrue("a page shows 6 or 9 cells, got ${cells.size}", cells.size == 9 || cells.size == 6)
+        rule.runOnIdle { cells.forEach { assertEquals(1, session.glyphs[it].size) } }
+        next()
+
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(cells.size, total))
+        rule.runOnIdle {
+            assertEquals(cells.size, session.index)
+            assertEquals(cells.size, recognizer.calls)
+        }
+        rule.onNodeWithTag(HandTypeTestTags.stylusCell(cells.size)).assertExists()
     }
 
     @Test fun wrongLetterShowsHintThenSecondNextKeepsIt() {
-        val session = StylusSession(StylusSession.sheetCharacters())
+        val session = StylusSession(characters)
         val total = session.characters.size
-        val recognizer = FakeRecognizer(listOf("H"))
+        val recognizer = inOrder(wrongAt = 0)
         setScreen(session, recognizer)
 
-        drawTallStroke()
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
-        rule.waitForIdle()
+        val cells = writePage()
+        next()
         rule.onNodeWithTag(HandTypeTestTags.STYLUS_HINT)
             .assertTextEquals(context.getString(R.string.stylus_hint_wrong, "H", "A"))
         rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(0, total))
 
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
-        rule.waitForIdle()
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(1, total))
-        rule.runOnIdle { assertEquals(1, recognizer.calls) }
+        next()
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_PROGRESS).assertTextEquals(progress(cells.size, total))
+        // The kept cell and the cells that already passed are not recognized again.
+        rule.runOnIdle { assertEquals(cells.size, recognizer.calls) }
     }
 
-    @Test fun emptyCellIsRejectedWithoutRecognition() {
-        val session = StylusSession(StylusSession.sheetCharacters())
-        val recognizer = FakeRecognizer(listOf("A"))
+    @Test fun emptyPageIsRejectedWithoutRecognition() {
+        val session = StylusSession(characters)
+        val recognizer = inOrder()
         setScreen(session, recognizer)
 
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
-        rule.waitForIdle()
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_HINT)
-            .assertTextEquals(context.getString(R.string.stylus_hint_empty))
+        next()
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_HINT).assertTextEquals(
+            context.getString(R.string.stylus_hint_cell, "A", context.getString(R.string.stylus_hint_empty)),
+        )
         rule.runOnIdle {
             assertEquals(0, session.index)
             assertEquals(0, recognizer.calls)
         }
     }
 
-    @Test fun unavailableRecognizerFallsBackToShapeChecks() {
-        val session = StylusSession(StylusSession.sheetCharacters())
-        setScreen(session, FakeRecognizer(null))
+    @Test fun oneEmptyCellBlocksThePageAndIsNamed() {
+        val session = StylusSession(characters)
+        val recognizer = FakeRecognizer { null }
+        setScreen(session, recognizer)
 
-        drawTallStroke()
-        rule.onNodeWithTag(HandTypeTestTags.STYLUS_NEXT).performClick()
+        val cells = writePage(skip = 4)
+        next()
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_HINT).assertTextEquals(
+            context.getString(R.string.stylus_hint_cell, "E", context.getString(R.string.stylus_hint_empty)),
+        )
+        rule.runOnIdle {
+            assertEquals(0, session.index)
+            assertEquals(cells.size - 1, recognizer.calls)
+        }
+
+        drawTallStroke(4)
+        next()
+        rule.runOnIdle {
+            assertEquals(cells.size, session.index)
+            assertEquals(cells.size, recognizer.calls)
+        }
+    }
+
+    @Test fun undoRemovesTheLastStrokeOnThePage() {
+        val session = StylusSession(characters)
+        setScreen(session, inOrder())
+
+        drawTallStroke(0)
+        drawTallStroke(1)
+        drawTallStroke(0)
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_UNDO).performClick()
+        rule.runOnIdle {
+            assertEquals(1, session.glyphs[0].size)
+            assertEquals(1, session.glyphs[1].size)
+        }
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_UNDO).performClick()
+        rule.runOnIdle {
+            assertEquals(1, session.glyphs[0].size)
+            assertEquals(0, session.glyphs[1].size)
+        }
+    }
+
+    @Test fun clearEmptiesTheCellWrittenInLast() {
+        val session = StylusSession(characters)
+        setScreen(session, inOrder())
+
+        drawTallStroke(1)
+        drawTallStroke(2)
+        drawTallStroke(2)
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_CLEAR).performClick()
+        rule.runOnIdle {
+            assertEquals(1, session.glyphs[1].size)
+            assertEquals(0, session.glyphs[2].size)
+        }
+    }
+
+    @Test fun previousGoesBackOnePage() {
+        val session = StylusSession(characters)
+        setScreen(session, inOrder())
+
+        val cells = writePage()
+        next()
+        rule.runOnIdle { assertEquals(cells.size, session.index) }
+        rule.onNodeWithTag(HandTypeTestTags.STYLUS_BACK).performClick()
         rule.waitForIdle()
-        rule.runOnIdle { assertTrue(session.index == 1) }
+        rule.runOnIdle { assertEquals(0, session.index) }
+        rule.onNodeWithTag(HandTypeTestTags.stylusCell(0)).assertExists()
+    }
+
+    @Test fun unavailableRecognizerFallsBackToShapeChecks() {
+        val session = StylusSession(characters)
+        setScreen(session, FakeRecognizer { null })
+
+        val cells = writePage()
+        next()
+        rule.runOnIdle { assertEquals(cells.size, session.index) }
         rule.onNodeWithTag(HandTypeTestTags.STYLUS_HINT)
             .assertTextEquals(context.getString(R.string.stylus_note_shape_only))
     }

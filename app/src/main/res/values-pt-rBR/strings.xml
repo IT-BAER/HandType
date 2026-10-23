@@ -281,6 +281,7 @@
     <string name="stylus_hint_too_small">Pequeno demais - use as linhas guia.</string>
     <string name="stylus_hint_too_large">Grande demais - fique mais perto das linhas guia.</string>
     <string name="stylus_hint_reach_up">Curto demais - este caractere passa da linha superior.</string>
+    <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">Parece “%1$s”, esperado “%2$s”. Toque em Avançar de novo para mantê-lo.</string>
     <string name="stylus_hint_unrecognized">Ainda não parece “%1$s”. Toque em Avançar de novo para mantê-lo.</string>
     <string name="stylus_note_shape_only">O reconhecimento de letras ainda não está pronto (é baixado uma vez), então só o tamanho e a posição são verificados.</string>
