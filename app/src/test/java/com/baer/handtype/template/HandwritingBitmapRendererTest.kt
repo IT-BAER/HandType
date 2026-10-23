@@ -7,6 +7,34 @@ import org.junit.Test
 class HandwritingBitmapRendererTest {
 
     @Test
+    fun inkRowBandsTileTheNoteHeightAndSplitBetweenLines() {
+        val bands = HandwritingBitmapRenderer.inkRowBands(
+            rows = listOf(InkRow(10, 20, 100, 60), InkRow(12, 80, 90, 120)),
+            height = 150,
+        )
+        assertEquals(listOf(InkRow(10, 0, 100, 70), InkRow(12, 70, 90, 150)), bands)
+    }
+
+    @Test
+    fun inkRowBandsSplitOverlappingLinesInTheMiddleOfTheOverlap() {
+        // A descender of line 1 reaches below the ascenders of line 2.
+        val bands = HandwritingBitmapRenderer.inkRowBands(
+            rows = listOf(InkRow(10, 20, 100, 90), InkRow(12, 80, 90, 140), InkRow(8, 130, 70, 170)),
+            height = 180,
+        )
+        assertEquals(listOf(InkRow(10, 0, 100, 85), InkRow(12, 85, 90, 135), InkRow(8, 135, 70, 180)), bands)
+    }
+
+    @Test
+    fun inkRowBandsOfASingleLineCoverTheWholeHeight() {
+        assertEquals(
+            listOf(InkRow(5, 0, 50, 99)),
+            HandwritingBitmapRenderer.inkRowBands(listOf(InkRow(5, 30, 50, 60)), height = 99),
+        )
+        assertEquals(emptyList<InkRow>(), HandwritingBitmapRenderer.inkRowBands(emptyList(), height = 99))
+    }
+
+    @Test
     fun bundledUmlautsKeepTheBodySizeOfTheirBaseLetter() {
         // The dots add ink height, so the umlaut needs a larger target for the same body.
         for ((umlaut, base) in listOf('Ä' to 'A', 'Ö' to 'O', 'Ü' to 'U', 'ä' to 'a', 'ö' to 'o', 'ü' to 'u')) {

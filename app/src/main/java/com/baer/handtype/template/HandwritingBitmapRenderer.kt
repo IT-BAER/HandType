@@ -8,7 +8,12 @@ import android.graphics.Path
 import android.graphics.PathMeasure
 import android.graphics.Typeface
 import com.baer.handtype.ml.GlyphPostProcessor
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -35,14 +40,49 @@ data class HandwritingRenderConfig(
     val wordSkewRange: Float = 0.06f,
 )
 
+/** Pixel box in the note bitmap; right and bottom are exclusive. */
+data class InkRow(val left: Int, val top: Int, val right: Int, val bottom: Int)
+
 data class HandwritingRenderResult(
     val bitmap: Bitmap,
     val missingCharacters: Set<Char>,
     /** Text of each laid-out line of the glyph path, for layout tests. Empty for the cursive path. */
     internal val lines: List<String> = emptyList(),
+    /** One band per line with ink, top to bottom; the bands tile the bitmap height. */
+    val inkRows: List<InkRow> = emptyList(),
+    /** The note's paper without ink, only when rendered with `keepPaper`. */
+    val paper: Bitmap? = null,
 )
 
 object HandwritingBitmapRenderer {
+
+    /** Stretches line ink boxes into bands that tile [height]; neighbours split mid-gap or mid-overlap. */
+    internal fun inkRowBands(rows: List<InkRow>, height: Int): List<InkRow> {
+        var top = 0
+        return rows.mapIndexed { i, row ->
+            val bottom = rows.getOrNull(i + 1)?.let { next -> ((row.bottom + next.top) / 2).coerceIn(top, height) } ?: height
+            row.copy(top = top, bottom = bottom).also { top = bottom }
+        }
+    }
+
+    /** Grows [rows] at [line] to hold a box of [w] x [h] at ([x], [y]) rotated [deg] about its centre. */
+    private fun growRow(rows: MutableMap<Int, InkRow>, line: Int, x: Float, y: Float, w: Float, h: Float, deg: Float) {
+        val rad = Math.toRadians(deg.toDouble())
+        val halfW = (abs(w / 2 * cos(rad)) + abs(h / 2 * sin(rad))).toFloat() + 2f
+        val halfH = (abs(w / 2 * sin(rad)) + abs(h / 2 * cos(rad))).toFloat() + 2f
+        val cx = x + w / 2
+        val cy = y + h / 2
+        val box = InkRow(floor(cx - halfW).toInt(), floor(cy - halfH).toInt(), ceil(cx + halfW).toInt(), ceil(cy + halfH).toInt())
+        rows[line] = rows[line]?.let {
+            InkRow(min(it.left, box.left), min(it.top, box.top), max(it.right, box.right), max(it.bottom, box.bottom))
+        } ?: box
+    }
+
+    private fun clampedBands(rows: Map<Int, InkRow>, width: Int, height: Int): List<InkRow> =
+        inkRowBands(
+            rows.toSortedMap().values.map { it.copy(left = it.left.coerceIn(0, width), right = it.right.coerceIn(0, width)) },
+            height,
+        )
 
     private val descenderChars = setOf('g', 'j', 'p', 'q', 'y')
     private val dottedChars = setOf('i', 'j')
@@ -498,6 +538,7 @@ object HandwritingBitmapRenderer {
         @Suppress("UNUSED_PARAMETER") strokeData: Map<String, GlyphOutline>,
         config: HandwritingRenderConfig,
         seed: Long = System.nanoTime(),
+        keepPaper: Boolean = false,
     ): HandwritingRenderResult {
         val rng = Random(seed)
         val safeWidth = config.maxWidthPx.coerceAtLeast(config.marginPx * 2 + 1)
@@ -523,9 +564,11 @@ object HandwritingBitmapRenderer {
             val y: Float,
             val rotation: Float,
             val alpha: Float,
+            val line: Int,
         )
 
         val placements = mutableListOf<WordPlacement>()
+        var lineIndex = 0
         var cursorX = config.marginPx.toFloat()
         var cursorY = config.marginPx.toFloat() + charSize
         var charIndexInLine = 0
@@ -534,6 +577,7 @@ object HandwritingBitmapRenderer {
         var maxUsedX = cursorX
 
         fun newLine() {
+            lineIndex++
             cursorX = config.marginPx.toFloat()
             cursorY += charSize * 1.1f + config.verticalSpacingPx
             charIndexInLine = 0
@@ -608,6 +652,7 @@ object HandwritingBitmapRenderer {
                         y = cursorY + jy + waveOffset + driftOffset - charSize * 0.7f,
                         rotation = rotation,
                         alpha = 0.90f + rng.nextFloat() * 0.10f,  // 0.90-1.0
+                        line = lineIndex,
                     )
                 }
 
@@ -634,11 +679,14 @@ object HandwritingBitmapRenderer {
             lineSpacingPx = lineSpacingPx,
             firstBaselinePx = firstBaselinePx,
         )
+        val paper = if (keepPaper) output.copy(Bitmap.Config.ARGB_8888, false) else null
+        val inkRows = HashMap<Int, InkRow>()
 
         val placementPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         val matrix = Matrix()
 
         placements.forEach { p ->
+            growRow(inkRows, p.line, p.x, p.y, p.bitmap.width.toFloat(), p.bitmap.height.toFloat(), p.rotation)
             placementPaint.alpha = (p.alpha * 255).toInt().coerceIn(0, 255)
             if (p.rotation != 0f) {
                 matrix.reset()
@@ -652,7 +700,12 @@ object HandwritingBitmapRenderer {
             }
         }
 
-        return HandwritingRenderResult(bitmap = output, missingCharacters = missingCharacters)
+        return HandwritingRenderResult(
+            bitmap = output,
+            missingCharacters = missingCharacters,
+            inkRows = clampedBands(inkRows, bitmapWidth, bitmapHeight),
+            paper = paper,
+        )
     }
 
     fun render(
@@ -660,6 +713,7 @@ object HandwritingBitmapRenderer {
         template: HandwritingTemplate,
         config: HandwritingRenderConfig,
         seed: Long = System.nanoTime(),
+        keepPaper: Boolean = false,
     ): HandwritingRenderResult {
         val rng = Random(seed)
         val normalizedText = BundledGlyphTextNormalizer.normalize(text)
@@ -962,6 +1016,7 @@ object HandwritingBitmapRenderer {
                             alpha = alpha,
                             drawScaleX = glyphScaleX,
                             drawScaleY = glyphScaleY,
+                            line = laidOutLines.lastIndex,
                         )
 
                         cursorX += advance + effectiveHorizontalSpacingPx + if (effectiveSpacingJitterPx > 0) {
@@ -1012,6 +1067,8 @@ object HandwritingBitmapRenderer {
             lineSpacingPx = lineSpacingPx,
             firstBaselinePx = firstBaselinePx,
         )
+        val paper = if (keepPaper) output.copy(Bitmap.Config.ARGB_8888, false) else null
+        val inkRows = HashMap<Int, InkRow>()
 
         val glyphPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply {
             isDither = true
@@ -1019,6 +1076,11 @@ object HandwritingBitmapRenderer {
         val matrix = Matrix()
 
         placements.forEach { placement ->
+            growRow(
+                inkRows, placement.line, placement.left.toFloat(), placement.top.toFloat(),
+                placement.bitmap.width * placement.drawScaleX, placement.bitmap.height * placement.drawScaleY,
+                placement.rotationDeg,
+            )
             glyphPaint.alpha = (placement.alpha * 255).toInt().coerceIn(0, 255)
 
             // Subtle mesh warp for organic wavy strokes
@@ -1074,6 +1136,8 @@ object HandwritingBitmapRenderer {
             bitmap = output,
             missingCharacters = missingCharacters,
             lines = laidOutLines.map(StringBuilder::toString).filter(String::isNotEmpty),
+            inkRows = clampedBands(inkRows, bitmapWidth, bitmapHeight),
+            paper = paper,
         )
     }
 }
@@ -1086,4 +1150,5 @@ private data class GlyphPlacement(
     val alpha: Float = 1f,
     val drawScaleX: Float = 1f,
     val drawScaleY: Float = 1f,
+    val line: Int = 0,
 )
