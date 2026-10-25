@@ -50,6 +50,7 @@ object GlyphPostProcessor {
     private const val TARGET_GUIDE_BAND_HEIGHT = (TARGET_CANVAS * 0.46f).toInt()
     private const val INK_COLOR = 0xFF1A1410.toInt()
     private const val SIDE_PAD = 8
+    private const val OUTER_GUIDE_DOT_MAX_AREA = 12
 
     private val DIACRITIC_CHARS = setOf(
         'ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü',
@@ -76,6 +77,8 @@ object GlyphPostProcessor {
         expectsDiacritic: Boolean = false,
         // A crop without printed sheet furniture must keep rule-shaped ink: a tall I or a wide W.
         rejectPrintedRules: Boolean = true,
+        // Dotted outer guides; they never set the glyph scale.
+        outerGuideYsInCrop: IntArray = intArrayOf(),
     ): Bitmap {
         val width = crop.width
         val height = crop.height
@@ -163,6 +166,7 @@ object GlyphPostProcessor {
         }
         val components = extractInkComponents(inkMask, width, height)
             .filterNot { rejectPrintedRules && isPrintedRule(it, width, height) }
+            .filterNot { isOuterGuideDot(it.top, it.bottom, it.area, outerGuideYsInCrop) }
         if (components.isEmpty()) {
             return Bitmap.createBitmap(TARGET_CANVAS, TARGET_CANVAS, Bitmap.Config.ARGB_8888)
         }
@@ -702,6 +706,13 @@ object GlyphPostProcessor {
     internal fun normalizedBaselineRow(): Int = TARGET_BASELINE_Y
 
     internal fun normalizedGuideBandHeight(): Int = TARGET_GUIDE_BAND_HEIGHT
+
+    /**
+     * A printed dot of a dotted guide that survived thresholding. Faint writing lowers the Otsu
+     * threshold enough to keep them, and the i/j dot search would take the top-most one.
+     */
+    internal fun isOuterGuideDot(top: Int, bottom: Int, area: Int, outerGuideYsInCrop: IntArray): Boolean =
+        area <= OUTER_GUIDE_DOT_MAX_AREA && outerGuideYsInCrop.any { top >= it - 2 && bottom <= it + 2 }
 
     internal fun resolveGuideBand(guideYsInCrop: IntArray): IntRange? {
         if (guideYsInCrop.size < 2) return null

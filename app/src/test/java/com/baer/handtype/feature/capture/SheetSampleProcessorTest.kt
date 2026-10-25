@@ -80,6 +80,32 @@ class SheetSampleProcessorTest {
     }
 
     @Test
+    fun guideSnapKeepsTheBaselineAboveAnInkedDescenderLine() {
+        val cellHeight = 152
+        val topInset = 4
+        val width = 108
+        val height = 145
+        fun y(ratio: Float) = (cellHeight * ratio).toInt() - topInset
+        val luma = IntArray(width * height) { PAPER }
+        // A photographed baseline keeps only thin dash cores; the dotted descender line stays whole.
+        for (x in 0 until width) if (x % 12 < 4) luma[y(PracticeSheetGenerator.GUIDE_BASELINE_RATIO) * width + x] = GUIDE
+        for (x in 0 until width) if (x % 8 < 2) luma[y(PracticeSheetGenerator.GUIDE_DESCENDER_RATIO) * width + x] = GUIDE
+        // The flat bottom of a 'g' loop drawn along the descender line.
+        for (yy in y(PracticeSheetGenerator.GUIDE_DESCENDER_RATIO) - 1..y(PracticeSheetGenerator.GUIDE_DESCENDER_RATIO) + 1) {
+            for (x in 30 until 75) luma[yy * width + x] = INK
+        }
+        val baseline = y(PracticeSheetGenerator.GUIDE_BASELINE_RATIO)
+
+        assertEquals(
+            baseline,
+            SheetSampleProcessor.snapLine(
+                luma, width, nominal = baseline + 4, limit = height, span = 0 until width, horizontal = true,
+                radius = SheetSampleProcessor.guideSnapRadius(cellHeight),
+            ),
+        )
+    }
+
+    @Test
     fun borderSnapIgnoresLetterStemNearTheBorder() {
         val width = 100
         val height = 160
