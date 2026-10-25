@@ -2,10 +2,79 @@ package com.baer.handtype.feature.capture
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SheetSampleProcessorTest {
+
+    @Test
+    fun aStrokeCrossingTheBorderFromAboveIsInkAboveTheCell() {
+        val width = 20
+        val borderY = 10
+        // Paper 245; a pen stroke at column 5 above the border; a printed guide dot at column 12.
+        val luma = IntArray(width * 20) { i ->
+            val x = i % width
+            val y = i / width
+            when {
+                x == 5 && y < borderY -> 40
+                x == 12 && y == borderY - 4 -> 198
+                else -> 245
+            }
+        }
+
+        val above = SheetSampleProcessor.inkAboveBorder(luma, width, borderY, x0 = 2, x1 = 18)
+
+        assertEquals(16, above.size)
+        assertTrue("pen stroke", above[5 - 2])
+        assertFalse("printed guide dot", above[12 - 2])
+        assertEquals(1, above.count { it })
+    }
+
+    @Test
+    fun aDescenderCrossingTheBorderIsFollowedIntoTheCellBelow() {
+        val width = 30
+        val borderY = 20
+        // Paper 245; printed border rows 19..21; a descender at column 8 from row 10 to 30 with a
+        // hook to column 11 at its end; a letter of the cell below at columns 20..24, rows 26..32.
+        val luma = IntArray(width * 40) { i ->
+            val x = i % width
+            val y = i / width
+            when {
+                x == 8 && y in 10..30 -> 40
+                y == 30 && x in 8..11 -> 40
+                x in 20..24 && y in 26..32 -> 40
+                y in borderY - 1..borderY + 1 -> 90
+                else -> 245
+            }
+        }
+
+        val stroke = SheetSampleProcessor.strokeBelowBorder(luma, width, borderY, x0 = 2, x1 = 28, seedY = 14, maxY = 36)!!
+
+        fun at(x: Int, y: Int) = stroke[(y - 14) * (28 - 2) + (x - 2)]
+        assertTrue("descender below the border", at(8, 28))
+        assertTrue("its hook", at(11, 30))
+        assertTrue("where it crosses the border", at(8, borderY))
+        assertFalse("the border away from the stroke", at(16, borderY))
+        assertFalse("the letter of the cell below", at(22, 29))
+    }
+
+    @Test
+    fun aStrokeEndingAtTheBorderIsNotExtended() {
+        val width = 30
+        val borderY = 20
+        val luma = IntArray(width * 40) { i ->
+            val x = i % width
+            val y = i / width
+            when {
+                x == 8 && y in 10..borderY -> 40
+                y in borderY - 1..borderY + 1 -> 90
+                else -> 245
+            }
+        }
+
+        assertNull(SheetSampleProcessor.strokeBelowBorder(luma, width, borderY, x0 = 2, x1 = 28, seedY = 14, maxY = 36))
+    }
 
     @Test
     fun paperMaskCoversInkEnclosedByThePage() {
@@ -77,6 +146,32 @@ class SheetSampleProcessorTest {
         for (y in 52..55) for (x in 20 until 80) luma[y * width + x] = INK
 
         assertEquals(40, SheetSampleProcessor.snapLine(luma, width, nominal = 45, limit = height, span = 0 until width, horizontal = true))
+    }
+
+    @Test
+    fun guideSnapKeepsTheBaselineAboveAnInkedDescenderLine() {
+        val cellHeight = 152
+        val topInset = 4
+        val width = 108
+        val height = 145
+        fun y(ratio: Float) = (cellHeight * ratio).toInt() - topInset
+        val luma = IntArray(width * height) { PAPER }
+        // A photographed baseline keeps only thin dash cores; the dotted descender line stays whole.
+        for (x in 0 until width) if (x % 12 < 4) luma[y(PracticeSheetGenerator.GUIDE_BASELINE_RATIO) * width + x] = GUIDE
+        for (x in 0 until width) if (x % 8 < 2) luma[y(PracticeSheetGenerator.GUIDE_DESCENDER_RATIO) * width + x] = GUIDE
+        // The flat bottom of a 'g' loop drawn along the descender line.
+        for (yy in y(PracticeSheetGenerator.GUIDE_DESCENDER_RATIO) - 1..y(PracticeSheetGenerator.GUIDE_DESCENDER_RATIO) + 1) {
+            for (x in 30 until 75) luma[yy * width + x] = INK
+        }
+        val baseline = y(PracticeSheetGenerator.GUIDE_BASELINE_RATIO)
+
+        assertEquals(
+            baseline,
+            SheetSampleProcessor.snapLine(
+                luma, width, nominal = baseline + 4, limit = height, span = 0 until width, horizontal = true,
+                radius = SheetSampleProcessor.guideSnapRadius(cellHeight),
+            ),
+        )
     }
 
     @Test
