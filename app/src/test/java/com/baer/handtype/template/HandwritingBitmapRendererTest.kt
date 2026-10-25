@@ -190,6 +190,13 @@ class LeadingPullTest {
     }
 
     @Test
+    fun cursiveLetterReachingTheDescenderGuideKeepsTheCanvasBaseline() {
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('ß', canvasBaseline = 163, inkBottom = 197))
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('f', canvasBaseline = 163, inkBottom = 197))
+        assertEquals("print ß dips just below the line", 170, HandwritingBitmapRenderer.userCanvasBaselineRow('ß', canvasBaseline = 163, inkBottom = 170))
+    }
+
+    @Test
     fun synthesizedPunctuationKeepsTheCanvasBaseline() {
         // A hyphen's ink bottom sits mid x-height; treating it as the baseline drops it to the line.
         assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('-', canvasBaseline = 163, inkBottom = 115))

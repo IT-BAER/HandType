@@ -291,10 +291,13 @@ object HandwritingBitmapRenderer {
 
     /**
      * Writers float letters above the printed guide by varying amounts, so a letter's ink bottom
-     * is its baseline. Descenders and synthesized punctuation are already placed on the canvas baseline.
+     * is its baseline. Descenders and synthesized punctuation are already placed on the canvas baseline,
+     * and so is ink reaching far below it: a cursive ß or f has a descender a print one lacks.
      */
     internal fun userCanvasBaselineRow(character: Char, canvasBaseline: Int, inkBottom: Int): Int =
-        if (character.lowercaseChar() in descenderChars || !character.isLetterOrDigit()) canvasBaseline else inkBottom
+        if (character.lowercaseChar() in descenderChars || !character.isLetterOrDigit() ||
+            inkBottom - canvasBaseline > GlyphPostProcessor.normalizedGuideBandHeight() / 5
+        ) canvasBaseline else inkBottom
 
     internal fun targetInkHeightPx(
         lineHeightPx: Int,

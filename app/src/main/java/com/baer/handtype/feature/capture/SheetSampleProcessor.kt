@@ -219,21 +219,26 @@ object SheetSampleProcessor {
                 normalizeWhitePoint(cellCrop),
                 PracticeSheetGenerator.labelBounds(cell.character).apply { offset(-sideInset, -topInset) },
             )
-            // The x-height guide and the baseline are the only two lines on the sheet, and both
-            // are needed here to reconstruct glyph height.
+            // The x-height guide and the baseline set the glyph scale; the dotted outer guides
+            // are light enough for Otsu to keep on the paper side.
             val guideRatios = floatArrayOf(
                 PracticeSheetGenerator.GUIDE_UPPER_RATIO,
                 PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
             )
-            val guideYsInCrop = guideRatios
+            fun snappedGuideRows(ratios: FloatArray) = ratios
                 .map { ratio -> (cellHeightPx * ratio).toInt() - topInset }
                 .filter { it >= 0 && it < edgeCleanCellCrop.height }
-                .map { snapGuideRow(edgeCleanCellCrop, it) }
+                .map { snapGuideRow(edgeCleanCellCrop, it, guideSnapRadius(cellHeightPx)) }
                 .toIntArray()
+            val guideYsInCrop = snappedGuideRows(guideRatios)
+            val outerGuideYsInCrop = snappedGuideRows(
+                floatArrayOf(PracticeSheetGenerator.GUIDE_CAP_RATIO, PracticeSheetGenerator.GUIDE_DESCENDER_RATIO),
+            )
             val cleaned = GlyphPostProcessor.cleanGlyph(
                 edgeCleanCellCrop,
                 guideYsInCrop,
                 expectsDiacritic = GlyphPostProcessor.expectsDiacritic(cell.character),
+                outerGuideYsInCrop = outerGuideYsInCrop,
             )
 
             debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
@@ -262,8 +267,17 @@ object SheetSampleProcessor {
      * [GUIDE_SEARCH_RADIUS] rows away from where the grid geometry puts it. Returns [nominalY]
      * unchanged when no row in range looks like a printed line.
      */
-    private fun snapGuideRow(crop: Bitmap, nominalY: Int): Int =
-        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true)
+    private fun snapGuideRow(crop: Bitmap, nominalY: Int, radius: Int): Int =
+        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true, radius = radius)
+
+    /** Half the gap from a dashed guide to its dotted neighbour, so a snap never lands on the dotted line. */
+    internal fun guideSnapRadius(cellHeightPx: Int): Int {
+        val gap = minOf(
+            PracticeSheetGenerator.GUIDE_UPPER_RATIO - PracticeSheetGenerator.GUIDE_CAP_RATIO,
+            PracticeSheetGenerator.GUIDE_DESCENDER_RATIO - PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
+        )
+        return minOf(GUIDE_SEARCH_RADIUS, (cellHeightPx * gap / 2).toInt())
+    }
 
     /**
      * Rescales [cellCrop] so its own paper level maps to luma 255. A photographed sheet has an
@@ -393,8 +407,16 @@ object SheetSampleProcessor {
      * candidate must reach [LINE_SEGMENTS_MIN] of [LINE_SEGMENTS] segments. Among those the line
      * with the most dark pixels wins; with none, [nominal] is the better guess.
      */
-    internal fun snapLine(luma: IntArray, stride: Int, nominal: Int, limit: Int, span: IntRange, horizontal: Boolean): Int {
-        val lines = (nominal - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)..(nominal + GUIDE_SEARCH_RADIUS).coerceAtMost(limit - 1)
+    internal fun snapLine(
+        luma: IntArray,
+        stride: Int,
+        nominal: Int,
+        limit: Int,
+        span: IntRange,
+        horizontal: Boolean,
+        radius: Int = GUIDE_SEARCH_RADIUS,
+    ): Int {
+        val lines = (nominal - radius).coerceAtLeast(0)..(nominal + radius).coerceAtMost(limit - 1)
         if (lines.isEmpty() || span.isEmpty()) return nominal
         fun at(line: Int, p: Int) = luma[if (horizontal) line * stride + p else p * stride + line]
         // Paper level from the window itself: a dim photo has paper well below a printed sheet's.

@@ -13,6 +13,40 @@ class GlyphPostProcessorTest {
     }
 
     @Test
+    fun printedDotOnADottedGuideIsNotInk() {
+        val outerGuides = intArrayOf(18, 135)
+        assertTrue(GlyphPostProcessor.isOuterGuideDot(top = 17, bottom = 18, area = 4, outerGuideYsInCrop = outerGuides))
+        assertTrue(GlyphPostProcessor.isOuterGuideDot(top = 134, bottom = 136, area = 6, outerGuideYsInCrop = outerGuides))
+        assertFalse("pen i-dot below the cap line", GlyphPostProcessor.isOuterGuideDot(top = 21, bottom = 25, area = 20, outerGuideYsInCrop = outerGuides))
+        assertFalse("accent drawn on the cap line", GlyphPostProcessor.isOuterGuideDot(top = 16, bottom = 20, area = 30, outerGuideYsInCrop = outerGuides))
+    }
+
+    @Test
+    fun cellBorderFrameIsAFrameButASparseCursiveCapitalIsNot() {
+        val w = 108
+        val h = 145
+        fun frame(sides: String): IntArray = (0 until w * h).filter { i ->
+            val x = i % w
+            val y = i / w
+            ('l' in sides && x in 4..6) || ('r' in sides && x in 101..103) ||
+                ('t' in sides && y in 3..5) || ('b' in sides && y in 137..139)
+        }.filter { i -> i % w in 4..103 && i / w in 3..139 }.toIntArray()
+        assertTrue(GlyphPostProcessor.isCellBorderFrame(frame("lrtb"), 4, 3, 103, 139, w, h))
+        assertTrue("bottom border erased", GlyphPostProcessor.isCellBorderFrame(frame("lrt"), 4, 3, 103, 136, w, h))
+
+        // One 5 px pen stroke swinging across the cell like a tall cursive S.
+        val stroke = (0..1300).flatMap { step ->
+            val t = step / 1300.0
+            val cx = 54 + 44 * kotlin.math.sin(t * 2 * Math.PI)
+            val cy = 5 + 128 * t
+            (-2..2).flatMap { dx -> (-2..2).map { dy -> (cy.toInt() + dy) * w + cx.toInt() + dx } }
+        }.distinct().toIntArray()
+        val xs = stroke.map { it % w }
+        val ys = stroke.map { it / w }
+        assertFalse(GlyphPostProcessor.isCellBorderFrame(stroke, xs.min(), ys.min(), xs.max(), ys.max(), w, h))
+    }
+
+    @Test
     fun resolveGuideBandUsesTopAndBottomOnly() {
         assertTrue(
             GlyphPostProcessor.resolveGuideBand(intArrayOf(118, 81, 46)) == 46..118,

@@ -50,6 +50,7 @@ object GlyphPostProcessor {
     private const val TARGET_GUIDE_BAND_HEIGHT = (TARGET_CANVAS * 0.46f).toInt()
     private const val INK_COLOR = 0xFF1A1410.toInt()
     private const val SIDE_PAD = 8
+    private const val OUTER_GUIDE_DOT_MAX_AREA = 12
 
     private val DIACRITIC_CHARS = setOf(
         'ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü',
@@ -76,6 +77,8 @@ object GlyphPostProcessor {
         expectsDiacritic: Boolean = false,
         // A crop without printed sheet furniture must keep rule-shaped ink: a tall I or a wide W.
         rejectPrintedRules: Boolean = true,
+        // Dotted outer guides; they never set the glyph scale.
+        outerGuideYsInCrop: IntArray = intArrayOf(),
     ): Bitmap {
         val width = crop.width
         val height = crop.height
@@ -121,8 +124,9 @@ object GlyphPostProcessor {
         // ink pulls the threshold below the dot's light grey. Only accept groups with area < 150
         // to ensure we never pull in large paper-texture regions.
         val diacriticZoneEnd = guideBand?.baselineY?.coerceIn(0, height) ?: (height * 0.40f).toInt()
-        // Track pixels recovered by the diacritic scan so we can force them to full opacity
-        // later — faint dots/accents otherwise render at low alpha and disappear when scaled.
+        // Pixels of the kept dots/accents, forced to full opacity later: faint marks otherwise render
+        // at low alpha and disappear when scaled. Set only for marks, because the scans below also
+        // pick up the faint anti-aliased edge of every stroke.
         val diacriticPixelMask = BooleanArray(pixels.size)
         // Pass 1: gentle scan (luma < 240, area 3..149) — picks up clearly faint dots without
         // pulling in paper grain.
@@ -133,12 +137,7 @@ object GlyphPostProcessor {
             }
             val candidateComponents = extractInkComponents(diacriticCandidates, width, height)
             for (comp in candidateComponents) {
-                if (comp.area in 3..149) {
-                    comp.pixels.forEach {
-                        inkMask[it] = true
-                        diacriticPixelMask[it] = true
-                    }
-                }
+                if (comp.area in 3..149) comp.pixels.forEach { inkMask[it] = true }
             }
         }
         // Pass 2 (aggressive, only for chars known to carry a diacritic): always runs additively
@@ -154,15 +153,11 @@ object GlyphPostProcessor {
             val best = candidateComponents
                 .filter { it.area in 1..149 }
                 .minByOrNull { it.area }
-            if (best != null) {
-                best.pixels.forEach {
-                    inkMask[it] = true
-                    diacriticPixelMask[it] = true
-                }
-            }
+            best?.pixels?.forEach { inkMask[it] = true }
         }
         val components = extractInkComponents(inkMask, width, height)
             .filterNot { rejectPrintedRules && isPrintedRule(it, width, height) }
+            .filterNot { isOuterGuideDot(it.top, it.bottom, it.area, outerGuideYsInCrop) }
         if (components.isEmpty()) {
             return Bitmap.createBitmap(TARGET_CANVAS, TARGET_CANVAS, Bitmap.Config.ARGB_8888)
         }
@@ -487,13 +482,37 @@ object GlyphPostProcessor {
         val height = component.bottom - component.top + 1
         val horizontalRule = height <= RULE_MAX_THICKNESS && width >= cropWidth * RULE_MIN_SPAN
         val verticalRule = width <= RULE_MAX_THICKNESS && height >= cropHeight * RULE_MIN_SPAN
-        // The four cell borders meet at the corners, so they reach the component labeller as one
-        // hollow rectangle that spans the crop yet encloses almost nothing. Left alone it is the
-        // largest component and is picked as the glyph.
-        val cellBorderFrame = width >= cropWidth * RULE_MIN_SPAN &&
-            height >= cropHeight * RULE_MIN_SPAN &&
-            component.area < width.toLong() * height * FRAME_MAX_FILL
-        return horizontalRule || verticalRule || cellBorderFrame
+        return horizontalRule || verticalRule || with(component) {
+            isCellBorderFrame(pixels, left, top, right, bottom, cropWidth, cropHeight)
+        }
+    }
+
+    /**
+     * The four cell borders meet at the corners, so they reach the component labeller as one
+     * hollow rectangle that spans the crop yet encloses almost nothing. Left alone it is the
+     * largest component and is picked as the glyph. [pixels] index a crop [cropWidth] wide.
+     */
+    internal fun isCellBorderFrame(
+        pixels: IntArray,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+        cropWidth: Int,
+        cropHeight: Int,
+    ): Boolean {
+        val width = right - left + 1
+        val height = bottom - top + 1
+        if (width < cropWidth * RULE_MIN_SPAN || height < cropHeight * RULE_MIN_SPAN) return false
+        if (pixels.size >= width.toLong() * height * FRAME_MAX_FILL) return false
+        // A tall cursive capital is just as sparse, but only a frame keeps its ink on the box edges.
+        val onEdge = pixels.count { index ->
+            val x = index % cropWidth
+            val y = index / cropWidth
+            x - left < RULE_MAX_THICKNESS || right - x < RULE_MAX_THICKNESS ||
+                y - top < RULE_MAX_THICKNESS || bottom - y < RULE_MAX_THICKNESS
+        }
+        return onEdge >= pixels.size * FRAME_MIN_EDGE_SHARE
     }
 
     private fun shouldKeepComponent(
@@ -703,6 +722,13 @@ object GlyphPostProcessor {
 
     internal fun normalizedGuideBandHeight(): Int = TARGET_GUIDE_BAND_HEIGHT
 
+    /**
+     * A printed dot of a dotted guide that survived thresholding. Faint writing lowers the Otsu
+     * threshold enough to keep them, and the i/j dot search would take the top-most one.
+     */
+    internal fun isOuterGuideDot(top: Int, bottom: Int, area: Int, outerGuideYsInCrop: IntArray): Boolean =
+        area <= OUTER_GUIDE_DOT_MAX_AREA && outerGuideYsInCrop.any { top >= it - 2 && bottom <= it + 2 }
+
     internal fun resolveGuideBand(guideYsInCrop: IntArray): IntRange? {
         if (guideYsInCrop.size < 2) return null
         val upper = guideYsInCrop.minOrNull() ?: return null
@@ -753,4 +779,6 @@ object GlyphPostProcessor {
     // A cell border encloses its own bounding box at ~3% fill. The most open letter that spans
     // this much of a cell still fills over a quarter of its box, so the gap is wide.
     private const val FRAME_MAX_FILL = 0.15f
+    // Letters measured 0.12..0.55 of their ink within RULE_MAX_THICKNESS of the box edge.
+    private const val FRAME_MIN_EDGE_SHARE = 0.8f
 }
