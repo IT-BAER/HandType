@@ -60,7 +60,7 @@
     <string name="camera_section_title">Captura tu hoja de escritura</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>
     <string name="camera_pre_scan_step_1">Imprime la hoja de escritura.</string>
-    <string name="camera_pre_scan_step_2">Escribe el carácter correspondiente en cada casilla y mantenlo sobre la línea guía.</string>
+    <string name="camera_pre_scan_step_2">Escribe el carácter correspondiente en cada casilla. Apóyalo en la línea discontinua inferior: las minúsculas llegan a la línea discontinua superior, las mayúsculas y letras altas a la línea punteada de arriba, y g, j, p, q, y bajan hasta la línea punteada de abajo.</string>
     <string name="camera_pre_scan_step_3">Captura toda la página y mantén los cuatro cuadrados negros completamente visibles.</string>
     <string name="camera_pre_scan_step_4">Usa luz uniforme y evita desenfoque, reflejos y sombras duras.</string>
     <string name="camera_sheet_button">Compartir la hoja de escritura</string>
@@ -269,7 +269,7 @@
     <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Escribir en la pantalla</string>
     <string name="stylus_title">Escribir en la pantalla</string>
-    <string name="stylus_instruction">Escribe el carácter tenue en la casilla. Apóyalo en la línea inferior; las minúsculas llegan a la superior.</string>
+    <string name="stylus_instruction">Escribe el carácter tenue en la casilla. Apóyalo en la línea discontinua inferior; las minúsculas llegan a la discontinua superior y las mayúsculas a la punteada.</string>
     <string name="stylus_progress">%1$d / %2$d</string>
     <string name="stylus_undo">Deshacer</string>
     <string name="stylus_clear">Borrar</string>
@@ -281,7 +281,7 @@
     <string name="stylus_hint_outside">Mantén cada trazo dentro de la casilla.</string>
     <string name="stylus_hint_too_small">Demasiado pequeño: usa las líneas guía.</string>
     <string name="stylus_hint_too_large">Demasiado grande: acércate más a las líneas guía.</string>
-    <string name="stylus_hint_reach_up">Demasiado bajo: este carácter sube por encima de la línea superior.</string>
+    <string name="stylus_hint_reach_up">Demasiado bajo: este carácter sube por encima de la línea discontinua superior.</string>
     <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">Parece “%1$s”, se esperaba “%2$s”. Toca Siguiente otra vez para conservarlo.</string>
     <string name="stylus_hint_unrecognized">Todavía no parece “%1$s”. Toca Siguiente otra vez para conservarlo.</string>
