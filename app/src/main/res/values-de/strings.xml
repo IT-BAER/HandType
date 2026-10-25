@@ -61,7 +61,7 @@
     <string name="camera_section_title">Handschriftblatt aufnehmen</string>
     <string name="camera_pre_scan_title">Vor dem Scan</string>
     <string name="camera_pre_scan_step_1">Drucke die Schriftprobe.</string>
-    <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld, auf der unteren Hilfslinie stehend und bis zur oberen reichend.</string>
+    <string name="camera_pre_scan_step_2">Schreibe das passende Zeichen in jedes Feld. Es steht auf der unteren gestrichelten Linie: Kleinbuchstaben reichen bis zur oberen gestrichelten Linie, Großbuchstaben und hohe Buchstaben bis zur gepunkteten Linie oben, g, j, p, q, y bis zur gepunkteten Linie unten.</string>
     <string name="camera_pre_scan_step_3">Erfasse die ganze Seite und halte alle vier schwarzen Quadrate vollständig sichtbar.</string>
     <string name="camera_pre_scan_step_4">Nutze gleichmäßiges Licht und vermeide Unschärfe, Spiegelungen und harte Schatten.</string>
     <string name="camera_sheet_button">Schriftprobe teilen</string>
@@ -251,7 +251,7 @@
     <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Stattdessen auf dem Bildschirm schreiben</string>
     <string name="stylus_title">Auf dem Bildschirm schreiben</string>
-    <string name="stylus_instruction">Schreibe das blasse Zeichen in das Feld. Es steht auf der unteren Linie, Kleinbuchstaben reichen bis zur oberen.</string>
+    <string name="stylus_instruction">Schreibe das blasse Zeichen in das Feld. Es steht auf der unteren gestrichelten Linie; Kleinbuchstaben reichen bis zur oberen gestrichelten, Großbuchstaben bis zur gepunkteten Linie.</string>
     <string name="stylus_progress">%1$d / %2$d</string>
     <string name="stylus_undo">Rückgängig</string>
     <string name="stylus_clear">Löschen</string>
@@ -263,7 +263,7 @@
     <string name="stylus_hint_outside">Bleib mit jedem Strich im Feld.</string>
     <string name="stylus_hint_too_small">Zu klein - nutze die Hilfslinien.</string>
     <string name="stylus_hint_too_large">Zu groß - bleib näher an den Hilfslinien.</string>
-    <string name="stylus_hint_reach_up">Zu kurz - dieses Zeichen reicht über die obere Linie.</string>
+    <string name="stylus_hint_reach_up">Zu kurz - dieses Zeichen reicht über die obere gestrichelte Linie.</string>
     <string name="stylus_hint_cell">„%1$s“: %2$s</string>
     <string name="stylus_hint_wrong">Sieht aus wie „%1$s“, erwartet „%2$s“. Tippe erneut auf Weiter, um es zu behalten.</string>
     <string name="stylus_hint_unrecognized">Das sieht noch nicht wie „%1$s“ aus. Tippe erneut auf Weiter, um es zu behalten.</string>

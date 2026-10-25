@@ -60,7 +60,7 @@
     <string name="camera_section_title">捕捉您的手写纸</string>
     <string name="camera_pre_scan_title">扫描前</string>
     <string name="camera_pre_scan_step_1">打印手写纸。</string>
-    <string name="camera_pre_scan_step_2">在每个方框中写入对应的字符，并保持在引导线上。</string>
+    <string name="camera_pre_scan_step_2">在每个方框中写入对应的字符。让它落在下方虚线上：小写字母写到上方虚线，大写字母和高字母写到顶部点线，g、j、p、q、y 向下写到底部点线。</string>
     <string name="camera_pre_scan_step_3">拍摄整页，并确保四个黑色方块完全可见。</string>
     <string name="camera_pre_scan_step_4">使用均匀的光线，避免模糊、眩光和硬阴影。</string>
     <string name="camera_sheet_button">分享手写纸</string>
@@ -269,7 +269,7 @@
     <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">改为在屏幕上书写</string>
     <string name="stylus_title">在屏幕上书写</string>
-    <string name="stylus_instruction">在方框中写出浅色显示的字符。让它落在下方线上，小写字母写到上方线。</string>
+    <string name="stylus_instruction">在方框中写出浅色显示的字符。让它落在下方虚线上，小写字母写到上方虚线，大写字母写到点线。</string>
     <string name="stylus_progress">%1$d / %2$d</string>
     <string name="stylus_undo">撤销</string>
     <string name="stylus_clear">清除</string>
@@ -281,7 +281,7 @@
     <string name="stylus_hint_outside">请让每一笔都在方框内。</string>
     <string name="stylus_hint_too_small">太小了 - 请参照引导线。</string>
     <string name="stylus_hint_too_large">太大了 - 请更贴近引导线。</string>
-    <string name="stylus_hint_reach_up">太矮了 - 这个字符应高过上方线。</string>
+    <string name="stylus_hint_reach_up">太矮了 - 这个字符应高过上方虚线。</string>
     <string name="stylus_hint_cell">“%1$s”：%2$s</string>
     <string name="stylus_hint_wrong">看起来像“%1$s”，应为“%2$s”。再次点按“下一步”即可保留。</string>
     <string name="stylus_hint_unrecognized">还不像“%1$s”。再次点按“下一步”即可保留。</string>
