@@ -50,6 +50,9 @@ object GlyphPostProcessor {
     private const val TARGET_GUIDE_BAND_HEIGHT = (TARGET_CANVAS * 0.46f).toInt()
     private const val INK_COLOR = 0xFF1A1410.toInt()
     private const val SIDE_PAD = 8
+    private const val OUTER_GUIDE_DOT_MAX_AREA = 12
+    // Lightest luma the faint-dot scan accepts as ink.
+    private const val MARK_PAPER_LUMA = 250
 
     private val DIACRITIC_CHARS = setOf(
         'ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü',
@@ -76,6 +79,10 @@ object GlyphPostProcessor {
         expectsDiacritic: Boolean = false,
         // A crop without printed sheet furniture must keep rule-shaped ink: a tall I or a wide W.
         rejectPrintedRules: Boolean = true,
+        // Dotted outer guides; they never set the glyph scale.
+        outerGuideYsInCrop: IntArray = intArrayOf(),
+        // Per crop column: ink just above the crop, where a stroke of the row above crosses in.
+        inkAboveCrop: BooleanArray = BooleanArray(0),
     ): Bitmap {
         val width = crop.width
         val height = crop.height
@@ -121,8 +128,8 @@ object GlyphPostProcessor {
         // ink pulls the threshold below the dot's light grey. Only accept groups with area < 150
         // to ensure we never pull in large paper-texture regions.
         val diacriticZoneEnd = guideBand?.baselineY?.coerceIn(0, height) ?: (height * 0.40f).toInt()
-        // Track pixels recovered by the diacritic scan so we can force them to full opacity
-        // later — faint dots/accents otherwise render at low alpha and disappear when scaled.
+        // Pixels of the kept dots/accents, darkened later when fainter than the pen. Set only for
+        // marks, because the scans below also pick up the faint anti-aliased edge of every stroke.
         val diacriticPixelMask = BooleanArray(pixels.size)
         // Pass 1: gentle scan (luma < 240, area 3..149) — picks up clearly faint dots without
         // pulling in paper grain.
@@ -133,12 +140,7 @@ object GlyphPostProcessor {
             }
             val candidateComponents = extractInkComponents(diacriticCandidates, width, height)
             for (comp in candidateComponents) {
-                if (comp.area in 3..149) {
-                    comp.pixels.forEach {
-                        inkMask[it] = true
-                        diacriticPixelMask[it] = true
-                    }
-                }
+                if (comp.area in 3..149) comp.pixels.forEach { inkMask[it] = true }
             }
         }
         // Pass 2 (aggressive, only for chars known to carry a diacritic): always runs additively
@@ -154,15 +156,18 @@ object GlyphPostProcessor {
             val best = candidateComponents
                 .filter { it.area in 1..149 }
                 .minByOrNull { it.area }
-            if (best != null) {
-                best.pixels.forEach {
-                    inkMask[it] = true
-                    diacriticPixelMask[it] = true
-                }
-            }
+            best?.pixels?.forEach { inkMask[it] = true }
         }
         val components = extractInkComponents(inkMask, width, height)
             .filterNot { rejectPrintedRules && isPrintedRule(it, width, height) }
+            .filterNot { isOuterGuideDot(it.top, it.bottom, it.area, outerGuideYsInCrop) }
+            // A mark may be cut by the cell's top edge, so only letters without one drop spill.
+            .filterNot { c ->
+                !expectsDiacritic && isSpillFromCellAbove(
+                    c.top, c.bottom, guideYsInCrop,
+                    continuesAboveCrop = c.pixels.any { it / width <= c.top + 1 && inkAboveCrop.getOrElse(it % width) { false } },
+                )
+            }
         if (components.isEmpty()) {
             return Bitmap.createBitmap(TARGET_CANVAS, TARGET_CANVAS, Bitmap.Config.ARGB_8888)
         }
@@ -170,11 +175,9 @@ object GlyphPostProcessor {
         val keptComponents = components
             .filter { shouldKeepComponent(it, primary, guideYsInCrop, expectsDiacritic) }
             .toMutableList()
-        // Char-aware diacritic safety net: i/j and accented vowels can have small dots/accents
-        // that the strict shouldKeepComponent rules reject. Only for characters we KNOW carry a
-        // diacritic, pick the single best candidate sitting above the primary that looks like a
-        // dot/accent (compact area, AR in 0.3..3.0, centered horizontally on the body, within
-        // 3× the primary height). Avoids re-introducing paper-noise dots above all letters.
+        // Dots and accents of the characters known to carry them (i/j, umlauts, accented vowels):
+        // recovered when shouldKeepComponent rejects them, then placed near the body. Only for
+        // these characters, so paper noise never becomes a dot above other letters.
         // Map from shifted dot pixel index → original pixel index (used to source luma for alpha
         // calc when the dot is relocated below for visual proximity to the body).
         val diacriticSourceMap = HashMap<Int, Int>()
@@ -183,17 +186,21 @@ object GlyphPostProcessor {
             // stem, so the largest component is not always the body.
             val body = keptComponents.filter { it.area >= primary.area / 2 }.maxBy { it.bottom }
             val primaryHeight = body.bottom - body.top + 1
-            val primaryWidth = body.right - body.left + 1
             val diacriticReach = maxOf(primaryHeight * 3, 60)
-            // True dots/accents always sit in the upper portion of the cell, above the body.
-            // Pick the TOP-MOST candidate (smallest .top) in the upper half of the canvas that
-            // is centered roughly above the body. Selecting by area was unreliable when stray
-            // ink fragments between dot and body had similar pixel counts to the real dot.
+            // Top body row per column: an umlaut dot may sit between the arms of a U or beside the
+            // crown of an O, below the body's overall top.
+            val columnTop = IntArray(width) { Int.MAX_VALUE }
+            for (p in body.pixels) columnTop[p % width] = minOf(columnTop[p % width], p / width)
+            fun bodyTopUnder(c: InkComponent): Int =
+                (c.left..c.right).minOf { columnTop[it] }.takeIf { it != Int.MAX_VALUE } ?: body.top
+            // A marker dot can outweigh 200 px; a stroke piece of the letter is far larger.
+            val markMaxArea = maxOf(200, body.area / 4)
             val matchesDiacritic: (InkComponent) -> Boolean = { c ->
                 c !== body &&
-                    c.area in 2..200 &&
-                    c.bottom < body.top &&
-                    c.top < height / 2 &&
+                    c.area in 2..markMaxArea &&
+                    !isGuideSliver(c.top, c.bottom, guideYsInCrop) &&
+                    c.bottom < bodyTopUnder(c) &&
+                    c.bottom < body.top + primaryHeight / 3 &&
                     run {
                         val w = c.right - c.left + 1
                         val h = c.bottom - c.top + 1
@@ -202,48 +209,57 @@ object GlyphPostProcessor {
                         // accents like acute/grave are slanted lines (AR ~0.4..2.5). Be permissive.
                         ar in 0.3f..5.0f
                     } &&
-                    (body.top - c.bottom - 1) <= diacriticReach
+                    (bodyTopUnder(c) - c.bottom - 1) <= diacriticReach
                 // No horizontal alignment check: the cell contains a single letter, so any
                 // small mark in the upper portion of the cell that matches dot/accent shape
                 // belongs to this letter. Users routinely place i/j dots slightly off-center
                 // and sometimes far to the left of the body.
             }
 
-            // 1) Safety-net: if a likely dot was rejected by shouldKeepComponent, add it.
-            val safetyNet = components.asSequence()
-                .filter { it !in keptComponents }
-                .filter(matchesDiacritic)
-                .minByOrNull { it.top }
-            if (safetyNet != null) {
-                keptComponents += safetyNet
-                safetyNet.pixels.forEach { diacriticPixelMask[it] = true }
+            // 1) Safety net: likely marks that shouldKeepComponent rejected; an umlaut has two.
+            val safetyNet = components.filter { it !in keptComponents && matchesDiacritic(it) }
+            keptComponents += safetyNet
+            safetyNet.forEach { mark -> mark.pixels.forEach { diacriticPixelMask[it] = true } }
+
+            // 2) Marks are level with the largest one (umlaut dots, even when one sits higher);
+            //    fragments far smaller than it are guide or label residue.
+            val found = keptComponents.filter(matchesDiacritic)
+            val largest = found.maxByOrNull { it.area }
+            val marks = if (largest == null) emptyList() else found.filter {
+                it.area * 4 >= largest.area &&
+                    it.bottom >= largest.top - largest.height / 2 && it.top <= largest.bottom + largest.height / 2
             }
-            // Marks above the body: the dot, plus whatever printed label or guide residue
-            // survived. Keep marks near the nearest one (umlaut dots sit level), drop the rest.
-            val above = keptComponents.filter { it !== body && it.bottom < body.top }
-            if (above.size > 1) {
-                val nearestGap = body.top - above.maxOf { it.bottom }
-                keptComponents.removeAll { it in above && body.top - it.bottom > nearestGap * 2 + 4 }
+            keptComponents.removeAll { it in found && it !in marks }
+            if (largest != null) {
+                keptComponents.removeAll { it !== body && it.bottom < body.top && it.area * 4 < largest.area }
             }
 
-            // 2) Relocate ANY kept component that looks like a dot/accent so it sits close to
-            //    the body AND horizontally centered above the body's body. The user may have
-            //    drawn it far above (near the cell top) or off to the side (j dots especially);
-            //    after normalization that places it well outside the ascender zone or visually
-            //    detached from the letter.
-            //    Target gap = 18% of body height (e.g. ~14px for an ~80px-tall i stem).
-            //    All marks move as one group, so the two dots of an umlaut keep their spacing.
-            val targetGap = maxOf(2, (primaryHeight * 0.18f).toInt())
-            val primaryCenterX = (body.left + body.right) / 2
-            //    Marks closer than the target gap move up, or the dilation below fuses them with
-            //    the body. Fragments far smaller than the largest mark are guide residue.
-            val found = keptComponents.filter(matchesDiacritic)
-            val largestMark = found.maxOfOrNull { it.area } ?: 0
-            val marks = found.filter { it.area * 4 >= largestMark }
-            keptComponents.removeAll { it in found && it !in marks }
-            val shiftY = marks.minOfOrNull { body.top - it.bottom - 1 - targetGap }
-                ?.coerceAtLeast(-marks.minOf { it.top }) ?: 0
-            val shiftX = if (marks.isEmpty()) 0 else primaryCenterX - (marks.minOf { it.left } + marks.maxOf { it.right }) / 2
+            // 3) Move the marks as one group, so umlaut dots keep their spacing, and only as far
+            //    as needed: the writer's dot height and offset are part of the hand. Up when one
+            //    nearly touches the ink below it (scaling would fuse them), down when far above
+            //    the body (the renderer fits all ink to the line, so the letter would shrink),
+            //    sideways only into the body's width.
+            val minGap = maxOf(2, (primaryHeight * 0.06f).toInt())
+            val maxGap = maxOf(minGap, (primaryHeight * 0.3f).toInt())
+            val shiftY = if (marks.isEmpty()) 0 else {
+                val closest = marks.minOf { bodyTopUnder(it) - it.bottom - 1 }
+                val aboveBody = marks.minOf { body.top - it.bottom - 1 }
+                when {
+                    closest < minGap -> closest - minGap
+                    aboveBody > maxGap -> aboveBody - maxGap
+                    else -> 0
+                }.coerceAtLeast(-marks.minOf { it.top })
+            }
+            val shiftX = if (marks.isEmpty()) 0 else {
+                val left = marks.minOf { it.left }
+                val right = marks.maxOf { it.right }
+                when {
+                    right - left > body.right - body.left -> (body.left + body.right - left - right) / 2
+                    left < body.left -> body.left - left
+                    right > body.right -> body.right - right
+                    else -> 0
+                }
+            }
             val toRemove = mutableListOf<InkComponent>()
             val toAdd = mutableListOf<InkComponent>()
             for (dot in marks) {
@@ -311,42 +327,21 @@ object GlyphPostProcessor {
         }
         if (bottom < 0) return crop // no ink found
 
-        // Dilate diacritic pixels by 3x3 — ONLY for characters known to carry a diacritic, and
-        // only seeds that already survived component filtering. This avoids promoting paper
-        // grain into visible dots above letters that shouldn't have any.
-        if (expectsDiacritic) {
-            val dilated = BooleanArray(diacriticPixelMask.size)
-            for (i in diacriticPixelMask.indices) {
-                if (!diacriticPixelMask[i] || !filteredInkMask[i]) continue
-                val cy = i / width
-                val cx = i % width
-                for (dy in -1..1) {
-                    val ny = cy + dy
-                    if (ny < 0 || ny >= height) continue
-                    for (dx in -1..1) {
-                        val nx = cx + dx
-                        if (nx < 0 || nx >= width) continue
-                        dilated[ny * width + nx] = true
-                    }
-                }
-            }
-            for (i in dilated.indices) {
-                if (dilated[i]) {
-                    diacriticPixelMask[i] = true
-                    filteredInkMask[i] = true
-                }
-            }
-            // Recompute bounding box including dilated dot pixels.
-            for (i in filteredInkMask.indices) {
-                if (!filteredInkMask[i]) continue
-                val y = i / width
-                val x = i % width
-                if (x < left) left = x
-                if (x > right) right = x
-                if (y < top) top = y
-                if (y > bottom) bottom = y
+        // A mark fainter than the pen (a light pencil dot) is darkened until its darkest pixel
+        // matches the body's median ink, keeping its own shading; other marks map like the stroke.
+        var markLumaMin = MARK_PAPER_LUMA
+        val bodyLumas = ArrayList<Int>()
+        for (i in diacriticPixelMask.indices) {
+            if (!filteredInkMask[i]) continue
+            if (diacriticPixelMask[i]) {
+                markLumaMin = minOf(markLumaMin, luma[diacriticSourceMap[i] ?: i])
+            } else if (luma[i] <= permissiveThreshold) {
+                bodyLumas += luma[i]
             }
         }
+        val bodyMedianLuma = bodyLumas.sorted().getOrElse(bodyLumas.size / 2) { lumaMin }
+        val markStretch = ((MARK_PAPER_LUMA - bodyMedianLuma).toFloat() / (MARK_PAPER_LUMA - markLumaMin).coerceAtLeast(1))
+            .coerceAtLeast(1f)
 
         val padding = 4
         left = (left - padding).coerceAtLeast(0)
@@ -369,23 +364,14 @@ object GlyphPostProcessor {
             val dstRow = y * inkWidth
             for (x in 0 until inkWidth) {
                 val srcIdx = srcRow + (left + x)
-                val l = luma[srcIdx]
+                // Relocated mark pixels take the luma of their original position.
+                val l = if (diacriticPixelMask[srcIdx]) {
+                    (MARK_PAPER_LUMA - (MARK_PAPER_LUMA - luma[diacriticSourceMap[srcIdx] ?: srcIdx]) * markStretch).toInt()
+                } else {
+                    luma[srcIdx]
+                }
                 val alpha = if (!filteredInkMask[srcIdx]) {
                     0
-                } else if (diacriticPixelMask[srcIdx]) {
-                    // Diacritic pixels may have been relocated (see expectsDiacritic block);
-                    // source the luma from their original position. Boost alpha so faint dots
-                    // remain visible after downscale, but don't force pure black — that creates
-                    // harsher dots than the rest of the stroke.
-                    val sourceIdx = diacriticSourceMap[srcIdx] ?: srcIdx
-                    val srcLuma = luma[sourceIdx]
-                    if (srcLuma > permissiveThreshold) {
-                        240
-                    } else {
-                        (((permissiveThreshold - srcLuma).toFloat() / darkSpan) * 255f)
-                            .toInt()
-                            .coerceIn(230, 255)
-                    }
                 } else if (l > permissiveThreshold) {
                     0
                 } else {
@@ -487,13 +473,37 @@ object GlyphPostProcessor {
         val height = component.bottom - component.top + 1
         val horizontalRule = height <= RULE_MAX_THICKNESS && width >= cropWidth * RULE_MIN_SPAN
         val verticalRule = width <= RULE_MAX_THICKNESS && height >= cropHeight * RULE_MIN_SPAN
-        // The four cell borders meet at the corners, so they reach the component labeller as one
-        // hollow rectangle that spans the crop yet encloses almost nothing. Left alone it is the
-        // largest component and is picked as the glyph.
-        val cellBorderFrame = width >= cropWidth * RULE_MIN_SPAN &&
-            height >= cropHeight * RULE_MIN_SPAN &&
-            component.area < width.toLong() * height * FRAME_MAX_FILL
-        return horizontalRule || verticalRule || cellBorderFrame
+        return horizontalRule || verticalRule || with(component) {
+            isCellBorderFrame(pixels, left, top, right, bottom, cropWidth, cropHeight)
+        }
+    }
+
+    /**
+     * The four cell borders meet at the corners, so they reach the component labeller as one
+     * hollow rectangle that spans the crop yet encloses almost nothing. Left alone it is the
+     * largest component and is picked as the glyph. [pixels] index a crop [cropWidth] wide.
+     */
+    internal fun isCellBorderFrame(
+        pixels: IntArray,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+        cropWidth: Int,
+        cropHeight: Int,
+    ): Boolean {
+        val width = right - left + 1
+        val height = bottom - top + 1
+        if (width < cropWidth * RULE_MIN_SPAN || height < cropHeight * RULE_MIN_SPAN) return false
+        if (pixels.size >= width.toLong() * height * FRAME_MAX_FILL) return false
+        // A tall cursive capital is just as sparse, but only a frame keeps its ink on the box edges.
+        val onEdge = pixels.count { index ->
+            val x = index % cropWidth
+            val y = index / cropWidth
+            x - left < RULE_MAX_THICKNESS || right - x < RULE_MAX_THICKNESS ||
+                y - top < RULE_MAX_THICKNESS || bottom - y < RULE_MAX_THICKNESS
+        }
+        return onEdge >= pixels.size * FRAME_MIN_EDGE_SHARE
     }
 
     private fun shouldKeepComponent(
@@ -703,6 +713,29 @@ object GlyphPostProcessor {
 
     internal fun normalizedGuideBandHeight(): Int = TARGET_GUIDE_BAND_HEIGHT
 
+    /**
+     * A printed dot of a dotted guide that survived thresholding. Faint writing lowers the Otsu
+     * threshold enough to keep them, and the i/j dot search would take the top-most one.
+     */
+    internal fun isOuterGuideDot(top: Int, bottom: Int, area: Int, outerGuideYsInCrop: IntArray): Boolean =
+        area <= OUTER_GUIDE_DOT_MAX_AREA && outerGuideYsInCrop.any { top >= it - 2 && bottom <= it + 2 }
+
+    /**
+     * A piece of a dashed guide that the faint-mark scan picked up: no taller than the printed line
+     * and lying on it. Taken for a mark, it is the one nearest the body and evicts the real dots.
+     */
+    /**
+     * A descender of the row above that crossed the cell border: it enters at the crop's top edge
+     * (the scanner clears the first rows of border bleed) from ink above the cell, and ends before
+     * the x-height guide, where every stroke of this cell's letter reaches. A cursive F or T bar
+     * that only touches the edge stays.
+     */
+    internal fun isSpillFromCellAbove(top: Int, bottom: Int, guideYsInCrop: IntArray, continuesAboveCrop: Boolean): Boolean =
+        continuesAboveCrop && top <= 4 && guideYsInCrop.isNotEmpty() && bottom < guideYsInCrop.min()
+
+    internal fun isGuideSliver(top: Int, bottom: Int, guideYsInCrop: IntArray): Boolean =
+        bottom - top <= 2 && guideYsInCrop.any { top >= it - 3 && bottom <= it + 3 }
+
     internal fun resolveGuideBand(guideYsInCrop: IntArray): IntRange? {
         if (guideYsInCrop.size < 2) return null
         val upper = guideYsInCrop.minOrNull() ?: return null
@@ -753,4 +786,6 @@ object GlyphPostProcessor {
     // A cell border encloses its own bounding box at ~3% fill. The most open letter that spans
     // this much of a cell still fills over a quarter of its box, so the gap is wide.
     private const val FRAME_MAX_FILL = 0.15f
+    // Letters measured 0.12..0.55 of their ink within RULE_MAX_THICKNESS of the box edge.
+    private const val FRAME_MIN_EDGE_SHARE = 0.8f
 }

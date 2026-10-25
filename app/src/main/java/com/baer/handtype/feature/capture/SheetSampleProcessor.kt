@@ -60,6 +60,8 @@ object SheetSampleProcessor {
     private const val LINE_SEGMENTS = 6
     private const val LINE_SEGMENTS_MIN = 5
     private const val LINE_CONTRAST = 15
+    // Pen ink below the paper level; a printed guide (luma ~198 on ~250 paper) stays above.
+    private const val INK_ABOVE_CONTRAST = 60
 
     // detectGridLines(): a solid border darkens nearly all of the central band (a dashed guide
     // about 60%), and printed cells are equal within this fraction of the mean gap.
@@ -219,21 +221,27 @@ object SheetSampleProcessor {
                 normalizeWhitePoint(cellCrop),
                 PracticeSheetGenerator.labelBounds(cell.character).apply { offset(-sideInset, -topInset) },
             )
-            // The x-height guide and the baseline are the only two lines on the sheet, and both
-            // are needed here to reconstruct glyph height.
+            // The x-height guide and the baseline set the glyph scale; the dotted outer guides
+            // are light enough for Otsu to keep on the paper side.
             val guideRatios = floatArrayOf(
                 PracticeSheetGenerator.GUIDE_UPPER_RATIO,
                 PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
             )
-            val guideYsInCrop = guideRatios
+            fun snappedGuideRows(ratios: FloatArray) = ratios
                 .map { ratio -> (cellHeightPx * ratio).toInt() - topInset }
                 .filter { it >= 0 && it < edgeCleanCellCrop.height }
-                .map { snapGuideRow(edgeCleanCellCrop, it) }
+                .map { snapGuideRow(edgeCleanCellCrop, it, guideSnapRadius(cellHeightPx)) }
                 .toIntArray()
+            val guideYsInCrop = snappedGuideRows(guideRatios)
+            val outerGuideYsInCrop = snappedGuideRows(
+                floatArrayOf(PracticeSheetGenerator.GUIDE_CAP_RATIO, PracticeSheetGenerator.GUIDE_DESCENDER_RATIO),
+            )
             val cleaned = GlyphPostProcessor.cleanGlyph(
                 edgeCleanCellCrop,
                 guideYsInCrop,
                 expectsDiacritic = GlyphPostProcessor.expectsDiacritic(cell.character),
+                outerGuideYsInCrop = outerGuideYsInCrop,
+                inkAboveCrop = inkAboveBorder(rectifiedLuma, RECTIFIED_WIDTH, cellTop, cropLeft, cropRight),
             )
 
             debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
@@ -262,8 +270,17 @@ object SheetSampleProcessor {
      * [GUIDE_SEARCH_RADIUS] rows away from where the grid geometry puts it. Returns [nominalY]
      * unchanged when no row in range looks like a printed line.
      */
-    private fun snapGuideRow(crop: Bitmap, nominalY: Int): Int =
-        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true)
+    private fun snapGuideRow(crop: Bitmap, nominalY: Int, radius: Int): Int =
+        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true, radius = radius)
+
+    /** Half the gap from a dashed guide to its dotted neighbour, so a snap never lands on the dotted line. */
+    internal fun guideSnapRadius(cellHeightPx: Int): Int {
+        val gap = minOf(
+            PracticeSheetGenerator.GUIDE_UPPER_RATIO - PracticeSheetGenerator.GUIDE_CAP_RATIO,
+            PracticeSheetGenerator.GUIDE_DESCENDER_RATIO - PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
+        )
+        return minOf(GUIDE_SEARCH_RADIUS, (cellHeightPx * gap / 2).toInt())
+    }
 
     /**
      * Rescales [cellCrop] so its own paper level maps to luma 255. A photographed sheet has an
@@ -393,8 +410,16 @@ object SheetSampleProcessor {
      * candidate must reach [LINE_SEGMENTS_MIN] of [LINE_SEGMENTS] segments. Among those the line
      * with the most dark pixels wins; with none, [nominal] is the better guess.
      */
-    internal fun snapLine(luma: IntArray, stride: Int, nominal: Int, limit: Int, span: IntRange, horizontal: Boolean): Int {
-        val lines = (nominal - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)..(nominal + GUIDE_SEARCH_RADIUS).coerceAtMost(limit - 1)
+    internal fun snapLine(
+        luma: IntArray,
+        stride: Int,
+        nominal: Int,
+        limit: Int,
+        span: IntRange,
+        horizontal: Boolean,
+        radius: Int = GUIDE_SEARCH_RADIUS,
+    ): Int {
+        val lines = (nominal - radius).coerceAtLeast(0)..(nominal + radius).coerceAtMost(limit - 1)
         if (lines.isEmpty() || span.isEmpty()) return nominal
         fun at(line: Int, p: Int) = luma[if (horizontal) line * stride + p else p * stride + line]
         // Paper level from the window itself: a dim photo has paper well below a printed sheet's.
@@ -420,6 +445,21 @@ object SheetSampleProcessor {
             }
         }
         return best
+    }
+
+    /**
+     * Columns of [x0] until [x1] with ink in the rows just above the border at [borderY]: a stroke
+     * of the row above crossing into the cell. Printed guides are far lighter than pen ink.
+     */
+    internal fun inkAboveBorder(luma: IntArray, stride: Int, borderY: Int, x0: Int, x1: Int): BooleanArray {
+        val rows = (borderY - 6).coerceAtLeast(0)..(borderY - 3)
+        if (rows.isEmpty() || x1 <= x0) return BooleanArray(maxOf(0, x1 - x0))
+        val window = IntArray(rows.count() * (x1 - x0))
+        var i = 0
+        for (y in rows) for (x in x0 until x1) window[i++] = luma[y * stride + x]
+        window.sort()
+        val inkMax = window[window.size / 2] - INK_ABOVE_CONTRAST
+        return BooleanArray(x1 - x0) { dx -> rows.any { luma[it * stride + x0 + dx] < inkMax } }
     }
 
     private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int =

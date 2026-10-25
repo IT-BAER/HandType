@@ -14,6 +14,7 @@ import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -83,6 +84,9 @@ object HandwritingBitmapRenderer {
             rows.toSortedMap().values.map { it.copy(left = it.left.coerceIn(0, width), right = it.right.coerceIn(0, width)) },
             height,
         )
+
+    /** Canvas x-height of an average print hand; it renders at about a third of the line height. */
+    private const val REFERENCE_X_HEIGHT_PX = 64f
 
     private val descenderChars = setOf('g', 'j', 'p', 'q', 'y')
     private val dottedChars = setOf('i', 'j')
@@ -183,6 +187,8 @@ object HandwritingBitmapRenderer {
         character: Char,
         templateBaselineRow: Int,
         isUserTemplate: Boolean,
+        writerBaseline: Int,
+        writerScale: Float,
     ): PreparedGlyph {
         val bounds = measureInkBounds(bitmap)
         if (isUserTemplate && bitmap.height == GlyphPostProcessor.normalizedCanvasSize()) {
@@ -202,11 +208,14 @@ object HandwritingBitmapRenderer {
             val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
             val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
             val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
-            val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom)
+            val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom, writerBaseline)
             return PreparedGlyph(
                 bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
                 baselineRow = (baseline - cropTop).coerceIn(0, cropH - 1),
                 normalizedUserCanvas = true,
+                // The window, not the ink, sets the scale: one scale for the whole hand, so a
+                // capital that overflows the window keeps its size next to the small letters.
+                sizeHeight = ((rawBot - rawTop + 1) / writerScale).toInt(),
                 // Tall glyphs (T, F, 7, f, t) carry a bar or hook the next letter tucks under.
                 // x-height letters keep their full width: an r arm or o tail is the letter.
                 advanceWidth = if (bounds.height >= GlyphPostProcessor.normalizedGuideBandHeight() * 6 / 10) {
@@ -291,10 +300,67 @@ object HandwritingBitmapRenderer {
 
     /**
      * Writers float letters above the printed guide by varying amounts, so a letter's ink bottom
-     * is its baseline. Descenders and synthesized punctuation are already placed on the canvas baseline.
+     * is its baseline. Synthesized punctuation is drawn on the canvas baseline. Descenders hang
+     * from [writerBaseline], and so does ink reaching far below it: a cursive ß or f has a
+     * descender a print one lacks. Capital G J P Q Y have no descender.
      */
-    internal fun userCanvasBaselineRow(character: Char, canvasBaseline: Int, inkBottom: Int): Int =
-        if (character.lowercaseChar() in descenderChars || !character.isLetterOrDigit()) canvasBaseline else inkBottom
+    internal fun userCanvasBaselineRow(character: Char, canvasBaseline: Int, inkBottom: Int, writerBaseline: Int = canvasBaseline): Int =
+        when {
+            !character.isLetterOrDigit() -> canvasBaseline
+            character.isLowerCase() && character in descenderChars -> writerBaseline
+            inkBottom - writerBaseline > GlyphPostProcessor.normalizedGuideBandHeight() / 5 -> writerBaseline
+            else -> inkBottom
+        }
+
+    /**
+     * Scale that brings a hand's x-height (normalized canvas px) to the reference, so a hand that
+     * fills the sheet's guide band as asked still fits the ruled line. A tiny hand grows less than
+     * that: scaled up, its fine pen would turn into a marker.
+     */
+    internal fun writerSizeScale(xHeightInkHeights: List<Int>): Float {
+        val median = xHeightInkHeights.sorted().getOrNull(xHeightInkHeights.size / 2) ?: return 1f
+        return (REFERENCE_X_HEIGHT_PX / median.coerceAtLeast(1)).coerceIn(0.5f, 1.6f)
+    }
+
+    /**
+     * How far the next glyph may move left from [distancePx] (left edge to left edge) until its
+     * ink comes within [gapPx] of the previous glyph's ink on some shared row. A cursive lead-in
+     * slides under the previous exit stroke; round print letters already sit at that gap.
+     * [prevRight] and [nextLeft] hold the outermost ink column per bitmap row, -1 for none.
+     */
+    internal fun kerningPx(
+        prevRight: IntArray,
+        prevBaselineRow: Int,
+        prevScaleX: Float,
+        prevScaleY: Float,
+        nextLeft: IntArray,
+        nextBaselineRow: Int,
+        nextScaleX: Float,
+        nextScaleY: Float,
+        distancePx: Int,
+        gapPx: Int,
+        maxKernPx: Int,
+    ): Int {
+        // Rows in px from the baseline, so glyphs of different crops line up.
+        val prevEdge = HashMap<Int, Float>()
+        prevRight.forEachIndexed { row, col ->
+            if (col < 0) return@forEachIndexed
+            val y = ((row - prevBaselineRow) * prevScaleY).roundToInt()
+            prevEdge[y] = max(prevEdge[y] ?: Float.NEGATIVE_INFINITY, (col + 1) * prevScaleX)
+        }
+        var required = Float.NEGATIVE_INFINITY
+        nextLeft.forEachIndexed { row, col ->
+            if (col < 0) return@forEachIndexed
+            val edge = prevEdge[((row - nextBaselineRow) * nextScaleY).roundToInt()] ?: return@forEachIndexed
+            required = max(required, edge - col * nextScaleX)
+        }
+        if (required == Float.NEGATIVE_INFINITY) return 0
+        return (distancePx - ceil(required).toInt() - gapPx).coerceIn(0, maxKernPx.coerceAtLeast(0))
+    }
+
+    /** Where the writer's x-height letters stand: the median of their ink bottoms. */
+    internal fun writerBaselineRow(canvasBaseline: Int, xHeightInkBottoms: List<Int>): Int =
+        xHeightInkBottoms.sorted().getOrElse(xHeightInkBottoms.size / 2) { canvasBaseline }
 
     internal fun targetInkHeightPx(
         lineHeightPx: Int,
@@ -732,9 +798,24 @@ object HandwritingBitmapRenderer {
             }
             PunctuationSynthesizer.InkStyle.estimate(allGlyphs).copy(xHeightTop = xHeightTopRow(xTops))
         }
+        val writerBaseline = writerBaselineRow(
+            GlyphPostProcessor.normalizedBaselineRow(),
+            "acemnorsuvwxz".mapNotNull { c ->
+                template.glyphs[c]?.firstOrNull()
+                    ?.takeIf { it.height == GlyphPostProcessor.normalizedCanvasSize() }
+                    ?.let { rawBounds[it]?.bottom }
+            },
+        )
+        val writerScale = writerSizeScale(
+            "acemnorsuvwxz".mapNotNull { c ->
+                template.glyphs[c]?.firstOrNull()
+                    ?.takeIf { it.height == GlyphPostProcessor.normalizedCanvasSize() }
+                    ?.let { rawBounds[it]?.height }
+            },
+        )
         fun preparedGlyph(character: Char, bitmap: Bitmap): PreparedGlyph {
             return preparedGlyphs.getOrPut(bitmap) {
-                prepareGlyph(bitmap, character, templateBaselineRow, isUserTemplate)
+                prepareGlyph(bitmap, character, templateBaselineRow, isUserTemplate, writerBaseline, writerScale)
             }
         }
         fun variantsFor(character: Char): List<Bitmap>? =
@@ -753,8 +834,6 @@ object HandwritingBitmapRenderer {
                 base.copy(
                     bitmap = composed.bitmap,
                     baselineRow = base.baselineRow + composed.topPad,
-                    sizeWidth = base.bitmap.width,
-                    sizeHeight = base.bitmap.height,
                     leftOverhang = composed.leftPad,
                 )
             }
@@ -840,13 +919,41 @@ object HandwritingBitmapRenderer {
             lineDriftSlope = (rng.nextFloat() * 2f - 1f) * effectiveLineDriftPx
         }
 
+        // Outermost ink column per bitmap row (left, right), for kerning user glyphs.
+        val inkProfiles = HashMap<Bitmap, Pair<IntArray, IntArray>>()
+        fun inkProfile(bitmap: Bitmap): Pair<IntArray, IntArray> = inkProfiles.getOrPut(bitmap) {
+            val w = bitmap.width
+            val h = bitmap.height
+            val pixels = IntArray(w * h).also { bitmap.getPixels(it, 0, w, 0, 0, w, h) }
+            val left = IntArray(h) { -1 }
+            val right = IntArray(h) { -1 }
+            for (y in 0 until h) {
+                for (x in 0 until w) {
+                    if ((pixels[y * w + x] ushr 24) <= 40) continue
+                    if (left[y] < 0) left[y] = x
+                    right[y] = x
+                }
+            }
+            left to right
+        }
+        val kernGapPx = max(2, (lineHeightPx * 0.015f).toInt())
+        fun kern(prev: PreparedGlyph, prevScaleX: Float, prevScaleY: Float, next: PreparedGlyph, nextScaleX: Float, nextScaleY: Float, distancePx: Int): Int =
+            if (!prev.normalizedUserCanvas || !next.normalizedUserCanvas) 0 else kerningPx(
+                inkProfile(prev.bitmap).second, prev.baselineRow, prevScaleX, prevScaleY,
+                inkProfile(next.bitmap).first, next.baselineRow, nextScaleX, nextScaleY,
+                distancePx, kernGapPx, (next.bitmap.width * nextScaleX * 0.5f).toInt(),
+            )
+
         fun wordWidth(word: String): Int {
             var w = 0
+            var previous: Triple<PreparedGlyph, Float, Float>? = null
+            var previousLeft = 0
             word.forEachIndexed { i, original ->
                 val accent = accentFor(original)
                 val ch = accent?.base ?: original
                 val glyph = variantsFor(ch)?.firstOrNull()
                 if (glyph == null) {
+                    previous = null
                     w += when {
                         ch in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
                         ch in punctuationChars -> (lineHeightPx * 0.08f).toInt().coerceAtLeast(4)
@@ -860,13 +967,16 @@ object HandwritingBitmapRenderer {
                         isUserTemplate = isUserTemplate,
                         normalizedUserCanvas = prepared.normalizedUserCanvas,
                     )
-                    val (glyphScaleX, _) = UserGlyphWidthNormalizer.scales(
+                    val (glyphScaleX, glyphScaleY) = UserGlyphWidthNormalizer.scales(
                         character = ch,
                         templateId = template.descriptor.id,
                         glyphWidthPx = prepared.sizeWidth,
                         glyphHeightPx = prepared.sizeHeight,
                         targetInkHeightPx = targetInkHeight,
                     )
+                    previous?.let { (p, sx, sy) -> w -= kern(p, sx, sy, prepared, glyphScaleX, glyphScaleY, w - previousLeft) }
+                    previous = Triple(prepared, glyphScaleX, glyphScaleY)
+                    previousLeft = w
                     w += glyphAdvancePx(
                         glyph = prepared,
                         character = ch,
@@ -917,6 +1027,9 @@ object HandwritingBitmapRenderer {
                 for ((pieceIndex, piece) in hyphenatedPieces(word).withIndex()) {
                     if (pieceIndex > 0) moveToNextLine()
                     var previousTucked = false
+                    var previousGlyph: Triple<PreparedGlyph, Float, Float>? = null
+                    var previousLeft = 0
+                    var previousLine = -1
                     for ((charIndex, typed) in piece.withIndex()) {
                         // An accented letter without a glyph is sized and placed as its base letter.
                         val accent = accentFor(typed)
@@ -945,6 +1058,7 @@ object HandwritingBitmapRenderer {
                             cursorX += missingAdvance
                             maxUsedX = max(maxUsedX, cursorX)
                             charIndexInLine++
+                            previousGlyph = null
                             continue
                         }
 
@@ -999,12 +1113,19 @@ object HandwritingBitmapRenderer {
                             0
                         }
                         val drawTop = baselineY - (prepared.baselineRow * glyphScaleY).toInt() + descenderDrop
-                        val drawLeft = cursorX + jx - (prepared.leftOverhang * glyphScaleX).toInt() - leadingPullPx(
+                        val unkernedLeft = cursorX + jx - (prepared.leftOverhang * glyphScaleX).toInt() - leadingPullPx(
                             character = character,
                             lineHeightPx = lineHeightPx,
                             normalizedUserCanvas = prepared.normalizedUserCanvas,
                             previousTucked = previousTucked,
                         )
+                        val kernPx = previousGlyph?.takeIf { previousLine == laidOutLines.lastIndex }
+                            ?.let { (p, sx, sy) -> kern(p, sx, sy, prepared, glyphScaleX, glyphScaleY, unkernedLeft - previousLeft) } ?: 0
+                        val drawLeft = unkernedLeft - kernPx
+                        cursorX -= kernPx
+                        previousGlyph = Triple(prepared, glyphScaleX, glyphScaleY)
+                        previousLeft = drawLeft
+                        previousLine = laidOutLines.lastIndex
                         previousTucked = prepared.advanceWidth < prepared.sizeWidth
 
                         laidOutLines.last().append(typed)
