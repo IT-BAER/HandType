@@ -22,6 +22,8 @@ GRID_COLOR = (0xCC, 0xC4, 0xB4)
 GUIDE_COLOR = (0xCE, 0xC6, 0xB4)
 GUIDE_UPPER_RATIO = 0.32
 GUIDE_BASELINE_RATIO = 0.78
+GUIDE_CAP_RATIO = 0.13
+GUIDE_DESCENDER_RATIO = 0.93
 INK_COLOR = (0x1A, 0x14, 0x10)
 
 
@@ -86,15 +88,22 @@ def render() -> Image.Image:
     draw = ImageDraw.Draw(img)
 
     title_font = load_font(36, bold=True)
-    body_font = load_font(22)
+    body_font = load_font(20)
     label_font = load_font(28)
 
     draw.text((OUTER_MARGIN, OUTER_MARGIN - 50), "HandType handwriting sheet", fill=INK_COLOR, font=title_font)
+    footer = (
+        "Rest every letter on the lower dashed line. Small letters reach the upper dashed line.",
+        "Capitals, digits and b d f h k l reach the top dotted line; g j p q y hang down to the bottom dotted line.",
+    )
+    for i, line in enumerate(footer):
+        draw.text((OUTER_MARGIN, PAGE_HEIGHT - OUTER_MARGIN + 6 + 24 * i), line, fill=INK_COLOR, font=body_font)
     draw.text(
-        (OUTER_MARGIN, PAGE_HEIGHT - OUTER_MARGIN + 10),
-        "Write each letter resting on the lower guide line, filling up to the upper line. Keep the four black squares visible.",
+        (PAGE_WIDTH - OUTER_MARGIN, OUTER_MARGIN - 18),
+        "Keep the four black squares visible.",
         fill=INK_COLOR,
         font=body_font,
+        anchor="rs",
     )
 
     centres = fiducial_centers()
@@ -108,6 +117,8 @@ def render() -> Image.Image:
     grid_w = grid_right_px - grid_left_px
     grid_h = grid_bottom_px - grid_top_px
 
+    # The cap line runs at label height, so it starts right of the widest label.
+    cap_line_start = 8 + draw.textlength("W", font=label_font) + 8
     for char, left, top, right, bottom in normalized_cells():
         rect = (
             grid_left_px + left * grid_w,
@@ -116,18 +127,20 @@ def render() -> Image.Image:
             grid_top_px + bottom * grid_h,
         )
         draw.rectangle(rect, outline=GRID_COLOR, width=2)
-        draw_guide_lines(draw, rect)
+        draw_guide_lines(draw, rect, cap_line_start)
         if char != " ":
             draw.text((rect[0] + 8, rect[1] + 4), char, fill=LABEL_COLOR, font=label_font)
 
     return img
 
 
-def draw_guide_lines(draw: ImageDraw.ImageDraw, rect):
+def draw_guide_lines(draw: ImageDraw.ImageDraw, rect, cap_line_start):
     left, top, right, bottom = rect
     height = bottom - top
+    _dashed_line(draw, left + cap_line_start, right, top + height * GUIDE_CAP_RATIO, dash=2, gap=6)
     for y in (top + height * GUIDE_UPPER_RATIO, top + height * GUIDE_BASELINE_RATIO):
         _dashed_line(draw, left, right, y)
+    _dashed_line(draw, left, right, top + height * GUIDE_DESCENDER_RATIO, dash=2, gap=6)
 
 
 def _dashed_line(draw: ImageDraw.ImageDraw, x0, x1, y, dash=7, gap=5):

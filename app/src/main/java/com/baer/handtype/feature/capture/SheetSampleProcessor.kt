@@ -60,6 +60,12 @@ object SheetSampleProcessor {
     private const val LINE_SEGMENTS = 6
     private const val LINE_SEGMENTS_MIN = 5
     private const val LINE_CONTRAST = 15
+    // Pen ink below the paper level; a printed guide (luma ~198 on ~250 paper) stays above.
+    private const val INK_ABOVE_CONTRAST = 60
+    // Rows on each side of a snapped border that the printed rule can cover after rectification.
+    private const val BORDER_BAND = 4
+    // How far, in cell heights, a descender is followed below the cell.
+    private const val DESCENDER_REACH = 0.6f
 
     // detectGridLines(): a solid border darkens nearly all of the central band (a dashed guide
     // about 60%), and printed cells are equal within this fraction of the mean gap.
@@ -205,35 +211,61 @@ object SheetSampleProcessor {
             val cropRight = cellRight - sideInset
             val cropBottom = cellBottom - sideInset
 
+            // A descender that leaves through the bottom border is followed into the cell below.
+            val m = FURNITURE_MARGIN
+            val seedY = cropBottom - m - 1
+            val labelBelow = cells.getOrNull(index + PracticeSheetGenerator.GRID_COLS)?.character?.takeIf { it != ' ' }
+                ?.let { PracticeSheetGenerator.labelBounds(it).apply { offset(cellLeft, cellBottom); inset(-m, -m) } }
+            val descender = strokeBelowBorder(
+                rectifiedLuma, RECTIFIED_WIDTH, cellBottom, cropLeft + m, cropRight - m, seedY,
+                maxY = minOf(cellBottom + (cellHeightPx * DESCENDER_REACH).toInt(), RECTIFIED_HEIGHT),
+                skip = { x, y -> labelBelow?.contains(x, y) == true },
+            )
+            val descenderWidth = cropRight - cropLeft - 2 * m
+            val extendedBottom = descender?.let { mask -> seedY + mask.indexOfLast { it } / descenderWidth + 1 } ?: cropBottom
+
             val cellCrop = Bitmap.createBitmap(
                 rectified,
                 cropLeft,
                 cropTop,
                 cropRight - cropLeft,
-                cropBottom - cropTop,
+                extendedBottom - cropTop,
             )
             // Guides are full-width dashed lines light enough (luma 198) that per-cell Otsu keeps
             // them on the paper side. No pixel-level guide erasure: it severed strokes like the
             // 'H' crossbar into isolated components that the component filter then also rejected.
+            val normalized = normalizeWhitePoint(cellCrop)
             val edgeCleanCellCrop = eraseSheetFurniture(
-                normalizeWhitePoint(cellCrop),
+                normalized,
                 PracticeSheetGenerator.labelBounds(cell.character).apply { offset(-sideInset, -topInset) },
+                contentHeight = cropBottom - cropTop,
             )
-            // The x-height guide and the baseline are the only two lines on the sheet, and both
-            // are needed here to reconstruct glyph height.
+            descender?.forEachIndexed { i, isStroke ->
+                val x = m + i % descenderWidth
+                val y = seedY - cropTop + i / descenderWidth
+                if (isStroke && y < edgeCleanCellCrop.height) edgeCleanCellCrop.setPixel(x, y, normalized.getPixel(x, y))
+            }
+            // The x-height guide and the baseline set the glyph scale; the dotted outer guides
+            // are light enough for Otsu to keep on the paper side.
             val guideRatios = floatArrayOf(
                 PracticeSheetGenerator.GUIDE_UPPER_RATIO,
                 PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
             )
-            val guideYsInCrop = guideRatios
+            fun snappedGuideRows(ratios: FloatArray) = ratios
                 .map { ratio -> (cellHeightPx * ratio).toInt() - topInset }
                 .filter { it >= 0 && it < edgeCleanCellCrop.height }
-                .map { snapGuideRow(edgeCleanCellCrop, it) }
+                .map { snapGuideRow(edgeCleanCellCrop, it, guideSnapRadius(cellHeightPx)) }
                 .toIntArray()
+            val guideYsInCrop = snappedGuideRows(guideRatios)
+            val outerGuideYsInCrop = snappedGuideRows(
+                floatArrayOf(PracticeSheetGenerator.GUIDE_CAP_RATIO, PracticeSheetGenerator.GUIDE_DESCENDER_RATIO),
+            )
             val cleaned = GlyphPostProcessor.cleanGlyph(
                 edgeCleanCellCrop,
                 guideYsInCrop,
                 expectsDiacritic = GlyphPostProcessor.expectsDiacritic(cell.character),
+                outerGuideYsInCrop = outerGuideYsInCrop,
+                inkAboveCrop = inkAboveBorder(rectifiedLuma, RECTIFIED_WIDTH, cellTop, cropLeft, cropRight),
             )
 
             debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
@@ -262,8 +294,17 @@ object SheetSampleProcessor {
      * [GUIDE_SEARCH_RADIUS] rows away from where the grid geometry puts it. Returns [nominalY]
      * unchanged when no row in range looks like a printed line.
      */
-    private fun snapGuideRow(crop: Bitmap, nominalY: Int): Int =
-        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true)
+    private fun snapGuideRow(crop: Bitmap, nominalY: Int, radius: Int): Int =
+        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true, radius = radius)
+
+    /** Half the gap from a dashed guide to its dotted neighbour, so a snap never lands on the dotted line. */
+    internal fun guideSnapRadius(cellHeightPx: Int): Int {
+        val gap = minOf(
+            PracticeSheetGenerator.GUIDE_UPPER_RATIO - PracticeSheetGenerator.GUIDE_CAP_RATIO,
+            PracticeSheetGenerator.GUIDE_DESCENDER_RATIO - PracticeSheetGenerator.GUIDE_BASELINE_RATIO,
+        )
+        return minOf(GUIDE_SEARCH_RADIUS, (cellHeightPx * gap / 2).toInt())
+    }
 
     /**
      * Rescales [cellCrop] so its own paper level maps to luma 255. A photographed sheet has an
@@ -393,8 +434,16 @@ object SheetSampleProcessor {
      * candidate must reach [LINE_SEGMENTS_MIN] of [LINE_SEGMENTS] segments. Among those the line
      * with the most dark pixels wins; with none, [nominal] is the better guess.
      */
-    internal fun snapLine(luma: IntArray, stride: Int, nominal: Int, limit: Int, span: IntRange, horizontal: Boolean): Int {
-        val lines = (nominal - GUIDE_SEARCH_RADIUS).coerceAtLeast(0)..(nominal + GUIDE_SEARCH_RADIUS).coerceAtMost(limit - 1)
+    internal fun snapLine(
+        luma: IntArray,
+        stride: Int,
+        nominal: Int,
+        limit: Int,
+        span: IntRange,
+        horizontal: Boolean,
+        radius: Int = GUIDE_SEARCH_RADIUS,
+    ): Int {
+        val lines = (nominal - radius).coerceAtLeast(0)..(nominal + radius).coerceAtMost(limit - 1)
         if (lines.isEmpty() || span.isEmpty()) return nominal
         fun at(line: Int, p: Int) = luma[if (horizontal) line * stride + p else p * stride + line]
         // Paper level from the window itself: a dim photo has paper well below a printed sheet's.
@@ -422,6 +471,69 @@ object SheetSampleProcessor {
         return best
     }
 
+    /**
+     * Columns of [x0] until [x1] with ink in the rows just above the border at [borderY]: a stroke
+     * of the row above crossing into the cell. Printed guides are far lighter than pen ink.
+     */
+    internal fun inkAboveBorder(luma: IntArray, stride: Int, borderY: Int, x0: Int, x1: Int): BooleanArray {
+        val rows = (borderY - 6).coerceAtLeast(0)..(borderY - 3)
+        if (rows.isEmpty() || x1 <= x0) return BooleanArray(maxOf(0, x1 - x0))
+        val window = IntArray(rows.count() * (x1 - x0))
+        var i = 0
+        for (y in rows) for (x in x0 until x1) window[i++] = luma[y * stride + x]
+        window.sort()
+        val inkMax = window[window.size / 2] - INK_ABOVE_CONTRAST
+        return BooleanArray(x1 - x0) { dx -> rows.any { luma[it * stride + x0 + dx] < inkMax } }
+    }
+
+    /**
+     * The pen stroke that leaves the cell through its bottom border at [borderY], followed into the
+     * cell below: ink of rows [seedY] until [maxY], columns [x0] until [x1], connected to ink on
+     * row [seedY]. Inside the printed border it only moves down, so it cannot run along the rule.
+     * Null when no stroke continues below the border. [skip] marks pixels never to enter.
+     */
+    internal fun strokeBelowBorder(
+        luma: IntArray,
+        stride: Int,
+        borderY: Int,
+        x0: Int,
+        x1: Int,
+        seedY: Int,
+        maxY: Int,
+        skip: (x: Int, y: Int) -> Boolean = { _, _ -> false },
+    ): BooleanArray? {
+        val w = x1 - x0
+        val h = maxY - seedY
+        if (w <= 0 || h <= 0) return null
+        val window = IntArray(w * h)
+        for (y in 0 until h) for (x in 0 until w) window[y * w + x] = luma[(seedY + y) * stride + x0 + x]
+        val inkMax = window.sortedArray()[window.size / 2] - INK_ABOVE_CONTRAST
+        val band = borderY - BORDER_BAND..borderY + BORDER_BAND
+        val stroke = BooleanArray(w * h)
+        val queue = ArrayDeque<Int>()
+        fun visit(x: Int, y: Int) {
+            if (x !in 0 until w || y !in 0 until h) return
+            val i = y * w + x
+            if (stroke[i] || window[i] >= inkMax || skip(x0 + x, seedY + y)) return
+            stroke[i] = true
+            queue.add(i)
+        }
+        for (x in 0 until w) visit(x, 0)
+        var below = false
+        while (queue.isNotEmpty()) {
+            val i = queue.removeFirst()
+            val x = i % w
+            val y = i / w
+            if (seedY + y > band.last) below = true
+            for (dy in -1..1) for (dx in -1..1) {
+                if (dx == 0 && dy == 0) continue
+                if ((seedY + y in band || seedY + y + dy in band) && dy != 1) continue
+                visit(x + dx, y + dy)
+            }
+        }
+        return stroke.takeIf { below }
+    }
+
     private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int =
         snapLine(luma, RECTIFIED_WIDTH, nominalY, RECTIFIED_HEIGHT, x0 until x1, horizontal = true)
 
@@ -432,9 +544,10 @@ object SheetSampleProcessor {
      * Whites out the printed furniture the crop still contains: the cell label at [labelBox]
      * (crop coordinates) and the border bleed along the crop edges, each grown by
      * [FURNITURE_MARGIN]. The geometry comes from the sheet generator, not from pixel luma, so a
-     * dark label core can no longer survive as a stray component.
+     * dark label core can no longer survive as a stray component. Rows below [contentHeight] belong
+     * to the cell below and are erased whole.
      */
-    private fun eraseSheetFurniture(cellCrop: Bitmap, labelBox: Rect): Bitmap {
+    private fun eraseSheetFurniture(cellCrop: Bitmap, labelBox: Rect, contentHeight: Int = cellCrop.height): Bitmap {
         val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
         val paint = Paint().apply {
             color = Color.WHITE
@@ -447,7 +560,7 @@ object SheetSampleProcessor {
         canvas.drawRect(0f, 0f, m, h, paint)
         canvas.drawRect(w - m, 0f, w, h, paint)
         canvas.drawRect(0f, 0f, w, m, paint)
-        canvas.drawRect(0f, h - m, w, h, paint)
+        canvas.drawRect(0f, contentHeight - m, w, h, paint)
         canvas.drawRect(labelBox.left - m, labelBox.top - m, labelBox.right + m, labelBox.bottom + m, paint)
         return masked
     }
