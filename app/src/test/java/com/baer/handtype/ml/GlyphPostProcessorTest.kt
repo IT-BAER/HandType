@@ -13,6 +13,15 @@ class GlyphPostProcessorTest {
     }
 
     @Test
+    fun printedDotOnADottedGuideIsNotInk() {
+        val outerGuides = intArrayOf(18, 135)
+        assertTrue(GlyphPostProcessor.isOuterGuideDot(top = 17, bottom = 18, area = 4, outerGuideYsInCrop = outerGuides))
+        assertTrue(GlyphPostProcessor.isOuterGuideDot(top = 134, bottom = 136, area = 6, outerGuideYsInCrop = outerGuides))
+        assertFalse("pen i-dot below the cap line", GlyphPostProcessor.isOuterGuideDot(top = 21, bottom = 25, area = 20, outerGuideYsInCrop = outerGuides))
+        assertFalse("accent drawn on the cap line", GlyphPostProcessor.isOuterGuideDot(top = 16, bottom = 20, area = 30, outerGuideYsInCrop = outerGuides))
+    }
+
+    @Test
     fun resolveGuideBandUsesTopAndBottomOnly() {
         assertTrue(
             GlyphPostProcessor.resolveGuideBand(intArrayOf(118, 81, 46)) == 46..118,

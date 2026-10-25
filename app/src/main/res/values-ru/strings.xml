@@ -60,7 +60,7 @@
     <string name="camera_section_title">Сфотографируйте лист почерка</string>
     <string name="camera_pre_scan_title">Перед сканированием</string>
     <string name="camera_pre_scan_step_1">Распечатайте лист почерка.</string>
-    <string name="camera_pre_scan_step_2">Напишите соответствующий символ в каждой ячейке и держите его на линии-ориентире.</string>
+    <string name="camera_pre_scan_step_2">Напишите соответствующий символ в каждой ячейке. Поставьте его на нижнюю пунктирную линию: строчные буквы доходят до верхней пунктирной линии, заглавные и высокие буквы до верхней точечной линии, а g, j, p, q, y опускаются до нижней точечной линии.</string>
     <string name="camera_pre_scan_step_3">Сфотографируйте всю страницу и держите все четыре чёрных квадрата полностью видимыми.</string>
     <string name="camera_pre_scan_step_4">Используйте равномерный свет и избегайте размытия, бликов и жёстких теней.</string>
     <string name="camera_sheet_button">Поделиться листом почерка</string>
@@ -252,7 +252,7 @@
     <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Написать на экране</string>
     <string name="stylus_title">Написать на экране</string>
-    <string name="stylus_instruction">Напишите бледный символ в ячейке. Поставьте его на нижнюю линию; строчные буквы доходят до верхней.</string>
+    <string name="stylus_instruction">Напишите бледный символ в ячейке. Поставьте его на нижнюю пунктирную линию; строчные буквы доходят до верхней пунктирной, заглавные до точечной.</string>
     <string name="stylus_progress">%1$d / %2$d</string>
     <string name="stylus_undo">Отменить</string>
     <string name="stylus_clear">Стереть</string>
@@ -264,7 +264,7 @@
     <string name="stylus_hint_outside">Держите каждый штрих внутри ячейки.</string>
     <string name="stylus_hint_too_small">Слишком мелко - ориентируйтесь на линии.</string>
     <string name="stylus_hint_too_large">Слишком крупно - держитесь ближе к линиям.</string>
-    <string name="stylus_hint_reach_up">Слишком низко - этот символ выходит выше верхней линии.</string>
+    <string name="stylus_hint_reach_up">Слишком низко - этот символ выходит выше верхней пунктирной линии.</string>
     <string name="stylus_hint_cell">«%1$s»: %2$s</string>
     <string name="stylus_hint_wrong">Похоже на «%1$s», ожидалось «%2$s». Нажмите «Далее» ещё раз, чтобы оставить.</string>
     <string name="stylus_hint_unrecognized">Пока не похоже на «%1$s». Нажмите «Далее» ещё раз, чтобы оставить.</string>
