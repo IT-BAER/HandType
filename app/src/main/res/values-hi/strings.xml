@@ -59,7 +59,7 @@
     <string name="camera_section_title">अपनी हस्तलेखन शीट कैप्चर करें</string>
     <string name="camera_pre_scan_title">स्कैन करने से पहले</string>
     <string name="camera_pre_scan_step_1">हस्तलेखन शीट प्रिंट करें।</string>
-    <string name="camera_pre_scan_step_2">प्रत्येक बॉक्स में मिलान वर्ण लिखें और उसे गाइड लाइन पर रखें।</string>
+    <string name="camera_pre_scan_step_2">प्रत्येक बॉक्स में मिलान वर्ण लिखें। उसे निचली डैश लाइन पर रखें: छोटे अक्षर ऊपरी डैश लाइन तक, बड़े और ऊँचे अक्षर ऊपर की बिंदीदार लाइन तक जाते हैं, और g, j, p, q, y नीचे की बिंदीदार लाइन तक जाते हैं।</string>
     <string name="camera_pre_scan_step_3">पूरे पृष्ठ को कैप्चर करें और सभी चार काले वर्ग पूरी तरह दृश्यमान रखें।</string>
     <string name="camera_pre_scan_step_4">समान प्रकाश का उपयोग करें और धुंधलापन, चमक और कठोर छायाओं से बचें।</string>
     <string name="camera_sheet_button">हस्तलेखन शीट शेयर करें</string>
@@ -251,7 +251,7 @@
     <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">इसके बजाय स्क्रीन पर लिखें</string>
     <string name="stylus_title">स्क्रीन पर लिखें</string>
-    <string name="stylus_instruction">बॉक्स में हल्का दिख रहा वर्ण लिखें। उसे निचली लाइन पर रखें; छोटे अक्षर ऊपरी लाइन तक जाते हैं।</string>
+    <string name="stylus_instruction">बॉक्स में हल्का दिख रहा वर्ण लिखें। उसे निचली डैश लाइन पर रखें; छोटे अक्षर ऊपरी डैश लाइन तक, बड़े अक्षर बिंदीदार लाइन तक जाते हैं।</string>
     <string name="stylus_progress">%1$d / %2$d</string>
     <string name="stylus_undo">पूर्ववत करें</string>
     <string name="stylus_clear">साफ़ करें</string>
@@ -263,7 +263,7 @@
     <string name="stylus_hint_outside">हर स्ट्रोक बॉक्स के अंदर रखें।</string>
     <string name="stylus_hint_too_small">बहुत छोटा - गाइड लाइनों का उपयोग करें।</string>
     <string name="stylus_hint_too_large">बहुत बड़ा - गाइड लाइनों के पास रहें।</string>
-    <string name="stylus_hint_reach_up">बहुत छोटा - यह वर्ण ऊपरी लाइन से ऊपर तक जाता है।</string>
+    <string name="stylus_hint_reach_up">बहुत छोटा - यह वर्ण ऊपरी डैश लाइन से ऊपर तक जाता है।</string>
     <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">यह “%1$s” जैसा दिखता है, अपेक्षित “%2$s”। इसे रखने के लिए फिर से आगे पर टैप करें।</string>
     <string name="stylus_hint_unrecognized">यह अभी “%1$s” जैसा नहीं दिखता। इसे रखने के लिए फिर से आगे पर टैप करें।</string>

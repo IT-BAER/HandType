@@ -190,6 +190,70 @@ class LeadingPullTest {
     }
 
     @Test
+    fun capitalsOfDescenderLettersRestOnTheirInkBottom() {
+        for (c in "GJPQY") assertEquals("$c", 145, HandwritingBitmapRenderer.userCanvasBaselineRow(c, canvasBaseline = 163, inkBottom = 145))
+    }
+
+    @Test
+    fun descendersHangFromTheWritersBaselineNotThePrintedOne() {
+        // A small hand writes above the printed baseline; its g must not float above its a.
+        val writerBaseline = HandwritingBitmapRenderer.writerBaselineRow(canvasBaseline = 163, xHeightInkBottoms = listOf(141, 145, 143))
+        assertEquals(143, writerBaseline)
+        assertEquals(143, HandwritingBitmapRenderer.userCanvasBaselineRow('g', canvasBaseline = 163, inkBottom = 165, writerBaseline = writerBaseline))
+        assertEquals("synthesized marks stay on the canvas", 163, HandwritingBitmapRenderer.userCanvasBaselineRow('.', canvasBaseline = 163, inkBottom = 163, writerBaseline = writerBaseline))
+        assertEquals(163, HandwritingBitmapRenderer.writerBaselineRow(canvasBaseline = 163, xHeightInkBottoms = emptyList()))
+    }
+
+    @Test
+    fun aCursiveLeadInSlidesUnderThePreviousExitStroke() {
+        // Previous letter: exit stroke high on the right (rows 0-4 reach col 9), body low (col 5).
+        val prevRight = IntArray(10) { if (it < 5) 9 else 5 }
+        // Next letter: lead-in starts low on the left (col 0), body high (col 5).
+        val nextLeft = IntArray(10) { if (it < 5) 5 else 0 }
+        // Rows 5-9 need 6 px (right edge 6 vs left 0), rows 0-4 need 5 px; plus a 1 px gap.
+        assertEquals(5, kern(prevRight, nextLeft, distancePx = 12, gapPx = 1, maxKernPx = 20))
+        assertEquals("never more than the bound", 3, kern(prevRight, nextLeft, distancePx = 12, gapPx = 1, maxKernPx = 3))
+    }
+
+    @Test
+    fun roundPrintLettersKeepTheirSpacing() {
+        val o = IntArray(10) { 9 }
+        val oLeft = IntArray(10) { 0 }
+        assertEquals(0, kern(o, oLeft, distancePx = 12, gapPx = 3, maxKernPx = 20))
+    }
+
+    @Test
+    fun lettersWithoutSharedRowsDoNotMove() {
+        val high = IntArray(10) { if (it < 3) 4 else -1 }
+        val low = IntArray(10) { if (it > 6) 0 else -1 }
+        assertEquals(0, kern(high, low, distancePx = 12, gapPx = 1, maxKernPx = 20))
+    }
+
+    private fun kern(prevRight: IntArray, nextLeft: IntArray, distancePx: Int, gapPx: Int, maxKernPx: Int) =
+        HandwritingBitmapRenderer.kerningPx(
+            prevRight, prevBaselineRow = 9, prevScaleX = 1f, prevScaleY = 1f,
+            nextLeft, nextBaselineRow = 9, nextScaleX = 1f, nextScaleY = 1f,
+            distancePx = distancePx, gapPx = gapPx, maxKernPx = maxKernPx,
+        )
+
+    @Test
+    fun aHandThatFillsTheGuideBandIsScaledToTheRuledLine() {
+        val reference = HandwritingBitmapRenderer.writerSizeScale(listOf(64, 60, 68))
+        assertEquals(1f, reference, 0.001f)
+        // The sheet asks small letters to reach the upper dashed line: x-height 101 on the canvas.
+        assertTrue(HandwritingBitmapRenderer.writerSizeScale(listOf(101, 98, 104)) < 0.7f)
+        assertEquals("a tiny hand grows, but stays small", 1.6f, HandwritingBitmapRenderer.writerSizeScale(listOf(25, 24, 26)), 0.001f)
+        assertEquals(1f, HandwritingBitmapRenderer.writerSizeScale(emptyList()), 0.001f)
+    }
+
+    @Test
+    fun cursiveLetterReachingTheDescenderGuideKeepsTheCanvasBaseline() {
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('ß', canvasBaseline = 163, inkBottom = 197))
+        assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('f', canvasBaseline = 163, inkBottom = 197))
+        assertEquals("print ß dips just below the line", 170, HandwritingBitmapRenderer.userCanvasBaselineRow('ß', canvasBaseline = 163, inkBottom = 170))
+    }
+
+    @Test
     fun synthesizedPunctuationKeepsTheCanvasBaseline() {
         // A hyphen's ink bottom sits mid x-height; treating it as the baseline drops it to the line.
         assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow('-', canvasBaseline = 163, inkBottom = 115))
