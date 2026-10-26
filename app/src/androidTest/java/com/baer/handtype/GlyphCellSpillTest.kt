@@ -56,6 +56,15 @@ class GlyphCellSpillTest {
     }
 
     @Test
+    fun aDescenderAsDeepAsTheXHeightFitsOnTheCanvas() {
+        // A scrawled g (145-row crop, extended by its tail): its loop ends a full x-height below the line.
+        val crop = crop("scrawl_g_descender_below_cell.png")
+        val glyph = GlyphPostProcessor.cleanGlyph(crop, guides(Bitmap.createBitmap(1, 145, Bitmap.Config.ARGB_8888)))
+        val glyphBottom = lowestRow(glyph) { p -> (p ushr 24) > 40 }
+        assertTrue("descender ends at row $glyphBottom of ${glyph.height}", glyphBottom < glyph.height - 2)
+    }
+
+    @Test
     fun aDescenderDeeperThanTheCanvasIsCutNotSquashed() {
         // A 145-row crop the scanner extended by 0.6 cell: a stem from the cap line to deep below the
         // cell, with a foot to the right on the baseline. Its ink is taller than the glyph canvas.

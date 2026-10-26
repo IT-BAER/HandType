@@ -985,7 +985,8 @@ object HandwritingBitmapRenderer {
         val joins = mutableListOf<Pair<Pair<Float, Float>, Pair<Float, Float>>>()
         val joinShifts = mutableListOf<Int>()
 
-        val kernGapPx = max(2, (lineHeightPx * 0.015f).toInt())
+        // Letters that do not join keep this much air; at half of it lead-ins hug the letter before them.
+        val kernGapPx = max(2, (lineHeightPx * 0.03f).toInt())
         fun kern(prev: PreparedGlyph, prevScaleX: Float, prevScaleY: Float, next: PreparedGlyph, nextScaleX: Float, nextScaleY: Float, distancePx: Int): Int =
             if (!prev.normalizedUserCanvas || !next.normalizedUserCanvas) 0 else kerningPx(
                 inkProfile(prev.bitmap).second, prev.baselineRow, prevScaleX, prevScaleY,
@@ -1211,10 +1212,16 @@ object HandwritingBitmapRenderer {
                             // a little nearer or farther, so it moves up to a quarter of the x-height to where the bridge is shortest.
                             // Farther than half the x-height is letter spacing, not a pen break: both letters stay whole.
                             val maxShift = (xHeightPx!! * glyphScaleY * 0.25f).toInt()
+                            // Moving left, the letter's body keeps the kerning gap to the previous letter's body.
+                            val leftRoom = CursiveJoins.bodyRoom(
+                                alphaOf(previous.bitmap), previous.bitmap.width, tailGlyph.baselineRow, previous.drawScaleX, previous.drawScaleY, tail,
+                                alphaOf(prepared.bitmap), prepared.bitmap.width, prepared.baselineRow, glyphScaleX, glyphScaleY, leadIn.take(traced.ownRuns),
+                                distancePx = drawLeft - previous.left, gapPx = kernGapPx, maxPx = maxShift,
+                            )
                             // Only the lead-in's own ink: past its merge the run centres are those of the letter's stem.
                             val cut = if (tail.isEmpty() || firstLeadIn < 0) null else CursiveJoins.joinCuts(
                                 tailCenters, placedLeadCenters.take(traced.ownRuns), firstLeadIn, reach,
-                                maxLength = xHeightPx!! * glyphScaleY * 0.5f, shifts = -maxShift..maxShift, penPx = joinPenPx * glyphScaleY,
+                                maxLength = xHeightPx!! * glyphScaleY * 0.5f, shifts = -leftRoom..maxShift, penPx = joinPenPx * glyphScaleY,
                             )
                             val shift = cut?.shift ?: 0
                             val cuts = cut?.let { it.tail to it.leadIn }

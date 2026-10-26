@@ -60,6 +60,39 @@ class SheetSampleProcessorTest {
     }
 
     @Test
+    fun aTinyHandKeepsItsSmallestLetters() {
+        // Ink per cell in opaque-pixel equivalents: a tiny faint hand, its i well under 50; one cell left blank.
+        val ink = mapOf('a' to 120f, 'b' to 160f, 'c' to 90f, 'i' to 44f, 'l' to 70f, 'o' to 110f, 'q' to 0f)
+        assertEquals(setOf('a', 'b', 'c', 'i', 'l', 'o'), SheetSampleProcessor.writtenCells(ink))
+    }
+
+    @Test
+    fun aNormalHandIgnoresSpecksInABlankCell() {
+        val ink = mapOf('a' to 1500f, 'b' to 1900f, 'i' to 250f, 'l' to 400f, 'o' to 1400f, 'q' to 30f)
+        assertEquals(setOf('a', 'b', 'i', 'l', 'o'), SheetSampleProcessor.writtenCells(ink))
+    }
+
+    @Test
+    fun aDescenderTouchingTheLetterBelowIsNotFollowedIntoIt() {
+        val width = 30
+        val borderY = 20
+        // A descender at column 8 ends on row 23, where the top of the letter below starts: a stem at
+        // columns 8..9 from row 23 down past the reach limit.
+        val luma = IntArray(width * 40) { i ->
+            val x = i % width
+            val y = i / width
+            when {
+                x == 8 && y in 10..23 -> 40
+                x in 8..9 && y in 23..39 -> 40
+                y in borderY - 1..borderY + 1 -> 90
+                else -> 245
+            }
+        }
+
+        assertNull(SheetSampleProcessor.strokeBelowBorder(luma, width, borderY, x0 = 2, x1 = 28, seedY = 14, maxY = 36))
+    }
+
+    @Test
     fun aStrokeEndingAtTheBorderIsNotExtended() {
         val width = 30
         val borderY = 20

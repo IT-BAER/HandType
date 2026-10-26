@@ -41,6 +41,14 @@ object SheetSampleProcessor {
     // Printed furniture (cell border, label) is erased with this margin around its known geometry
     // to absorb the residual bow the four-point rectification leaves inside a cell.
     private const val FURNITURE_MARGIN = 3
+    // Stroke cores near a label: faint pens measure up to ~172; lighter anti-aliasing must not bridge pieces.
+    private const val LABEL_RESIDUE_LUMA = 200
+    // Pen ink over the printed label: this much darker than the median luma of the label's solid
+    // core (alpha at least LABEL_CORE_ALPHA when printed); its anti-aliased edges are lighter.
+    private const val LABEL_PEN_CONTRAST = 30
+    private const val LABEL_CORE_ALPHA = 200
+    // How far, in px, the printed label may sit from its geometry.
+    private const val LABEL_SHIFT = 4
 
     // Paper at or above this luma is already effectively white; normalizing it would only
     // amplify sensor noise.
@@ -64,6 +72,10 @@ object SheetSampleProcessor {
     private const val INK_ABOVE_CONTRAST = 60
     // Rows on each side of a snapped border that the printed rule can cover after rectification.
     private const val BORDER_BAND = 4
+    // writtenCells(): ink of a written cell, in opaque pixel equivalents and as part of the median.
+    private const val MIN_INK = 50f
+    private const val MIN_INK_OF_MEDIAN = 0.1f
+
     // How far, in cell heights, a descender is followed below the cell.
     private const val DESCENDER_REACH = 0.6f
 
@@ -215,11 +227,11 @@ object SheetSampleProcessor {
             val m = FURNITURE_MARGIN
             val seedY = cropBottom - m - 1
             val labelBelow = cells.getOrNull(index + PracticeSheetGenerator.GRID_COLS)?.character?.takeIf { it != ' ' }
-                ?.let { PracticeSheetGenerator.labelBounds(it).apply { offset(cellLeft, cellBottom); inset(-m, -m) } }
+                ?.let { labelShape(it, m) }
             val descender = strokeBelowBorder(
                 rectifiedLuma, RECTIFIED_WIDTH, cellBottom, cropLeft + m, cropRight - m, seedY,
                 maxY = minOf(cellBottom + (cellHeightPx * DESCENDER_REACH).toInt(), RECTIFIED_HEIGHT),
-                skip = { x, y -> labelBelow?.contains(x, y) == true },
+                skip = { x, y -> labelBelow?.invoke(x - cellLeft, y - cellBottom) == true },
             )
             val descenderWidth = cropRight - cropLeft - 2 * m
             val extendedBottom = descender?.let { mask -> seedY + mask.indexOfLast { it } / descenderWidth + 1 } ?: cropBottom
@@ -235,9 +247,13 @@ object SheetSampleProcessor {
             // them on the paper side. No pixel-level guide erasure: it severed strokes like the
             // 'H' crossbar into isolated components that the component filter then also rejected.
             val normalized = normalizeWhitePoint(cellCrop)
+            val label = labelShape(cell.character, m)
+            val labelCore = labelShape(cell.character, 0, minAlpha = LABEL_CORE_ALPHA)
             val edgeCleanCellCrop = eraseSheetFurniture(
                 normalized,
-                PracticeSheetGenerator.labelBounds(cell.character).apply { offset(-sideInset, -topInset) },
+                PracticeSheetGenerator.labelBounds(cell.character).apply { offset(-sideInset, -topInset); inset(-m, -m) },
+                isLabel = { x, y -> label(x + sideInset, y + topInset) },
+                isLabelCore = { x, y -> labelCore(x + sideInset, y + topInset) },
                 contentHeight = cropBottom - cropTop,
             )
             descender?.forEachIndexed { i, isStroke ->
@@ -269,15 +285,11 @@ object SheetSampleProcessor {
             )
 
             debugContext?.let { dumpCellCrop(it, index, cell.character, edgeCleanCellCrop, cleaned) }
-
-            // Detect empty cells: require enough strongly-opaque pixels (real ink, not faint
-            // residue from the printed cell border / label).
-            if (hasInk(cleaned)) {
-                glyphs[cell.character] = cleaned
-            } else {
-                missing += cell.character
-            }
+            glyphs[cell.character] = cleaned
         }
+        val written = writtenCells(glyphs.mapValues { inkAmount(it.value) })
+        missing += glyphs.keys - written
+        glyphs.keys.retainAll(written)
 
         if (BuildConfig.DEBUG) Log.i(TAG, "Sheet processing complete: ${glyphs.size} glyphs extracted, ${missing.size} cells empty")
         return SheetExtractionResult(
@@ -490,7 +502,8 @@ object SheetSampleProcessor {
      * The pen stroke that leaves the cell through its bottom border at [borderY], followed into the
      * cell below: ink of rows [seedY] until [maxY], columns [x0] until [x1], connected to ink on
      * row [seedY]. Inside the printed border it only moves down, so it cannot run along the rule.
-     * Null when no stroke continues below the border. [skip] marks pixels never to enter.
+     * Null when no stroke continues below the border, or when it reaches [maxY]: a descender ends
+     * above it, so that stroke runs into the letter below. [skip] marks pixels never to enter.
      */
     internal fun strokeBelowBorder(
         luma: IntArray,
@@ -531,7 +544,8 @@ object SheetSampleProcessor {
                 visit(x + dx, y + dy)
             }
         }
-        return stroke.takeIf { below }
+        val reachesLimit = (0 until w).any { stroke[(h - 1) * w + it] }
+        return stroke.takeIf { below && !reachesLimit }
     }
 
     private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int =
@@ -541,13 +555,20 @@ object SheetSampleProcessor {
         snapLine(luma, RECTIFIED_WIDTH, nominalX, RECTIFIED_WIDTH, y0 until y1, horizontal = false)
 
     /**
-     * Whites out the printed furniture the crop still contains: the cell label at [labelBox]
-     * (crop coordinates) and the border bleed along the crop edges, each grown by
-     * [FURNITURE_MARGIN]. The geometry comes from the sheet generator, not from pixel luma, so a
-     * dark label core can no longer survive as a stray component. Rows below [contentHeight] belong
-     * to the cell below and are erased whole.
+     * Whites out the printed furniture the crop still contains: the cell label ([isLabel] within
+     * [labelBox], crop coordinates; [isLabelCore] is the printed letter itself) and the border bleed
+     * along the crop edges, each grown by [FURNITURE_MARGIN]. The geometry comes from the sheet
+     * generator; only pen ink clearly darker than the printed letter, and connected past the label,
+     * survives there, so a dark label core cannot remain as a stray component. Rows below
+     * [contentHeight] belong to the cell below and are erased whole.
      */
-    private fun eraseSheetFurniture(cellCrop: Bitmap, labelBox: Rect, contentHeight: Int = cellCrop.height): Bitmap {
+    private fun eraseSheetFurniture(
+        cellCrop: Bitmap,
+        labelBox: Rect,
+        isLabel: (x: Int, y: Int) -> Boolean,
+        isLabelCore: (x: Int, y: Int) -> Boolean,
+        contentHeight: Int = cellCrop.height,
+    ): Bitmap {
         val masked = cellCrop.copy(Bitmap.Config.ARGB_8888, true)
         val paint = Paint().apply {
             color = Color.WHITE
@@ -561,8 +582,84 @@ object SheetSampleProcessor {
         canvas.drawRect(w - m, 0f, w, h, paint)
         canvas.drawRect(0f, 0f, w, m, paint)
         canvas.drawRect(0f, contentHeight - m, w, h, paint)
-        canvas.drawRect(labelBox.left - m, labelBox.top - m, labelBox.right + m, labelBox.bottom + m, paint)
+        fun luma(x: Int, y: Int): Int {
+            val p = masked.getPixel(x, y)
+            return (Color.red(p) * 299 + Color.green(p) * 587 + Color.blue(p) * 114) / 1000
+        }
+        // The printed label sits a few px off its geometry (rectification, printer): take the
+        // darkest placement of its solid core, and that core's luma as the label's.
+        val core = buildList {
+            for (y in labelBox.top until labelBox.bottom) for (x in labelBox.left until labelBox.right) if (isLabelCore(x, y)) add(x to y)
+        }
+        fun inside(x: Int, y: Int) = x in 0 until masked.width && y in 0 until masked.height
+        var shift = 0 to 0
+        var darkest = Float.MAX_VALUE
+        for (dy in -LABEL_SHIFT..LABEL_SHIFT) for (dx in -LABEL_SHIFT..LABEL_SHIFT) {
+            val lumas = core.filter { (x, y) -> inside(x + dx, y + dy) }.map { (x, y) -> luma(x + dx, y + dy) }
+            if (lumas.size * 2 < core.size) continue
+            val mean = lumas.average().toFloat()
+            if (mean < darkest) { darkest = mean; shift = dx to dy }
+        }
+        val (sx, sy) = shift
+        val coreLumas = core.filter { (x, y) -> inside(x + sx, y + sy) }.map { (x, y) -> luma(x + sx, y + sy) }.sorted()
+        val penMax = coreLumas.getOrNull(coreLumas.size / 2)?.minus(LABEL_PEN_CONTRAST) ?: Int.MAX_VALUE
+        val box = Rect(labelBox).apply { offset(sx, sy) }
+        if (!box.intersect(0, 0, masked.width, masked.height)) return masked
+        for (y in box.top until box.bottom) for (x in box.left until box.right) {
+            if (isLabel(x - sx, y - sy) && luma(x, y) >= penMax) masked.setPixel(x, y, Color.WHITE)
+        }
+        // Ink in the box that no longer reaches past it is a piece the label letter cut off its stroke.
+        val rw = box.width() + 2
+        val rh = box.height() + 2
+        fun isInk(x: Int, y: Int): Boolean =
+            x in 0 until masked.width && y in 0 until masked.height && luma(x, y) < LABEL_RESIDUE_LUMA
+        val reached = BooleanArray(rw * rh)
+        val queue = ArrayDeque<Int>()
+        for (ry in 0 until rh) for (rx in 0 until rw) {
+            val ring = rx == 0 || ry == 0 || rx == rw - 1 || ry == rh - 1
+            if (ring && isInk(box.left - 1 + rx, box.top - 1 + ry)) {
+                reached[ry * rw + rx] = true
+                queue.add(ry * rw + rx)
+            }
+        }
+        while (queue.isNotEmpty()) {
+            val i = queue.removeFirst()
+            for (dy in -1..1) for (dx in -1..1) {
+                val rx = i % rw + dx
+                val ry = i / rw + dy
+                if (rx !in 0 until rw || ry !in 0 until rh || reached[ry * rw + rx]) continue
+                if (!isInk(box.left - 1 + rx, box.top - 1 + ry)) continue
+                reached[ry * rw + rx] = true
+                queue.add(ry * rw + rx)
+            }
+        }
+        for (y in box.top until box.bottom) for (x in box.left until box.right) {
+            if (!reached[(y - box.top + 1) * rw + x - box.left + 1] && isInk(x, y)) masked.setPixel(x, y, Color.WHITE)
+        }
         return masked
+    }
+
+    /**
+     * The printed label of [character] grown by [margin] px, as a hit test in cell coordinates
+     * (relative to the cell's top-left border corner).
+     */
+    private fun labelShape(character: Char, margin: Int, minAlpha: Int = 1): (x: Int, y: Int) -> Boolean {
+        val bounds = PracticeSheetGenerator.labelBounds(character)
+        val mask = PracticeSheetGenerator.labelMask(character, minAlpha)
+        val w = bounds.width()
+        val h = bounds.height()
+        val gw = w + 2 * margin
+        val gh = h + 2 * margin
+        val grown = BooleanArray(gw * gh)
+        for (i in mask.indices) {
+            if (!mask[i]) continue
+            for (dy in 0..2 * margin) for (dx in 0..2 * margin) grown[(i / w + dy) * gw + i % w + dx] = true
+        }
+        return { x, y ->
+            val gx = x - bounds.left + margin
+            val gy = y - bounds.top + margin
+            gx in 0 until gw && gy in 0 until gh && grown[gy * gw + gx]
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1092,21 +1189,30 @@ object SheetSampleProcessor {
     // Empty-cell detection
     // ---------------------------------------------------------------------------------------------
 
-    private fun hasInk(glyph: Bitmap): Boolean {
+    /** Total alpha of [glyph] in fully opaque pixel equivalents. */
+    private fun inkAmount(glyph: Bitmap): Float {
         val w = glyph.width
         val h = glyph.height
-        if (w <= 0 || h <= 0) return false
+        if (w <= 0 || h <= 0) return 0f
         val pixels = IntArray(w * h)
         glyph.getPixels(pixels, 0, w, 0, 0, w, h)
-        // Sum total alpha energy across the canvas. Thin strokes produce fewer pixels but at
-        // meaningful alpha; bold strokes produce more. A threshold of 50 fully-opaque pixel
-        // equivalents (50×255=12750) catches even the thinnest characters ('i', '1', 'l')
-        // while excluding blank cells (alphaSum=0 after cleanGlyph fix) and faint label residue.
         var alphaSum = 0L
         for (p in pixels) {
             alphaSum += (p ushr 24)
         }
-        return alphaSum > 50L * 255
+        return alphaSum / 255f
+    }
+
+    /**
+     * The cells of [ink] (opaque pixel equivalents per cell) that hold a written letter. 50 catches
+     * the thinnest letters of a normal hand ('i', '1', 'l') while excluding blank cells and faint
+     * residue; a tiny hand's letters count down to a tenth of its median letter.
+     */
+    internal fun writtenCells(ink: Map<Char, Float>): Set<Char> {
+        val written = ink.values.filter { it > 0f }.sorted()
+        val median = written.getOrNull(written.size / 2) ?: return emptySet()
+        val threshold = minOf(MIN_INK, median * MIN_INK_OF_MEDIAN)
+        return ink.filterValues { it > threshold }.keys
     }
 
     private const val MIN_OPACITY_FOR_INK = 200

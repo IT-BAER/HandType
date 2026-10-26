@@ -46,8 +46,10 @@ object GlyphPostProcessor {
 
     // Reference size for the baseline, guide band and width; older saved templates are this tall.
     private const val TARGET_CANVAS = 220
-    // Taller than the reference below the baseline, for descenders followed into the cell below.
-    private const val CANVAS_HEIGHT = 250
+    // 1.5 x-heights below the baseline, for descenders followed into the cell below.
+    private const val CANVAS_HEIGHT = 313
+    // Canvas height of templates saved before the canvas grew to [CANVAS_HEIGHT].
+    private const val LEGACY_CANVAS_HEIGHT = 250
     private const val TARGET_GLYPH_HEIGHT = 199
     private const val TARGET_BASELINE_Y = (TARGET_CANVAS * 0.74f).toInt()
     private const val TARGET_GUIDE_BAND_HEIGHT = (TARGET_CANVAS * 0.46f).toInt()
@@ -707,8 +709,9 @@ object GlyphPostProcessor {
 
     internal fun normalizedCanvasSize(): Int = TARGET_CANVAS
 
-    /** A cleaned glyph canvas: the current height, or the reference height of older templates. */
-    internal fun isNormalizedCanvas(height: Int): Boolean = height == CANVAS_HEIGHT || height == TARGET_CANVAS
+    /** A cleaned glyph canvas: the current height, or the height of older templates. */
+    internal fun isNormalizedCanvas(height: Int): Boolean =
+        height == CANVAS_HEIGHT || height == LEGACY_CANVAS_HEIGHT || height == TARGET_CANVAS
 
     internal fun normalizedBaselineRow(): Int = TARGET_BASELINE_Y
 

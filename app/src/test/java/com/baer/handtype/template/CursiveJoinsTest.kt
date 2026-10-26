@@ -35,6 +35,20 @@ class CursiveJoinsTest {
     }
 
     @Test
+    fun aJoinedLetterMovesLeftOnlyIntoTheRoomBetweenTheBodies() {
+        // Two cursive u, left edges 40 px apart; their bodies (columns 16..30) may come to 2 px of each
+        // other: the previous tail and the next lead-in, which the join replaces, do not count.
+        val tail = (40..49).map { y -> (30 + (49 - y) * 6 / 9).let { intArrayOf(y, it, it) } }
+        val leadIn = (38..49).map { y -> (4 + (49 - y)).let { intArrayOf(y, it, it) } }
+        val room = CursiveJoins.bodyRoom(
+            cursive, width, 49, 1f, 1f, tail,
+            cursive, width, 49, 1f, 1f, leadIn,
+            distancePx = 40, gapPx = 2, maxPx = 40,
+        )
+        assertEquals(40 - (31 - 16) - 2, room)
+    }
+
+    @Test
     fun aPrintLetterHasNoLeadIn() {
         // A print n: two stems and an arch, nothing reaching left of the stem.
         val n = glyph { x, y -> (y in 20..49 && (x in 10..11 || x in 26..27)) || (y == 22 && x in 10..27) }
@@ -309,6 +323,31 @@ class CursiveJoinsTest {
         // Parallel to the tail, 3.5 px beside it: with a 6 px pen they touch, but stepping across reads as a notch.
         val leadIn = (0..20).map { (10 + it).toFloat() to (-5 - it).toFloat() }
         assertEquals(null, CursiveJoins.joinCuts(tailLine, leadIn, firstLeadIn = 0, reach = 2, maxLength = 10f, penPx = 6f))
+    }
+
+    @Test
+    fun aLeadInParallelToTheTailMovesOntoItsLineNotBesideIt() {
+        // A captured l tail and the next l's lead-in (output px, the lead-in 17 px left of where it stands); a meet
+        // 1.6 px across the stroke left a visible step, though both strokes run within 3 degrees of each other.
+        val tail = listOf(
+            294.5f to 190.3f, 294.5f to 191.7f, 293.1f to 193.0f, 293.1f to 194.4f, 291.7f to 195.7f, 290.3f to 197.1f, 290.3f to 198.4f,
+            288.9f to 199.8f, 287.5f to 201.1f, 284.7f to 202.4f, 283.4f to 203.8f, 282.0f to 205.1f, 280.6f to 206.5f, 279.2f to 207.8f,
+            277.8f to 209.2f, 275.0f to 210.5f, 273.6f to 211.8f, 272.3f to 213.2f, 270.9f to 214.5f, 269.5f to 215.8f,
+        )
+        val leadIn = listOf(
+            269.6f to 228.4f, 269.6f to 227.1f, 269.6f to 225.7f, 271.0f to 224.4f, 271.1f to 223.0f, 271.1f to 221.6f, 272.5f to 220.3f,
+            272.5f to 219.0f, 273.9f to 217.6f, 273.9f to 216.3f, 275.3f to 214.9f, 276.7f to 213.6f, 276.7f to 212.2f, 278.1f to 210.9f,
+            282.3f to 209.6f, 285.0f to 208.3f, 285.0f to 207.0f, 286.4f to 205.6f, 287.8f to 204.3f, 289.2f to 203.0f, 289.2f to 201.6f,
+            290.6f to 200.3f, 292.0f to 199.0f, 293.4f to 197.6f, 294.8f to 196.3f, 296.2f to 195.0f, 296.2f to 193.6f, 297.6f to 192.3f,
+            299.0f to 190.9f, 300.4f to 189.6f, 301.8f to 188.3f, 301.8f to 186.9f, 303.2f to 185.6f, 303.2f to 184.2f, 304.6f to 182.9f,
+            306.0f to 181.6f,
+        ).map { (x, y) -> x + 17 to y }
+        val cut = CursiveJoins.joinCuts(tail, leadIn, firstLeadIn = 10, reach = 6, maxLength = 38f, shifts = -19..19, penPx = 7.5f)!!
+        val (dx, dy) = CursiveJoins.strokeDirection(tail.subList(cut.tail, minOf(cut.tail + 6, tail.lastIndex) + 1).reversed())!!
+        val from = tail[cut.tail]
+        val to = leadIn[cut.leadIn].let { (x, y) -> x + cut.shift to y }
+        val across = dx * (to.second - from.second) - dy * (to.first - from.first)
+        assertTrue("$cut steps $across px across the stroke", abs(across) <= 0.5f)
     }
 
     @Test
