@@ -309,7 +309,11 @@ object SheetSampleProcessor {
      * unchanged when no row in range looks like a printed line.
      */
     private fun snapGuideRow(crop: Bitmap, nominalY: Int, radius: Int): Int =
-        snapLine(computeLuma(crop), crop.width, nominalY, crop.height, 0 until crop.width, horizontal = true, radius = radius)
+        snapGuideLine(computeLuma(crop), crop.width, nominalY, crop.height, radius)
+
+    /** Pen ink never counts toward a guide: the flat top of a wide letter (x, w) darkens every segment too. */
+    internal fun snapGuideLine(luma: IntArray, width: Int, nominalY: Int, height: Int, radius: Int): Int =
+        snapLine(luma, width, nominalY, height, 0 until width, horizontal = true, radius = radius, penContrast = INK_ABOVE_CONTRAST)
 
     /** Half the gap from a dashed guide to its dotted neighbour, so a snap never lands on the dotted line. */
     internal fun guideSnapRadius(cellHeightPx: Int): Int {
@@ -446,7 +450,8 @@ object SheetSampleProcessor {
      * onto the printed rule within [GUIDE_SEARCH_RADIUS], measured along [span]. A rule, solid or
      * dashed, darkens every part of the span; a pen stroke only part of it, however dark, so a
      * candidate must reach [LINE_SEGMENTS_MIN] of [LINE_SEGMENTS] segments. Among those the line
-     * with the most dark pixels wins; with none, [nominal] is the better guess.
+     * with the most dark pixels wins; with none, [nominal] is the better guess. With [penContrast],
+     * pixels that far below the paper level are pen ink and do not count.
      */
     internal fun snapLine(
         luma: IntArray,
@@ -456,6 +461,7 @@ object SheetSampleProcessor {
         span: IntRange,
         horizontal: Boolean,
         radius: Int = GUIDE_SEARCH_RADIUS,
+        penContrast: Int? = null,
     ): Int {
         val lines = (nominal - radius).coerceAtLeast(0)..(nominal + radius).coerceAtMost(limit - 1)
         if (lines.isEmpty() || span.isEmpty()) return nominal
@@ -466,6 +472,7 @@ object SheetSampleProcessor {
         for (line in lines) for (p in span) window[i++] = at(line, p)
         window.sort()
         val darkMax = minOf(window[window.size / 2] - LINE_CONTRAST, GUIDE_LUMA_MAX)
+        val inkMax = penContrast?.let { window[window.size / 2] - it } ?: -1
         val segmentLength = span.count().toFloat() / LINE_SEGMENTS
         var best = nominal
         var bestCount = 0
@@ -473,7 +480,7 @@ object SheetSampleProcessor {
             var count = 0
             val hit = BooleanArray(LINE_SEGMENTS)
             for (p in span) {
-                if (at(line, p) > darkMax) continue
+                if (at(line, p) > darkMax || at(line, p) <= inkMax) continue
                 count++
                 hit[((p - span.first) / segmentLength).toInt().coerceAtMost(LINE_SEGMENTS - 1)] = true
             }

@@ -121,10 +121,12 @@ def compose_sheet(glyphs) -> Image.Image:
         scale = band / float(np.median(x_heights))
         glyph, baseline = glyphs[char]
         base_y = cy0 + (cy1 - cy0) * sheet.GUIDE_BASELINE_RATIO
-        # A writer keeps the letter on the line: a wide or tall one is squeezed, a descender runs on into the
-        # box below (the scan follows it there). A tall letter stays clear of the top border, which the scan drops.
-        scale = min(scale, (cx1 - cx0) * 0.9 / glyph.width, (base_y - cy0 - (cy1 - cy0) * 0.06) / max(1, baseline))
-        g = glyph.resize((max(1, int(glyph.width * scale)), max(1, int(glyph.height * scale))), Image.LANCZOS)
+        # A writer keeps the letter on the line: a wide one is written narrower at the same height, a descender
+        # runs on into the box below (the scan follows it there). A tall letter stays clear of the top border,
+        # which the scan drops.
+        scale = min(scale, (base_y - cy0 - (cy1 - cy0) * 0.06) / max(1, baseline))
+        width = min(glyph.width * scale, (cx1 - cx0) * 0.9)
+        g = glyph.resize((max(1, int(width)), max(1, int(glyph.height * scale))), Image.LANCZOS)
         x = int((cx0 + cx1 - g.width) / 2)
         y = int(round(base_y - baseline * scale))
         img.alpha_composite(g, (x, min(y, img.height - g.height)))

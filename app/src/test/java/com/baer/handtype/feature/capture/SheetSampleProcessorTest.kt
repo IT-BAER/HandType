@@ -215,6 +215,30 @@ class SheetSampleProcessorTest {
     }
 
     @Test
+    fun guideSnapIgnoresWideLetterTopBelowTheGuide() {
+        val width = 108
+        val height = 145
+        val luma = IntArray(width * height) { PAPER }
+        for (x in 0 until width) if (x % 12 < 4) luma[44 * width + x] = GUIDE
+        // The flat arcs of a wide cursive 'x' darken five of six segments just below the x-height guide.
+        for (y in 52..54) for (x in 4 until 100) if (x !in 50..56) luma[y * width + x] = INK
+
+        assertEquals(44, SheetSampleProcessor.snapGuideLine(luma, width, 44, height, SheetSampleProcessor.guideSnapRadius(152)))
+    }
+
+    @Test
+    fun guideSnapStaysNominalWhenOnlyPenInkIsDark() {
+        val width = 108
+        val height = 145
+        val luma = IntArray(width * height) { PAPER }
+        // A scanned or digital sheet: the guide prints lighter than the guide threshold.
+        for (x in 0 until width) if (x % 12 < 4) luma[45 * width + x] = 226
+        for (y in 52..54) for (x in 4 until 100) if (x !in 50..56) luma[y * width + x] = INK
+
+        assertEquals(44, SheetSampleProcessor.snapGuideLine(luma, width, 44, height, SheetSampleProcessor.guideSnapRadius(152)))
+    }
+
+    @Test
     fun borderSnapIgnoresLetterStemNearTheBorder() {
         val width = 100
         val height = 160
