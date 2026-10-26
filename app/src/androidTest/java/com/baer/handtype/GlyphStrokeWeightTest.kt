@@ -153,7 +153,7 @@ class GlyphStrokeWeightTest {
 
     /** Alpha sum below the dots: ink mass, not opaque pixel count. */
     private fun bodyInk(glyph: Bitmap): Long {
-        val bodyTop = GlyphPostProcessor.normalizedBaselineRow() -
+        val bodyTop = GlyphPostProcessor.canvasBaselineRow(glyph.height) -
             (GlyphPostProcessor.normalizedGuideBandHeight() * 0.7f).toInt()
         val pixels = IntArray(glyph.width * (glyph.height - bodyTop))
         glyph.getPixels(pixels, 0, glyph.width, 0, bodyTop, glyph.width, glyph.height - bodyTop)

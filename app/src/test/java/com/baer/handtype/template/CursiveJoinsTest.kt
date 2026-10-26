@@ -143,6 +143,28 @@ class CursiveJoinsTest {
     }
 
     @Test
+    fun aBridgeOverANearlyClearPixelTakesTheInkColourNotThePixelsNoiseColour() {
+        // Alpha 1 holds no real colour: un-premultiplied it reads as pure red or white.
+        val ink = 0x1A1410
+        val bridged = CursiveJoins.bridgePixel(0x01FF0000, coverage = 200, inkRgb = ink)
+        assertEquals(200, bridged ushr 24)
+        for (shift in listOf(16, 8, 0)) assertEquals("channel $shift", ((ink shr shift) and 0xFF).toDouble(), ((bridged shr shift) and 0xFF).toDouble(), 2.0)
+        // Ink already there keeps its share of the colour by its alpha.
+        assertEquals(0xC8302820.toInt(), CursiveJoins.bridgePixel(0xC8302820.toInt(), coverage = 200, inkRgb = ink))
+        assertEquals("stronger ink stays", 0xE0302820.toInt(), CursiveJoins.bridgePixel(0xE0302820.toInt(), coverage = 200, inkRgb = ink))
+        val half = CursiveJoins.bridgePixel(0x64FFFFFF, coverage = 200, inkRgb = 0)
+        assertEquals("half white, half black", 128.0, ((half shr 8) and 0xFF).toDouble(), 2.0)
+    }
+
+    @Test
+    fun anExitWhoseStrokeGoesOnAboveItsTracedEndIsNoTail() {
+        // A j's loop crossing its 3 px stem (columns 20..22, rows 5..49) at rows 38..41, and the loop's end, a 2-row
+        // stub at columns 26..27, above it: the trace from the crossing forks. Its rows hold the stem, so cutting there cuts the stem.
+        val crossing = glyph { x, y -> (y in 5..49 && x in 20..22) || (y in 38..41 && x in 20..27 - (y - 38)) || (y in 36..37 && x in 26..27) }
+        assertEquals(emptyList<IntArray>(), CursiveJoins.tailRuns(crossing, width, exitX = 27, exitY = 38, bandTop = 20, bandBottom = 49, maxRunPx = 15f, penPx = 3f))
+    }
+
+    @Test
     fun anExitWhoseStrokeTurnsBackLeftAboveItIsNoTail() {
         // The right side of an s bowl: a 3 px stroke from (18, 22) down-right to (30, 40), then down-left to (20, 49).
         val bowl = glyph { x, y ->

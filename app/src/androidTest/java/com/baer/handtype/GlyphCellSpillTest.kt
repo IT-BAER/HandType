@@ -49,7 +49,7 @@ class GlyphCellSpillTest {
         }
         val glyphBottom = lowestRow(glyph) { p -> (p ushr 24) > 40 }
         val sourceDepth = (sourceBottom - baseline).toFloat() / (baseline - upper)
-        val glyphDepth = (glyphBottom - GlyphPostProcessor.normalizedBaselineRow()).toFloat() /
+        val glyphDepth = (glyphBottom - GlyphPostProcessor.canvasBaselineRow(glyph.height)).toFloat() /
             GlyphPostProcessor.normalizedGuideBandHeight()
         assertTrue("descender depth $glyphDepth, written $sourceDepth", glyphDepth >= sourceDepth * 0.9f)
         assertTrue("descender reaches the canvas edge", glyphBottom < glyph.height - 2)
@@ -83,7 +83,30 @@ class GlyphCellSpillTest {
         assertTrue("no ink in a ${glyph.width}x${glyph.height} glyph, guides ${guides.toList()}", ink.isNotEmpty())
         val footEnd = ink.maxOf { it % glyph.width }
         val footBottom = ink.filter { it % glyph.width == footEnd }.maxOf { it / glyph.width }
-        assertTrue("foot bottom $footBottom", footBottom in GlyphPostProcessor.normalizedBaselineRow() - 4..GlyphPostProcessor.normalizedBaselineRow() + 1)
+        val baseline = GlyphPostProcessor.canvasBaselineRow(glyph.height)
+        assertTrue("foot bottom $footBottom", footBottom in baseline - 4..baseline + 1)
+    }
+
+    @Test
+    fun aCapitalWrittenUpToTheCellTopKeepsItsTop() {
+        // A scanner crop (145 rows, top 3 % of the cell dropped): an L whose stem starts in the crop's first row.
+        val crop = Bitmap.createBitmap(60, 145, Bitmap.Config.ARGB_8888).also { b ->
+            Canvas(b).apply {
+                drawColor(Color.WHITE)
+                val p = Paint().apply { color = 0xFF1A1410.toInt() }
+                drawRect(18f, 0f, 23f, 116f, p)
+                drawRect(18f, 111f, 44f, 116f, p)
+            }
+        }
+        val glyph = GlyphPostProcessor.cleanGlyph(crop, guides(crop))
+        val top = highestRow(glyph) { p -> (p ushr 24) > 40 }
+        assertTrue("stem starts at row $top of the ${glyph.height}-row canvas", top > 2)
+    }
+
+    private fun highestRow(bitmap: Bitmap, isInk: (Int) -> Boolean): Int {
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        return pixels.indices.first { isInk(pixels[it]) } / bitmap.width
     }
 
     private fun lowestRow(bitmap: Bitmap, isInk: (Int) -> Boolean): Int {
@@ -115,7 +138,7 @@ class GlyphCellSpillTest {
         val band = GlyphPostProcessor.normalizedGuideBandHeight()
         val capHeight = band * (PracticeSheetGenerator.GUIDE_BASELINE_RATIO - PracticeSheetGenerator.GUIDE_CAP_RATIO) /
             (PracticeSheetGenerator.GUIDE_BASELINE_RATIO - PracticeSheetGenerator.GUIDE_UPPER_RATIO)
-        val capRow = (GlyphPostProcessor.normalizedBaselineRow() - capHeight - band * 0.15f).toInt()
+        val capRow = (GlyphPostProcessor.canvasBaselineRow(glyph.height) - capHeight - band * 0.15f).toInt()
         val pixels = IntArray(glyph.width * capRow.coerceAtLeast(1))
         glyph.getPixels(pixels, 0, glyph.width, 0, 0, glyph.width, capRow.coerceAtLeast(1))
         val inkAbove = pixels.count { (it ushr 24) > 20 }

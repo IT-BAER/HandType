@@ -93,9 +93,10 @@ class SheetSampleProcessorTest {
     }
 
     @Test
-    fun aStrokeEndingAtTheBorderIsNotExtended() {
+    fun aStrokeEndingOnTheBorderKeepsItsEndWithoutThePrintedRule() {
         val width = 30
         val borderY = 20
+        // A pen stroke at column 8 ends on the printed rule (rows 19..21, luma 90, darker than paper by far).
         val luma = IntArray(width * 40) { i ->
             val x = i % width
             val y = i / width
@@ -106,7 +107,13 @@ class SheetSampleProcessorTest {
             }
         }
 
-        assertNull(SheetSampleProcessor.strokeBelowBorder(luma, width, borderY, x0 = 2, x1 = 28, seedY = 14, maxY = 36))
+        val stroke = SheetSampleProcessor.strokeBelowBorder(luma, width, borderY, x0 = 2, x1 = 28, seedY = 14, maxY = 36)!!
+
+        fun at(x: Int, y: Int) = stroke[(y - 14) * (28 - 2) + (x - 2)]
+        assertTrue("the stroke's end on the rule", at(8, borderY))
+        assertTrue("above the rule", at(8, 16))
+        assertFalse("the rule beside the stroke", at(7, borderY + 1) || at(9, borderY) || at(16, borderY))
+        assertFalse("nothing below the stroke's end", (borderY + 1 until 36).any { y -> (2 until 28).any { x -> at(x, y) } })
     }
 
     @Test

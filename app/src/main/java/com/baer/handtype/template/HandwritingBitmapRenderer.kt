@@ -205,7 +205,9 @@ object HandwritingBitmapRenderer {
             // the visible ink ends up only ~27% of line spacing. Crop to a tight ascender/
             // descender window so ink fills the line height.
             val canvasH = bitmap.height
-            val canvasBaseline = GlyphPostProcessor.normalizedBaselineRow()
+            val canvasBaseline = GlyphPostProcessor.canvasBaselineRow(canvasH)
+            // The writer's baseline is a row of the reference canvas; a taller canvas holds more room above it.
+            val canvasWriterBaseline = writerBaseline + canvasBaseline - GlyphPostProcessor.normalizedBaselineRow()
             // Reserve space above baseline for tall ascenders/caps; below for descenders.
             val referenceH = GlyphPostProcessor.normalizedCanvasSize()
             val ascenderReserve = (referenceH * 0.56f).toInt()    // ~123px above baseline
@@ -217,7 +219,7 @@ object HandwritingBitmapRenderer {
             val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
             val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
             val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
-            val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom, writerBaseline)
+            val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom, canvasWriterBaseline)
             return PreparedGlyph(
                 bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
                 baselineRow = (baseline - cropTop).coerceIn(0, cropH - 1),
@@ -798,15 +800,18 @@ object HandwritingBitmapRenderer {
         val baselineRows = rawBounds.values.map(InkBounds::bottom).sorted()
         val templateBaselineRow = baselineRows.getOrElse(baselineRows.size / 2) { 0 }
         val isUserTemplate = template.descriptor.id.startsWith(UserTemplateRepository.USER_ID_PREFIX)
+        // A stored glyph's row on the reference canvas, whose baseline the older canvases share.
+        fun referenceRow(glyph: Bitmap, row: Int): Int =
+            if (GlyphPostProcessor.isNormalizedCanvas(glyph.height)) row - GlyphPostProcessor.canvasBaselineRow(glyph.height) + GlyphPostProcessor.normalizedBaselineRow() else row
         val preparedGlyphs = HashMap<Bitmap, PreparedGlyph>(allGlyphs.size)
         val synthesizedGlyphCache = HashMap<Char, Bitmap?>()
         val synthesizedInkStyle by lazy {
             if (!isUserTemplate) return@lazy PunctuationSynthesizer.InkStyle.DEFAULT
             val xTops = "aceimnorsuvwxz".mapNotNull { c ->
-                template.glyphs[c]?.firstOrNull()?.let { rawBounds[it]?.top }
+                template.glyphs[c]?.firstOrNull()?.let { g -> rawBounds[g]?.top?.let { referenceRow(g, it) } }
             }
             val tallTops = "bdhkl0123456789".mapNotNull { c ->
-                template.glyphs[c]?.firstOrNull()?.let { rawBounds[it]?.top }
+                template.glyphs[c]?.firstOrNull()?.let { g -> rawBounds[g]?.top?.let { referenceRow(g, it) } }
             }.sorted()
             PunctuationSynthesizer.InkStyle.estimate(allGlyphs).copy(
                 xHeightTop = xHeightTopRow(xTops),
@@ -819,7 +824,7 @@ object HandwritingBitmapRenderer {
             "acemnorsuvwxz".mapNotNull { c ->
                 template.glyphs[c]?.firstOrNull()
                     ?.takeIf { GlyphPostProcessor.isNormalizedCanvas(it.height) }
-                    ?.let { rawBounds[it]?.bottom }
+                    ?.let { g -> rawBounds[g]?.bottom?.let { referenceRow(g, it) } }
             },
         )
         val xHeightInkHeights = "acemnorsuvwxz".mapNotNull { c ->
@@ -1471,8 +1476,7 @@ object HandwritingBitmapRenderer {
                 inkRight = maxOf(inkRight, i % w)
                 inkTop = minOf(inkTop, i / w)
                 inkBottom = maxOf(inkBottom, i / w)
-                val existing = pixels[i] ushr 24
-                if (a > existing) pixels[i] = (a shl 24) or if (existing > 0) pixels[i] and 0xFFFFFF else inkRgb
+                pixels[i] = CursiveJoins.bridgePixel(pixels[i], a, inkRgb)
             }
             ink.setPixels(pixels, 0, w, left, top, w, h)
             if (inkRight >= 0) {

@@ -95,7 +95,8 @@ internal object CursiveJoins {
     /**
      * The exit tail as one run per row like [leadInRuns], from its tip back down the stroke. The
      * exit point ([exitX], [exitY]) lies below the band's top part, so the tip may rise above it.
-     * Empty when the stroke above the exit point turns back left: that is a bowl's right side (an s), no tail;
+     * Empty when ink goes on above the traced tip (a fork, a crossing, a widening): a tail ends there, so that is a
+     * stem or a loop crossing it, and its rows hold the stem; when the stroke above the exit point turns back left: that is a bowl's right side (an s), no tail;
      * when it climbs a quarter of the band above [bandTop]: that is a stem, such as a capital's leg; and when its rows
      * are over twice as long as a stroke [penPx] wide at its slant would cross them: that is a blob.
      */
@@ -105,6 +106,8 @@ internal object CursiveJoins {
         val first = runs(alpha, width, exitY).firstOrNull { exitX in it[1]..it[2] } ?: return emptyList()
         val tip = trace(alpha, width, first, step = -1, limit = 0, maxRunPx)
         if (tip.first.any { it[0] < bandTop - (bandBottom - bandTop) / 4 }) return emptyList()
+        val (tipY, tipX0, tipX1) = tip.first.lastOrNull() ?: first
+        if (runs(alpha, width, tipY - 1).any { it[1] <= tipX1 + 1 && it[2] >= tipX0 - 1 }) return emptyList()
         // Run centres doubled: 3 means 1.5 px.
         var right = first[1] + first[2]
         for ((_, x0, x1) in tip.first) {
@@ -367,6 +370,17 @@ internal object CursiveJoins {
             val t = ((bestAlong - extend) / length).coerceIn(0f, 1f)
             sectionAt(fromSection, best) * (1 - t) + sectionAt(toSection, best) * t
         }
+    }
+
+    /**
+     * The ink-layer pixel [existing] (un-premultiplied ARGB) under a bridge of alpha [coverage] drawn in [inkRgb]: the
+     * darker alpha, its colour mixed by alpha. A nearly clear pixel's colour is rounding noise, such as pure red.
+     */
+    fun bridgePixel(existing: Int, coverage: Int, inkRgb: Int): Int {
+        val a = existing ushr 24
+        if (coverage <= a) return existing
+        fun channel(shift: Int) = (((existing shr shift) and 0xFF) * a + ((inkRgb shr shift) and 0xFF) * (coverage - a) + coverage / 2) / coverage
+        return (coverage shl 24) or (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
 
     /** Pen width of the strokes in [alpha]: twice the core area over its boundary length. */

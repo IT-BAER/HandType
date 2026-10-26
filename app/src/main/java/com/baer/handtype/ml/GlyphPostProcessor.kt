@@ -46,12 +46,14 @@ object GlyphPostProcessor {
 
     // Reference size for the baseline, guide band and width; older saved templates are this tall.
     private const val TARGET_CANVAS = 220
-    // 1.5 x-heights below the baseline, for descenders followed into the cell below.
-    private const val CANVAS_HEIGHT = 313
-    // Canvas height of templates saved before the canvas grew to [CANVAS_HEIGHT].
-    private const val LEGACY_CANVAS_HEIGHT = 250
+    // 2 x-heights above the baseline, past the top of the cell, and 1.5 below it, for descenders followed into the cell below.
+    private const val CANVAS_HEIGHT = 353
+    // Canvas heights of templates saved before the canvas grew to [CANVAS_HEIGHT]; their baseline is [TARGET_BASELINE_Y].
+    private const val LEGACY_CANVAS_HEIGHT = 313
+    private const val OLDER_CANVAS_HEIGHT = 250
     private const val TARGET_GLYPH_HEIGHT = 199
     private const val TARGET_BASELINE_Y = (TARGET_CANVAS * 0.74f).toInt()
+    private const val CANVAS_BASELINE_Y = TARGET_BASELINE_Y + 40
     private const val TARGET_GUIDE_BAND_HEIGHT = (TARGET_CANVAS * 0.46f).toInt()
     private const val INK_COLOR = 0xFF1A1410.toInt()
     private const val SIDE_PAD = 8
@@ -649,7 +651,7 @@ object GlyphPostProcessor {
 
     /** Renders the trimmed alpha glyph onto a canvas with baseline alignment.
      *
-     * Canvas height is [CANVAS_HEIGHT]; the baseline sits at [TARGET_BASELINE_Y] as on the reference canvas.
+     * Canvas height is [CANVAS_HEIGHT]; the baseline sits at [CANVAS_BASELINE_Y].
      * Canvas width is trimmed to the actual ink width + [SIDE_PAD] on each side, so
      * [HandwritingBitmapRenderer] advances by the real character width rather than the full
      * square canvas — eliminating the excessive inter-character gap in user-captured templates.
@@ -678,8 +680,8 @@ object GlyphPostProcessor {
         val left = SIDE_PAD.toFloat()
         val top = guideBand
             ?.takeIf { it.baselineY > 0 }
-            ?.let { TARGET_BASELINE_Y - it.baselineY * scale }
-            ?: (TARGET_BASELINE_Y - scaledH).toFloat()
+            ?.let { CANVAS_BASELINE_Y - it.baselineY * scale }
+            ?: (CANVAS_BASELINE_Y - scaledH).toFloat()
         val dst = RectF(left, top, left + scaledW, top + scaledH)
         val src = Rect(0, 0, glyph.width, glyph.height)
 
@@ -711,9 +713,13 @@ object GlyphPostProcessor {
 
     /** A cleaned glyph canvas: the current height, or the height of older templates. */
     internal fun isNormalizedCanvas(height: Int): Boolean =
-        height == CANVAS_HEIGHT || height == LEGACY_CANVAS_HEIGHT || height == TARGET_CANVAS
+        height == CANVAS_HEIGHT || height == LEGACY_CANVAS_HEIGHT || height == OLDER_CANVAS_HEIGHT || height == TARGET_CANVAS
 
+    /** Baseline row of the reference canvas, [normalizedCanvasSize] tall. */
     internal fun normalizedBaselineRow(): Int = TARGET_BASELINE_Y
+
+    /** Baseline row of a cleaned glyph canvas [height] rows tall: the current one sits lower than the older ones. */
+    internal fun canvasBaselineRow(height: Int): Int = if (height == CANVAS_HEIGHT) CANVAS_BASELINE_Y else TARGET_BASELINE_Y
 
     internal fun normalizedGuideBandHeight(): Int = TARGET_GUIDE_BAND_HEIGHT
 

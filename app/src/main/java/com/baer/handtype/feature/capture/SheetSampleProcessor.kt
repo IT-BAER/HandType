@@ -72,6 +72,8 @@ object SheetSampleProcessor {
     private const val INK_ABOVE_CONTRAST = 60
     // Rows on each side of a snapped border that the printed rule can cover after rectification.
     private const val BORDER_BAND = 4
+    // Pen ink on a printed rule: this much darker than the rule's median luma.
+    private const val RULE_PEN_CONTRAST = 30
     // writtenCells(): ink of a written cell, in opaque pixel equivalents and as part of the median.
     private const val MIN_INK = 50f
     private const val MIN_INK_OF_MEDIAN = 0.1f
@@ -223,7 +225,7 @@ object SheetSampleProcessor {
             val cropRight = cellRight - sideInset
             val cropBottom = cellBottom - sideInset
 
-            // A descender that leaves through the bottom border is followed into the cell below.
+            // A stroke ending on the bottom border keeps its end; a descender that leaves through it is followed into the cell below.
             val m = FURNITURE_MARGIN
             val seedY = cropBottom - m - 1
             val labelBelow = cells.getOrNull(index + PracticeSheetGenerator.GRID_COLS)?.character?.takeIf { it != ' ' }
@@ -234,7 +236,7 @@ object SheetSampleProcessor {
                 skip = { x, y -> labelBelow?.invoke(x - cellLeft, y - cellBottom) == true },
             )
             val descenderWidth = cropRight - cropLeft - 2 * m
-            val extendedBottom = descender?.let { mask -> seedY + mask.indexOfLast { it } / descenderWidth + 1 } ?: cropBottom
+            val extendedBottom = descender?.let { mask -> maxOf(cropBottom, seedY + mask.indexOfLast { it } / descenderWidth + 1) } ?: cropBottom
 
             val cellCrop = Bitmap.createBitmap(
                 rectified,
@@ -502,8 +504,9 @@ object SheetSampleProcessor {
      * The pen stroke that leaves the cell through its bottom border at [borderY], followed into the
      * cell below: ink of rows [seedY] until [maxY], columns [x0] until [x1], connected to ink on
      * row [seedY]. Inside the printed border it only moves down, so it cannot run along the rule.
-     * Null when no stroke continues below the border, or when it reaches [maxY]: a descender ends
-     * above it, so that stroke runs into the letter below. [skip] marks pixels never to enter.
+     * A stroke that ends on the border keeps its end there, without the printed rule. Null when no
+     * stroke reaches row [seedY], or when one reaches [maxY]: a descender ends above it, so that
+     * stroke runs into the letter below. [skip] marks pixels never to enter.
      */
     internal fun strokeBelowBorder(
         luma: IntArray,
@@ -545,7 +548,17 @@ object SheetSampleProcessor {
             }
         }
         val reachesLimit = (0 until w).any { stroke[(h - 1) * w + it] }
-        return stroke.takeIf { below && !reachesLimit }
+        if (reachesLimit) return null
+        if (!below) {
+            // A stroke ending on the border keeps its end; on the rule only ink clearly darker than the rule is pen.
+            val ruleY = borderY - seedY
+            if (ruleY !in 0 until h) return null
+            val penMax = (0 until w).map { window[ruleY * w + it] }.sorted()[w / 2] - RULE_PEN_CONTRAST
+            for (y in band.first - seedY..band.last - seedY) for (x in 0 until w) {
+                if (y in 0 until h && window[y * w + x] >= penMax) stroke[y * w + x] = false
+            }
+        }
+        return stroke.takeIf { it.any { s -> s } }
     }
 
     private fun snapBorderRow(luma: IntArray, nominalY: Int, x0: Int, x1: Int): Int =

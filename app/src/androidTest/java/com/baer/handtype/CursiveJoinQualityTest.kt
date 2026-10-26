@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.baer.handtype.ml.GlyphPostProcessor
 import com.baer.handtype.template.CursiveJoins
 import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
@@ -97,6 +98,31 @@ class CursiveJoinQualityTest {
         }
         assertTrue("no joins rendered", joinCount > 0)
         assertTrue(failures.joinToString("\n"), failures.isEmpty())
+    }
+
+    @Test
+    fun aHandOnTheCurrentCanvasRendersAsOnTheOlderCanvas() {
+        // The join fixtures sit on an older 250-row canvas; the current one is 353 rows with more room above the baseline.
+        for (hand in listOf("hw_04", "bank_04")) {
+            val older = glyphs(hand)
+            val current = older.mapValues { (_, variants) ->
+                variants.map { g ->
+                    val headroom = GlyphPostProcessor.canvasBaselineRow(353) - GlyphPostProcessor.canvasBaselineRow(g.height)
+                    Bitmap.createBitmap(g.width, 353, Bitmap.Config.ARGB_8888).also { Canvas(it).drawBitmap(g, 0f, headroom.toFloat(), null) }
+                }
+            }
+            assertTrue("current canvas", current.values.all { v -> v.all { GlyphPostProcessor.isNormalizedCanvas(it.height) } })
+            fun render(glyphs: Map<Char, List<Bitmap>>): IntArray = HandwritingBitmapRenderer.render(
+                "Hello, small jump! Foxes.",
+                HandwritingTemplate(TemplateDescriptor("user_u1", "Test", "", "", premium = false), glyphs = glyphs),
+                HandwritingRenderConfig(maxWidthPx = 1000, targetLineHeightPx = 200, noteBackground = NoteBackgroundCatalog.transparentPreset),
+                seed = 7,
+            ).bitmap.let { b -> IntArray(b.width * b.height).also { b.getPixels(it, 0, b.width, 0, 0, b.width, b.height) } }
+            val a = render(older)
+            val b = render(current)
+            assertTrue("$hand: ${a.size} vs ${b.size} px", a.size == b.size)
+            assertTrue("$hand: ${a.indices.count { a[it] != b[it] }} px differ", a.contentEquals(b))
+        }
     }
 
     private fun measure(
