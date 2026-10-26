@@ -7,8 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-26
+
+### Added
+- Premium: your own cursive handwriting joins the letters of a word. The join uses your own exit stroke and lead-in, with a short curved bridge between them. Print hands are unchanged.
+- Premium: missing punctuation (. , ! ? : ; ' " -) is drawn from your own i dot and l stem, in the pen width and lean of your hand.
+
 ### Changed
 - Smaller app: release builds are now optimized and shrunk with R8 (APK 78 MB to 36 MB).
+- The handwriting sheet and the on-screen sheet show four guide lines per cell: cap line, x-height, baseline and descender line. The instruction is rewritten in all 10 languages. Sheets printed before this update still scan.
+- Premium: a captured hand is scaled by its x-height, so small letters no longer come out as tall as capitals. This also applies to saved handwriting.
+- Premium: the letters of your own handwriting are spaced by their ink, so a lead-in slides under the previous letter.
+- Version 1.2.0 (versionCode 8).
+
+### Fixed
+- Reading a filled-in handwriting sheet: descenders that cross into the cell below are kept, tall capitals keep their tops, the printed cell label is erased by its letter shape so pen ink next to it stays, dotted guide lines no longer pass as i dots, and very small handwriting keeps letters like i.
+- Wide letters such as a cursive x or w are no longer scaled larger than the other small letters.
+- Stems at letter joins stay whole (j, F, r), and joins show no stray coloured pixels.
+- Punctuation drawn for your hand is soft and leans with it; a comma is no darker than the letters, and the dot of a ! sits under its stem.
 
 ## [1.1.0] - 2026-10-23
 

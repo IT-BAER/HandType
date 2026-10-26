@@ -1,6 +1,6 @@
-HandType 1.1.0
-• Escreva sua própria letra na tela, nove letras por página, ou imprima a folha direto do app (Premium).
-• Letras acentuadas como é, ñ, ç, å e as letras alemãs Ä Ö Ü ä ö ü ß.
-• Controle de tamanho do texto no resultado, que mostra o novo tamanho enquanto você arrasta.
-• Escreva na caixa de mensagem com uma caneta stylus (Android 14 ou mais recente).
-• Nova animação ao gerar, prévia da nota ao compartilhar e leitura melhor das folhas preenchidas.
+HandType 1.2.0
+• Sua própria letra cursiva agora liga as letras de cada palavra com seus próprios traços (Premium).
+• A pontuação que falta é desenhada no seu próprio estilo de caneta (Premium).
+• A folha tem quatro linhas-guia por célula, para as minúsculas continuarem pequenas. Folhas antigas ainda são lidas.
+• Leitura melhor das folhas preenchidas: hastes descendentes, maiúsculas altas, pingos do i e letras largas como x e w.
+• Download menor: o app tem cerca de metade do tamanho.

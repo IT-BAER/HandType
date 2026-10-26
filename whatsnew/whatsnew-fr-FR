@@ -1,6 +1,6 @@
-HandType 1.1.0
-• Écrivez votre propre écriture à l'écran, neuf lettres par page, ou imprimez la feuille depuis l'app (Premium).
-• Lettres accentuées comme é, ñ, ç, å et lettres allemandes Ä Ö Ü ä ö ü ß.
-• Curseur de taille du texte sur le résultat, qui montre la nouvelle taille pendant le glissement.
-• Écrivez dans la zone de message avec un stylet (Android 14 ou plus récent).
-• Nouvelle animation de génération, aperçu de la note lors du partage et meilleure lecture des feuilles remplies.
+HandType 1.2.0
+• Votre propre écriture cursive relie désormais les lettres d'un mot avec vos propres traits (Premium).
+• La ponctuation manquante est tracée dans votre style de stylo (Premium).
+• La feuille a quatre lignes guides par case, pour que les minuscules restent petites. Les anciennes feuilles restent lisibles.
+• Meilleure lecture des feuilles : jambages, grandes majuscules, points des i et lettres larges comme x et w.
+• Téléchargement plus léger : l'app fait environ la moitié.
