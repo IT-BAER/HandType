@@ -40,8 +40,10 @@ class SampleSheetHarnessTest {
             val bitmap = BitmapFactory.decodeFile(file.path)
             val context = InstrumentationRegistry.getInstrumentation().targetContext
             val result = SheetSampleProcessor.process(bitmap, context, skipPageDetection = true, localeCharacters = german)
-            context.externalCacheDir!!.resolve("sheet_debug/cells")
-                .copyRecursively(out.resolve("${file.nameWithoutExtension}_cells"), overwrite = true)
+            val debug = context.externalCacheDir!!.resolve("sheet_debug")
+            debug.resolve("cells").copyRecursively(out.resolve("${file.nameWithoutExtension}_cells"), overwrite = true)
+            debug.resolve("02_rectified.png").takeIf { it.exists() }
+                ?.copyTo(out.resolve("${file.nameWithoutExtension}_cells/rectified.png"), overwrite = true)
             val missing = expected.filter { it !in result.glyphs.keys }
             report.append("${file.name}: detectionFailed=${result.detectionFailed} kept=${result.glyphs.size}/${expected.size} missing=${missing.joinToString("")}\n")
             if (result.glyphs.isEmpty()) continue

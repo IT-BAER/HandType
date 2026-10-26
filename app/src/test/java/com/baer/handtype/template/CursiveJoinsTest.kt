@@ -35,6 +35,20 @@ class CursiveJoinsTest {
     }
 
     @Test
+    fun aJoinedLetterMovesLeftOnlyIntoTheRoomBetweenTheBodies() {
+        // Two cursive u, left edges 40 px apart; their bodies (columns 16..30) may come to 2 px of each
+        // other: the previous tail and the next lead-in, which the join replaces, do not count.
+        val tail = (40..49).map { y -> (30 + (49 - y) * 6 / 9).let { intArrayOf(y, it, it) } }
+        val leadIn = (38..49).map { y -> (4 + (49 - y)).let { intArrayOf(y, it, it) } }
+        val room = CursiveJoins.bodyRoom(
+            cursive, width, 49, 1f, 1f, tail,
+            cursive, width, 49, 1f, 1f, leadIn,
+            distancePx = 40, gapPx = 2, maxPx = 40,
+        )
+        assertEquals(40 - (31 - 16) - 2, room)
+    }
+
+    @Test
     fun aPrintLetterHasNoLeadIn() {
         // A print n: two stems and an arch, nothing reaching left of the stem.
         val n = glyph { x, y -> (y in 20..49 && (x in 10..11 || x in 26..27)) || (y == 22 && x in 10..27) }

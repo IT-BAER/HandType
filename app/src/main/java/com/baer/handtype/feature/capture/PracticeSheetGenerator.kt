@@ -175,6 +175,17 @@ object PracticeSheetGenerator {
         it.offset(LABEL_X.toInt(), LABEL_BASELINE_Y.toInt())
     }
 
+    /** Pixels of the printed cell label for [character] at [minAlpha] or more, row by row over [labelBounds]. */
+    fun labelMask(character: Char, minAlpha: Int = 1): BooleanArray {
+        val bounds = labelBounds(character)
+        if (bounds.isEmpty) return BooleanArray(0)
+        val bitmap = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
+        Canvas(bitmap).drawText(character.toString(), LABEL_X - bounds.left, LABEL_BASELINE_Y - bounds.top, labelPaint)
+        val pixels = IntArray(bounds.width() * bounds.height())
+        bitmap.getPixels(pixels, 0, bounds.width(), 0, 0, bounds.width(), bounds.height())
+        return BooleanArray(pixels.size) { pixels[it] ushr 24 >= minAlpha }
+    }
+
     fun renderBitmap(characters: List<Char> = cellCharacters()): Bitmap {
         val bitmap = Bitmap.createBitmap(PAGE_WIDTH, PAGE_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)

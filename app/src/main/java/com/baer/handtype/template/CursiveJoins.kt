@@ -218,6 +218,35 @@ internal object CursiveJoins {
     /** Cut indices into the tail and the lead-in, and how far the next letter moves sideways for them. */
     data class Cut(val tail: Int, val leadIn: Int, val shift: Int = 0)
 
+    /**
+     * How far, in output px, a joined letter may move left from [distancePx] (left edge to left
+     * edge, as in [HandwritingBitmapRenderer.kerningPx]) before its body comes within [gapPx] of the
+     * previous letter's body, at most [maxPx]. A body is the glyph's ink without the runs (row,
+     * first x, last x) of the [tail] or [leadIn] the join replaces.
+     */
+    fun bodyRoom(
+        prevAlpha: IntArray, prevWidth: Int, prevBaselineRow: Int, prevScaleX: Float, prevScaleY: Float, tail: List<IntArray>,
+        nextAlpha: IntArray, nextWidth: Int, nextBaselineRow: Int, nextScaleX: Float, nextScaleY: Float, leadIn: List<IntArray>,
+        distancePx: Int, gapPx: Int, maxPx: Int,
+    ): Int = HandwritingBitmapRenderer.kerningPx(
+        bodyEdge(prevAlpha, prevWidth, tail, fromLeft = false), prevBaselineRow, prevScaleX, prevScaleY,
+        bodyEdge(nextAlpha, nextWidth, leadIn, fromLeft = true), nextBaselineRow, nextScaleX, nextScaleY,
+        distancePx, gapPx, maxPx,
+    )
+
+    /**
+     * Outermost ink column per row (leftmost when [fromLeft]), -1 for none, of ink over alpha 40
+     * outside [runs]; a run's soft edges, up to 2 px beside it, count as the run.
+     */
+    private fun bodyEdge(alpha: IntArray, width: Int, runs: List<IntArray>, fromLeft: Boolean): IntArray {
+        val height = alpha.size / width
+        val skip = runs.groupBy { it[0] }
+        return IntArray(height) { y ->
+            val xs = if (fromLeft) 0 until width else (width - 1) downTo 0
+            xs.firstOrNull { x -> alpha[y * width + x] > 40 && skip[y].orEmpty().none { (_, x0, x1) -> x in x0 - 2..x1 + 2 } } ?: -1
+        }
+    }
+
     /** Unit direction of the line that fits [points] best, from the first towards the last; null when they lie within half a pixel. */
     fun strokeDirection(points: List<Pair<Float, Float>>): Pair<Float, Float>? {
         val chord = direction(points.first(), points.last()) ?: return null
