@@ -3,9 +3,9 @@ package com.baer.handtype.template
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.RectF
 import com.baer.handtype.ml.GlyphPostProcessor
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 
 /**
@@ -101,20 +101,42 @@ internal object PunctuationSynthesizer {
         }
     }
 
-    /** The writer's own pieces that punctuation is built from: an i dot and a straight stem. */
-    class WriterMarks(val dot: Bitmap?, val stem: Bitmap?) {
+    /**
+     * The writer's own pieces that punctuation is built from: an i dot and a straight stem. [lean] (x px per row going
+     * up) and [section] (pen cross-section, [CursiveJoins.crossSection] steps) come from the stems of the tall letters,
+     * so pen strokes drawn where the hand has no straight stem lean and fade like it; 0 and null when unknown.
+     */
+    class WriterMarks(val dot: Bitmap?, val stem: Bitmap?, val lean: Float = 0f, val section: FloatArray? = null) {
         companion object {
             val NONE = WriterMarks(null, null)
 
-            fun from(glyphs: Map<Char, List<Bitmap>>): WriterMarks = WriterMarks(
-                dot = "ijäöüÄÖÜ".firstNotNullOfOrNull { c -> glyphs[c]?.firstOrNull()?.let(::cropMark) },
-                // Only l: a 1 carries a flag and an I often serifs, which a ! or quote never has.
-                stem = glyphs['l']?.firstOrNull()?.let(::cropStem),
-            )
+            fun from(glyphs: Map<Char, List<Bitmap>>): WriterMarks {
+                val stems = "lbdhk".mapNotNull { c -> glyphs[c]?.firstOrNull()?.let(::stemShape) }
+                return WriterMarks(
+                    dot = "ijäöüÄÖÜ".firstNotNullOfOrNull { c -> glyphs[c]?.firstOrNull()?.let(::cropMark) },
+                    // Only l: a 1 carries a flag and an I often serifs, which a ! or quote never has.
+                    stem = glyphs['l']?.firstOrNull()?.let(::cropStem),
+                    lean = stems.map { it.first }.sorted().getOrElse(stems.size / 2) { 0f },
+                    section = if (stems.isEmpty()) null else FloatArray(CursiveJoins.SECTION_SIZE) { k ->
+                        stems.map { it.second[k] }.sorted()[stems.size / 2]
+                    },
+                )
+            }
 
-            private fun alpha(b: Bitmap): IntArray =
-                IntArray(b.width * b.height).also { b.getPixels(it, 0, b.width, 0, 0, b.width, b.height) }
-                    .map { it ushr 24 }.toIntArray()
+            // Lean and cross-section of a tall letter's stem, from its rows above the bottom quarter of the x-height,
+            // where it turns into a bowl, exit or foot.
+            private fun stemShape(b: Bitmap): Pair<Float, FloatArray>? {
+                val alpha = alpha(b)
+                val top = alpha.indexOfFirst { it > INK_ALPHA }.takeIf { it >= 0 }?.div(b.width) ?: return null
+                val rows = top..GlyphPostProcessor.canvasBaselineRow(b.height) - GUIDE_HEIGHT / 4
+                val lean = stemLean(alpha, b.width, rows) ?: return null
+                val norm = hypot(lean, 1f)
+                val section = CursiveJoins.crossSection(
+                    alpha, b.width, singleRunCentres(alpha, b.width, rows), lean / norm to -1f / norm,
+                    CursiveJoins.penWidth(alpha, b.width) / 2 + 2f,
+                )
+                return lean to section
+            }
 
             private fun cropMark(b: Bitmap): Bitmap? = markBounds(alpha(b), b.width)?.let { (l, t, r, bottom) ->
                 Bitmap.createBitmap(b, l, t, r - l + 1, bottom - t + 1)
@@ -138,6 +160,10 @@ internal object PunctuationSynthesizer {
     }
 
     private const val INK_ALPHA = 40
+
+    private fun alpha(b: Bitmap): IntArray =
+        IntArray(b.width * b.height).also { b.getPixels(it, 0, b.width, 0, 0, b.width, b.height) }
+            .map { it ushr 24 }.toIntArray()
 
     /**
      * Box (left, top, right, bottom) of the largest piece of ink above the letter body in [alpha],
@@ -182,6 +208,62 @@ internal object PunctuationSynthesizer {
         return sorted[(sorted.size * 0.97f).toInt()] <= sorted[sorted.size / 2] * 2
     }
 
+    /** Alpha-weighted ink centre (x, y) of each row in [rows] that holds a single ink run: a loop or bowl row holds two. */
+    internal fun singleRunCentres(alpha: IntArray, width: Int, rows: IntRange): List<Pair<Float, Float>> = rows.mapNotNull { y ->
+        val row = (0 until width).map { alpha[y * width + it] }
+        val runs = row.indices.count { x -> row[x] > INK_ALPHA && (x == 0 || row[x - 1] <= INK_ALPHA) }
+        if (runs != 1) return@mapNotNull null
+        val ink = row.indices.filter { row[it] > INK_ALPHA }
+        ink.sumOf { it * row[it] }.toFloat() / ink.sumOf { row[it] } to y.toFloat()
+    }
+
+    /**
+     * How far a stroke moves right per row going up, from its single-run rows within [rows] of [alpha]
+     * ([width] wide); null under 10 such rows.
+     */
+    internal fun stemLean(alpha: IntArray, width: Int, rows: IntRange): Float? =
+        centreLine(singleRunCentres(alpha, width, rows))?.let { -it.second }
+
+    /** Least-squares line x = a + b y (a to b) through [centres]; null under 10 of them. */
+    private fun centreLine(centres: List<Pair<Float, Float>>): Pair<Float, Float>? {
+        if (centres.size < 10) return null
+        val mx = centres.map { it.first }.average()
+        val my = centres.map { it.second }.average()
+        val slope = centres.sumOf { (x, y) -> (x - mx) * (y - my) } / centres.sumOf { (_, y) -> (y - my) * (y - my) }
+        return (mx - slope * my).toFloat() to slope.toFloat()
+    }
+
+    /** Cross-section of a plain pen [widthPx] wide: [alpha] across its width, fading out over one more pixel. */
+    internal fun penSection(widthPx: Float, alpha: Int): FloatArray =
+        FloatArray(CursiveJoins.SECTION_SIZE) { k -> alpha * (widthPx / 2 + 1 - k * CursiveJoins.SECTION_STEP).coerceIn(0f, 1f) }
+
+    /**
+     * Strokes [path] (pixel centres at +0.5) into [pixels] ([width] wide, un-premultiplied ARGB) with [section] around
+     * it, ends round, [radius] px thicker each side. Each pixel keeps the darker ink, so a stroke never stacks on ink.
+     */
+    internal fun drawStroke(
+        pixels: IntArray, width: Int, path: List<Pair<Float, Float>>, section: FloatArray, inkRgb: Int, radius: Float = 0f,
+    ) {
+        val height = pixels.size / width
+        val reach = radius + CursiveJoins.SECTION_SIZE * CursiveJoins.SECTION_STEP
+        val x0 = (path.minOf { it.first } - reach).toInt().coerceAtLeast(0)
+        val x1 = (path.maxOf { it.first } + reach).toInt().coerceAtMost(width - 1)
+        val y0 = (path.minOf { it.second } - reach).toInt().coerceAtLeast(0)
+        val y1 = (path.maxOf { it.second } + reach).toInt().coerceAtMost(height - 1)
+        for (y in y0..y1) for (x in x0..x1) {
+            val qx = x + 0.5f
+            val qy = y + 0.5f
+            val distance = if (path.size == 1) hypot(path[0].first - qx, path[0].second - qy) else path.zipWithNext().minOf { (a, b) ->
+                val dx = b.first - a.first
+                val dy = b.second - a.second
+                val t = (((qx - a.first) * dx + (qy - a.second) * dy) / (dx * dx + dy * dy).coerceAtLeast(1e-6f)).coerceIn(0f, 1f)
+                hypot(a.first + dx * t - qx, a.second + dy * t - qy)
+            }
+            val coverage = CursiveJoins.sectionAt(section, (distance - radius).coerceAtLeast(0f)).roundToInt()
+            if (coverage > 0) pixels[y * width + x] = CursiveJoins.bridgePixel(pixels[y * width + x], coverage, inkRgb)
+        }
+    }
+
     private val SUPPORTED: Set<Char> = setOf(
         '.', ',', '!', '?', ':', ';', '\'', '"', '-',
     )
@@ -192,27 +274,6 @@ internal object PunctuationSynthesizer {
         if (c !in SUPPORTED) return null
         val inkStyle = ink
         val strokePx = inkStyle.strokeWidthPx
-        val width = when (c) {
-            '.', ',', '\'', ':', ';', '!' -> 40
-            '"' -> 64
-            '-' -> 90
-            '?' -> 96
-            else -> 60
-        }.coerceAtLeast((marks.dot?.width ?: 0) + 16)
-        val bmp = Bitmap.createBitmap(width, CANVAS, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bmp)
-        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = inkStyle.argb
-            style = Paint.Style.FILL
-        }
-        val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = inkStyle.argb
-            style = Paint.Style.STROKE
-            strokeWidth = strokePx
-            strokeCap = Paint.Cap.ROUND
-            strokeJoin = Paint.Join.ROUND
-        }
-        val cx = width / 2f
         val dotR = strokePx * 1.0f
         val xTop = inkStyle.xHeightTop.toFloat()
         val dot = marks.dot
@@ -220,11 +281,45 @@ internal object PunctuationSynthesizer {
         // Tall marks follow the writer's tall letters: a row of the default layout, moved to this hand.
         val size = ((BASELINE - inkStyle.ascenderTop).toFloat() / (BASELINE - ASCENDER_TOP)).coerceIn(0.4f, 1.6f)
         fun sized(defaultRow: Float): Float = BASELINE - (BASELINE - defaultRow) * size
+        // A ! leans along one line through its dot's centre: the writer stem's own centre line, else the hand's lean.
+        val dotWidth = dot?.width?.toFloat() ?: (2 * dotR)
+        val dotMiddle = BASELINE - (dot?.height?.toFloat() ?: (2 * dotR)) / 2
+        val stemTop = sized(ASCENDER_TOP + 10f)
+        val stemBottom = minOf(sized(BASELINE - 18f), 2 * dotMiddle - BASELINE - 8f)
+        val bangStem = if (c == '!' && stem != null) stemPiece(stem, (stemBottom - stemTop).roundToInt()) else null
+        // Rows of [bangStem] per canvas row, and its centre line x = a + b y in its own pixels.
+        val squash = bangStem?.let { it.height / (stemBottom - stemTop) } ?: 1f
+        val (lineA, lineB) = bangStem?.let { centreLine(singleRunCentres(alpha(it), it.width, 0 until it.height)) ?: ((it.width - 1) / 2f to 0f) }
+            ?: (0f to -marks.lean)
+        val lean = -lineB * squash
+        val bangStemLeft = -0.5f - lineA - lineB * ((dotMiddle - stemTop) * squash - 0.5f)
+        val (inkLeft, inkRight) = when {
+            c != '!' -> 0f to 0f
+            bangStem != null -> minOf(-dotWidth / 2, bangStemLeft) to maxOf(dotWidth / 2, bangStemLeft + bangStem.width)
+            else -> listOf(-dotWidth / 2, dotWidth / 2, lean * (dotMiddle - stemTop), lean * (dotMiddle - stemBottom)).let { it.min() to it.max() }
+        }
+        val width = when (c) {
+            '.', ',', '\'', ':', ';', '!' -> 40
+            '"' -> 64
+            '-' -> 90
+            '?' -> 96
+            else -> 60
+        }.coerceAtLeast((marks.dot?.width ?: 0) + 16).coerceAtLeast((inkRight - inkLeft).roundToInt() + 16)
+        val bmp = Bitmap.createBitmap(width, CANVAS, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        val cx = width / 2f - (inkLeft + inkRight) / 2
         val filtered = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        val section = marks.section ?: penSection(strokePx, inkStyle.argb ushr 24)
+        // A pen stroke along [path] in the writer's section, [radius] px thicker each side.
+        fun pen(path: List<Pair<Float, Float>>, radius: Float = 0f) {
+            val px = IntArray(width * CANVAS).also { bmp.getPixels(it, 0, width, 0, 0, width, CANVAS) }
+            drawStroke(px, width, path, section, inkStyle.argb and 0xFFFFFF, radius)
+            bmp.setPixels(px, 0, width, 0, 0, width, CANVAS)
+        }
         // The writer's dot when the hand has one, else a round pen dot; returns its top row.
         fun dotOn(bottom: Float): Float {
             if (dot == null) {
-                canvas.drawCircle(cx, bottom - dotR, dotR, fill)
+                pen(listOf(cx to bottom - dotR), radius = dotR - strokePx / 2)
                 return bottom - 2 * dotR
             }
             val top = (bottom - dot.height).roundToInt()
@@ -234,33 +329,41 @@ internal object PunctuationSynthesizer {
         // A piece of the writer's stem between two rows, else a pen line leaning by [slant].
         fun stemBetween(x: Float, top: Float, bottom: Float, slant: Float = 0f) {
             if (stem == null) {
-                canvas.drawLine(x + slant / 2, top, x - slant / 2, bottom, stroke)
+                pen(listOf(x + slant / 2 to top, x - slant / 2 to bottom))
             } else {
                 val piece = stemPiece(stem, (bottom - top).roundToInt())
                 val left = (x - piece.width / 2f).roundToInt().toFloat()
                 canvas.drawBitmap(piece, null, RectF(left, top, left + piece.width, bottom), filtered)
             }
         }
+        // A single tail curving down-left from just above the baseline, drawn over the dot when there is one.
+        fun comma() = pen(quad(cx + 1f to BASELINE - 6f, cx + 2f to BASELINE + 2f, cx - 4f to BASELINE + 14f))
         when (c) {
             '.' -> dotOn(BASELINE.toFloat())
             ',' -> {
                 if (dot != null) dotOn(BASELINE.toFloat())
-                drawComma(canvas, cx, fill, stroke, dotR)
+                comma()
             }
             '!' -> {
-                val dotTop = dotOn(BASELINE.toFloat())
-                stemBetween(cx, sized(ASCENDER_TOP + 10f), minOf(sized(BASELINE - 18f), dotTop - 8f))
+                dotOn(BASELINE.toFloat())
+                if (bangStem != null) {
+                    val left = (cx + bangStemLeft).roundToInt().toFloat()
+                    canvas.drawBitmap(bangStem, null, RectF(left, stemTop, left + bangStem.width, stemBottom), filtered)
+                } else {
+                    pen(listOf(cx + lean * (dotMiddle - stemTop) to stemTop, cx + lean * (dotMiddle - stemBottom) to stemBottom))
+                }
             }
             '?' -> {
                 val hookRadius = 18f * size
                 val hookCenterY = sized(ASCENDER_TOP + 22f)
-                val path = Path().apply {
-                    moveTo(cx - hookRadius, hookCenterY + 4f * size)
-                    quadTo(cx - hookRadius, hookCenterY - hookRadius, cx, hookCenterY - hookRadius)
-                    quadTo(cx + hookRadius, hookCenterY - hookRadius, cx + hookRadius, hookCenterY)
-                    quadTo(cx + hookRadius, sized(X_HEIGHT_TOP + 22f), cx, sized(BASELINE - 26f))
-                }
-                canvas.drawPath(path, stroke)
+                val start = cx - hookRadius to hookCenterY + 4f * size
+                val top = cx to hookCenterY - hookRadius
+                val right = cx + hookRadius to hookCenterY
+                pen(
+                    listOf(start) + quad(start, cx - hookRadius to hookCenterY - hookRadius, top).drop(1) +
+                        quad(top, cx + hookRadius to hookCenterY - hookRadius, right).drop(1) +
+                        quad(right, cx + hookRadius to sized(X_HEIGHT_TOP + 22f), cx to sized(BASELINE - 26f)).drop(1),
+                )
                 dotOn(BASELINE.toFloat())
             }
             ':' -> {
@@ -270,7 +373,7 @@ internal object PunctuationSynthesizer {
             ';' -> {
                 dotOn(xTop + (dot?.height?.toFloat() ?: (2 * dotR)))
                 if (dot != null) dotOn(BASELINE.toFloat())
-                drawComma(canvas, cx, fill, stroke, dotR)
+                comma()
             }
             '\'' -> stemBetween(cx - 0.5f, xTop - 22f, xTop - 4f, slant = 5f)
             '"' -> {
@@ -280,7 +383,8 @@ internal object PunctuationSynthesizer {
             '-' -> {
                 val y = (xTop + BASELINE) / 2f
                 if (stem == null) {
-                    canvas.drawLine(cx - 20f, y, cx + 20f, y, stroke)
+                    // Rising 6 degrees to the right, like the laid-down writer stem.
+                    pen(listOf(cx - 20f to y + 2.1f, cx + 20f to y - 2.1f))
                 } else {
                     // The stem laid down, rising slightly to the right as a dash usually does.
                     val piece = stemPiece(stem, 40)
@@ -307,13 +411,12 @@ internal object PunctuationSynthesizer {
         return Bitmap.createBitmap(stem, columns.min(), top, columns.max() - columns.min() + 1, rows)
     }
 
-    private fun drawComma(canvas: Canvas, cx: Float, fill: Paint, stroke: Paint, dotR: Float) {
-        // Single curving tail — no separate dot. Starts just above baseline and
-        // curves down-left, like a natural handwritten comma.
-        val path = Path().apply {
-            moveTo(cx + 1f, BASELINE - 6f)
-            quadTo(cx + 2f, BASELINE + 2f, cx - 4f, BASELINE + 14f)
+    /** A quadratic curve from [from] over [control] to [to] as 12 straight pieces. */
+    private fun quad(from: Pair<Float, Float>, control: Pair<Float, Float>, to: Pair<Float, Float>): List<Pair<Float, Float>> =
+        (0..12).map { i ->
+            val t = i / 12f
+            val u = 1 - t
+            u * u * from.first + 2 * u * t * control.first + t * t * to.first to
+                u * u * from.second + 2 * u * t * control.second + t * t * to.second
         }
-        canvas.drawPath(path, stroke)
-    }
 }
