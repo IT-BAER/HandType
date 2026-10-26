@@ -18,7 +18,8 @@ import java.util.Locale
  * Generates the printable practice sheet that users fill out to calibrate their handwriting font.
  *
  * The sheet uses four solid black square fiducial markers (one per corner of the writable area)
- * plus a uniform 8×9 cell grid: 62 alphanumeric characters (A-Z, a-z, 0-9), then the letters of the
+ * plus a uniform 8×9 cell grid ruled with four guides (dotted cap line, dashed x-height line and
+ * baseline, dotted descender line): 62 alphanumeric characters (A-Z, a-z, 0-9), then the letters of the
  * app language (German: ÄÖÜäöüß). Sheets printed with the older 8×8 grid still scan. The character
  * label printed in the corner of each cell is intentionally faint so it does not bias the user's
  * stroke shape but still tells them which character to write.
@@ -47,6 +48,11 @@ object PracticeSheetGenerator {
     private const val GUIDE_COLOR = 0xFFCEC6B4.toInt()
     internal const val GUIDE_UPPER_RATIO = 0.32f
     internal const val GUIDE_BASELINE_RATIO = 0.78f
+
+    // Dotted outer guides for capitals/ascenders and descenders. Extraction scales from the two
+    // dashed guides only; these stay more than the guide snap radius away from them.
+    internal const val GUIDE_CAP_RATIO = 0.13f
+    internal const val GUIDE_DESCENDER_RATIO = 0.93f
 
     private val baseCharacters: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
 
@@ -188,14 +194,28 @@ object PracticeSheetGenerator {
         )
 
         // Footer instructions.
-        paint.textSize = 22f
+        paint.textSize = 20f
         paint.typeface = Typeface.DEFAULT
         canvas.drawText(
-            "Write each letter resting on the lower guide line, filling up to the upper line. Keep the four black squares visible.",
+            "Rest every letter on the lower dashed line. Small letters reach the upper dashed line.",
             OUTER_MARGIN.toFloat(),
-            PAGE_HEIGHT - OUTER_MARGIN + 32f,
+            PAGE_HEIGHT - OUTER_MARGIN + 24f,
             paint,
         )
+        canvas.drawText(
+            "Capitals, digits and b d f h k l reach the top dotted line; g j p q y hang down to the bottom dotted line.",
+            OUTER_MARGIN.toFloat(),
+            PAGE_HEIGHT - OUTER_MARGIN + 48f,
+            paint,
+        )
+        paint.textAlign = Paint.Align.RIGHT
+        canvas.drawText(
+            "Keep the four black squares visible.",
+            (PAGE_WIDTH - OUTER_MARGIN).toFloat(),
+            OUTER_MARGIN - 18f,
+            paint,
+        )
+        paint.textAlign = Paint.Align.LEFT
 
         // Fiducials.
         paint.style = Paint.Style.FILL
@@ -229,6 +249,11 @@ object PracticeSheetGenerator {
             strokeWidth = 1.5f
             pathEffect = DashPathEffect(floatArrayOf(7f, 5f), 0f)
         }
+        val outerGuidePaint = Paint(guidePaint).apply {
+            pathEffect = DashPathEffect(floatArrayOf(2f, 6f), 0f)
+        }
+        // The cap line runs at label height, so it starts right of the widest label.
+        val capLineStart = LABEL_X + labelPaint.measureText("W") + 8f
 
         normalizedCells(characters).forEach { cell ->
             val rect = RectF(
@@ -238,7 +263,7 @@ object PracticeSheetGenerator {
                 gridTopPx + cell.bottom * gridHeightPx,
             )
             canvas.drawRect(rect, gridLinePaint)
-            drawGuideLines(canvas, rect, guidePaint)
+            drawGuideLines(canvas, rect, guidePaint, outerGuidePaint, capLineStart)
             if (cell.character != ' ') {
                 canvas.drawText(
                     cell.character.toString(),
@@ -252,10 +277,14 @@ object PracticeSheetGenerator {
         return bitmap
     }
 
-    private fun drawGuideLines(canvas: Canvas, rect: RectF, paint: Paint) {
+    private fun drawGuideLines(canvas: Canvas, rect: RectF, paint: Paint, outerPaint: Paint, capLineStart: Float) {
+        val capY = rect.top + rect.height() * GUIDE_CAP_RATIO
         val xHeightY = rect.top + rect.height() * GUIDE_UPPER_RATIO
         val baselineY = rect.top + rect.height() * GUIDE_BASELINE_RATIO
+        val descenderY = rect.top + rect.height() * GUIDE_DESCENDER_RATIO
+        canvas.drawLine(rect.left + capLineStart, capY, rect.right, capY, outerPaint)
         canvas.drawLine(rect.left, xHeightY, rect.right, xHeightY, paint)
         canvas.drawLine(rect.left, baselineY, rect.right, baselineY, paint)
+        canvas.drawLine(rect.left, descenderY, rect.right, descenderY, outerPaint)
     }
 }
