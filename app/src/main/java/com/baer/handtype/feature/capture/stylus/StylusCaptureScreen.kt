@@ -646,6 +646,14 @@ private fun StylusCell(
             val y = size.height * ratio
             drawLine(GuideColor, Offset(0f, y), Offset(size.width, y), guideWidth, pathEffect = dash)
         }
+        val dots = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 6.dp.toPx()))
+        for (ratio in floatArrayOf(
+            PracticeSheetGenerator.GUIDE_CAP_RATIO,
+            PracticeSheetGenerator.GUIDE_DESCENDER_RATIO,
+        )) {
+            val y = size.height * ratio
+            drawLine(GuideColor, Offset(0f, y), Offset(size.width, y), guideWidth, pathEffect = dots)
+        }
         // A typical font's x-height is about half its em, so this em puts the ghost's
         // x-height on the guide gap and its baseline on the lower guide.
         val gap = PracticeSheetGenerator.GUIDE_BASELINE_RATIO - PracticeSheetGenerator.GUIDE_UPPER_RATIO

@@ -60,7 +60,7 @@
     <string name="camera_section_title">Capture sua folha de caligrafia</string>
     <string name="camera_pre_scan_title">Antes de escanear</string>
     <string name="camera_pre_scan_step_1">Imprima a folha de caligrafia.</string>
-    <string name="camera_pre_scan_step_2">Escreva o caractere correspondente em cada caixa e mantenha-o sobre a linha guia.</string>
+    <string name="camera_pre_scan_step_2">Escreva o caractere correspondente em cada caixa. Apoie-o na linha tracejada inferior: as minúsculas chegam à linha tracejada superior, as maiúsculas e letras altas à linha pontilhada de cima, e g, j, p, q, y descem até a linha pontilhada de baixo.</string>
     <string name="camera_pre_scan_step_3">Capture a página inteira e mantenha os quatro quadrados pretos totalmente visíveis.</string>
     <string name="camera_pre_scan_step_4">Use luz uniforme e evite desfoque, reflexos e sombras duras.</string>
     <string name="camera_sheet_button">Compartilhar a folha de caligrafia</string>
@@ -269,7 +269,7 @@
     <!-- Write the handwriting sheet on screen -->
     <string name="camera_write_button">Escrever na tela</string>
     <string name="stylus_title">Escrever na tela</string>
-    <string name="stylus_instruction">Escreva o caractere claro na caixa. Apoie-o na linha inferior; as minúsculas chegam à linha superior.</string>
+    <string name="stylus_instruction">Escreva o caractere claro na caixa. Apoie-o na linha tracejada inferior; as minúsculas chegam à tracejada superior e as maiúsculas à pontilhada.</string>
     <string name="stylus_progress">%1$d / %2$d</string>
     <string name="stylus_undo">Desfazer</string>
     <string name="stylus_clear">Limpar</string>
@@ -281,7 +281,7 @@
     <string name="stylus_hint_outside">Mantenha cada traço dentro da caixa.</string>
     <string name="stylus_hint_too_small">Pequeno demais - use as linhas guia.</string>
     <string name="stylus_hint_too_large">Grande demais - fique mais perto das linhas guia.</string>
-    <string name="stylus_hint_reach_up">Curto demais - este caractere passa da linha superior.</string>
+    <string name="stylus_hint_reach_up">Curto demais - este caractere passa da linha tracejada superior.</string>
     <string name="stylus_hint_cell">“%1$s”: %2$s</string>
     <string name="stylus_hint_wrong">Parece “%1$s”, esperado “%2$s”. Toque em Avançar de novo para mantê-lo.</string>
     <string name="stylus_hint_unrecognized">Ainda não parece “%1$s”. Toque em Avançar de novo para mantê-lo.</string>
