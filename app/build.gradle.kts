@@ -18,7 +18,7 @@ android {
         applicationId = "com.baer.handtype"
         minSdk = 29
         targetSdk = 36
-        versionCode = 8
+        versionCode = 9
         versionName = "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
