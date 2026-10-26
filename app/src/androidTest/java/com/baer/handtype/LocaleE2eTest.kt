@@ -184,11 +184,12 @@ class LocaleE2eTest {
         shot("stylus_template_result")
     }
 
-    private fun stylusText(tag: String): String =
-        composeRule.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsProperties.Text].joinToString("")
+    // Null while the stylus screen is gone: after the last page it leaves before the rename dialog shows.
+    private fun stylusText(tag: String): String? =
+        composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().firstOrNull()?.config?.get(SemanticsProperties.Text)?.joinToString("")
 
     /** The hint line when it shows a warning, else null. */
-    private fun stylusWarning(): String? = stylusText(HandTypeTestTags.STYLUS_HINT).takeUnless {
+    private fun stylusWarning(): String? = stylusText(HandTypeTestTags.STYLUS_HINT)?.takeUnless {
         it in listOf(R.string.stylus_instruction, R.string.stylus_note_shape_only, R.string.stylus_saving).map(context::getString)
     }
 

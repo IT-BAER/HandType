@@ -6,6 +6,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.baer.handtype.ml.GlyphPostProcessor
+import com.baer.handtype.template.AccentComposer
 import com.baer.handtype.template.PunctuationSynthesizer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -128,6 +129,38 @@ class WriterPunctuationTest {
         val column = IntArray(hyphen.height).also { hyphen.getPixels(it, 0, 1, hyphen.width / 2, 0, 1, hyphen.height) }
         val markSoft = softPixels(column)
         assertTrue("soft edge pixels: hyphen $markSoft, writer $writerSoft", markSoft >= writerSoft - 1)
+    }
+
+    // An x-height letter without marks of its own: a 12 px block 60 rows tall on the baseline.
+    private val block = glyph(40) { c, p -> c.drawRect(14f, baseline - 60f, 26f, baseline.toFloat(), p) }
+
+    @Test
+    fun anAccentFadesLikeTheHand() {
+        val composed = AccentComposer.compose(
+            block, baseline, AccentComposer.decompose('é')!!, unitPx = 60f, PunctuationSynthesizer.InkStyle.DEFAULT,
+            PunctuationSynthesizer.WriterMarks.from(cursive),
+        )
+        val (mark, _) = stemAndDot(composed.bitmap)
+        val writerSoft = softPixels(rowOf(cursive.getValue('l')[0], baseline - 30))
+        val markSoft = softPixels(rowOf(composed.bitmap, mark[mark.size / 2]))
+        assertTrue("soft edge pixels: acute $markSoft, writer $writerSoft", markSoft >= writerSoft - 1)
+    }
+
+    @Test
+    fun theDotsOfAnUmlautAreTheWritersIDot() {
+        val faintDot = mapOf('i' to listOf(glyph(40) { c, p ->
+            c.drawRect(17f, baseline - 60f, 23f, baseline.toFloat(), p)
+            p.alpha = 160
+            c.drawRect(14f, baseline - 90f, 26f, baseline - 80f, p)
+        }))
+        val composed = AccentComposer.compose(
+            block, baseline, AccentComposer.decompose('ë')!!, unitPx = 60f, PunctuationSynthesizer.InkStyle.DEFAULT,
+            PunctuationSynthesizer.WriterMarks.from(faintDot),
+        )
+        val (dots, _) = stemAndDot(composed.bitmap)
+        val px = pixels(composed.bitmap)
+        val darkest = dots.maxOf { y -> (0 until composed.bitmap.width).maxOf { px[y * composed.bitmap.width + it] ushr 24 } }
+        assertTrue("dot alpha $darkest, the writer's dot 160", darkest in 150..161)
     }
 
     @Test

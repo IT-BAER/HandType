@@ -410,6 +410,68 @@ class CursiveJoinsTest {
         assertFalse("too few letters to tell", CursiveJoins.isCursiveHand(listOf(true, true)))
     }
 
+    // A cursive o: a bowl over rows 23..47 and a flat flick crossing its top right from (18, 28), rising to (37, 22).
+    private val ring = glyph { x, y -> hypot((x - 16).toFloat(), (y - 35).toFloat()) in 10f..12f }
+    private fun flick(a: IntArray, x0: Int, y0: Int, x1: Int, y1: Int) = a.copyOf().also { b ->
+        for (x in x0..x1) { val y = y0 + (y1 - y0) * (x - x0) / (x1 - x0); b[y * width + x] = 255; b[(y + 1) * width + x] = 255 }
+    }
+
+    @Test
+    fun aFlatFlickHighInTheBandIsTracedColumnByColumnFromItsTip() {
+        val runs = CursiveJoins.flickRuns(flick(ring, 18, 28, 37, 22), width, bandTop = 20, bandBottom = 49, maxRunPx = 10f, penPx = 2f)
+        assertEquals("starts at the tip", listOf(37, 22, 23), runs.first().toList())
+        assertEquals("one run per column, leftward", (37 downTo 37 - runs.size + 1).toList(), runs.map { it[0] })
+        assertTrue("stays on the flick, not around the bowl: ends at ${runs.last()[0]}", runs.size >= 8 && runs.last()[0] >= 18)
+    }
+
+    @Test
+    fun aStemTopOrASteeplyFallingStrokeIsNoFlick() {
+        val n = glyph { x, y -> (y in 20..49 && (x in 10..11 || x in 26..27)) || (y == 22 && x in 10..27) }
+        assertTrue("stem", CursiveJoins.flickRuns(n, width, 20, 49, maxRunPx = 10f, penPx = 2f).isEmpty())
+        assertTrue("falls 34 degrees", CursiveJoins.flickRuns(flick(ring, 22, 24, 37, 34), width, 20, 49, maxRunPx = 10f, penPx = 2f).isEmpty())
+    }
+
+    @Test
+    fun aFlickWithInkFurtherRightLowerInTheBandIsNotTheExit() {
+        val tailed = flick(flick(ring, 18, 28, 37, 22), 28, 47, 39, 42)
+        assertTrue(CursiveJoins.flickRuns(tailed, width, 20, 49, maxRunPx = 10f, penPx = 2f).isEmpty())
+    }
+
+    @Test
+    fun theBridgeOfATopJoinEndsAtTheFirstInkAheadAlongTheFlick() {
+        val points = listOf(5f to 5f, 12f to 0f, 8f to 1f, -3f to 0f)
+        assertEquals(8f to 1f, CursiveJoins.firstAhead(points, 0f to 0f, 1f to 0f, halfWidth = 2f, maxLength = 20f))
+        assertEquals("too far", null, CursiveJoins.firstAhead(listOf(25f to 0f), 0f to 0f, 1f to 0f, halfWidth = 2f, maxLength = 20f))
+    }
+
+    @Test
+    fun pastItsOwnInkALeadInIsTheLeftPartOfTheRunsUntilTheyAreOneStrokeWide() {
+        // Runs of 4 px strokes side by side: 9 and 7 px wide, then one stroke of 4 px.
+        val merged = listOf(intArrayOf(30, 10, 18), intArrayOf(29, 12, 18), intArrayOf(28, 15, 18), intArrayOf(27, 15, 19))
+        val fork = CursiveJoins.leadInFork(merged, strokePx = 4)
+        assertEquals(listOf(listOf(30, 10, 14), listOf(29, 12, 14)), fork.map { it.toList() })
+    }
+
+    @Test
+    fun aBridgeClimbsAStemItMeetsToItsTop() {
+        // A stem slanting right as it rises, rows 10..30, 3 px wide; and a bowl's side that turns away right.
+        val stem = (10..30).flatMap { y -> (0..2).map { k -> (20f + (30 - y) * 0.3f + k) to y.toFloat() } }
+        assertEquals(10f, CursiveJoins.climb(stem, 20f to 25f, halfWidth = 3f, maxRise = 40f).second, 0.01f)
+        assertEquals("at most maxRise", 17f, CursiveJoins.climb(stem, 20f to 25f, halfWidth = 3f, maxRise = 8f).second, 0.01f)
+        val turning = (20..30).map { y -> (20f + (30 - y) * 3f) to y.toFloat() }
+        assertEquals("turns away at once", 30f, CursiveJoins.climb(turning, 20f to 30f, halfWidth = 2f, maxRise = 40f).second, 0.01f)
+    }
+
+    @Test
+    fun lettersThatEndHighJoinAtTheTop() {
+        assertTrue(CursiveJoins.topJoins('o', 'n'))
+        assertTrue(CursiveJoins.topJoins('w', 'e'))
+        assertTrue("an r without a baseline tail", CursiveJoins.topJoins('r', 'o'))
+        assertFalse("a capital O stands alone", CursiveJoins.topJoins('O', 'n'))
+        assertFalse(CursiveJoins.topJoins('o', 'N'))
+        assertFalse(CursiveJoins.topJoins('e', 'n'))
+    }
+
     @Test
     fun lettersThatEndHighDoNotJoinAndNothingJoinsIntoACapital() {
         assertTrue(CursiveJoins.joins('e', 'l'))

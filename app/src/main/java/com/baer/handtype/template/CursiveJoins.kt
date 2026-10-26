@@ -3,6 +3,7 @@ package com.baer.handtype.template
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.hypot
@@ -119,6 +120,65 @@ internal object CursiveJoins {
         val crossing = penPx / maxOf(abs(slant?.second ?: 1f), 0.2f)
         return if (tail.map { it[2] - it[1] + 1 }.sorted()[tail.size / 2] > crossing * 2) emptyList() else tail
     }
+
+    /**
+     * The flat exit flick of a letter that ends high (b o v w): one ink run per column (column, first row, last row),
+     * from its tip, the rightmost ink of the band's upper half and of the whole band, leftward to where it meets the
+     * letter. Empty unless that is a stroke at least two [penPx] long, whose columns are at most two [penPx] tall (a
+     * stem's are taller), rising to its tip at most 45 degrees and falling at most 20 over its last four [penPx].
+     */
+    fun flickRuns(alpha: IntArray, width: Int, bandTop: Int, bandBottom: Int, maxRunPx: Float, penPx: Float): List<IntArray> {
+        val height = alpha.size / width
+        val band = bandBottom - bandTop + 1
+        var tipX = -1
+        var tipY = -1
+        for (y in (bandTop - band / 4).coerceAtLeast(0)..(bandTop + band / 2).coerceAtMost(height - 1)) for (x in 0 until width) {
+            if (alpha[y * width + x] > INK_ALPHA && x > tipX) { tipX = x; tipY = y }
+        }
+        if (tipX < 0) return emptyList()
+        if ((bandTop.coerceAtLeast(0)..bandBottom.coerceAtMost(height - 1)).any { y -> (tipX + 1 until width).any { alpha[y * width + it] > INK_ALPHA } }) return emptyList()
+        // Columns are the rows of the transposed glyph.
+        val columns = IntArray(alpha.size) { i -> alpha[(i % height) * width + i / height] }
+        val first = runs(columns, height, tipX).firstOrNull { tipY in it[1]..it[2] } ?: return emptyList()
+        val settle = ceil(penPx).toInt()
+        val flick = listOf(first) + trace(columns, height, first, step = -1, limit = 0, maxRunPx, settleRows = settle).first
+        if (flick.size < 2 * settle + 1 || flick.map { it[2] - it[1] + 1 }.sorted()[flick.size / 2] > 2 * penPx) return emptyList()
+        val (tip, inner) = flick.first() to flick.getOrElse(4 * settle) { flick.last() }
+        val rise = Math.toDegrees(atan2((inner[1] + inner[2] - tip[1] - tip[2]) / 2.0, (tip[0] - inner[0]).toDouble()))
+        return if (rise in -20.0..45.0) flick else emptyList()
+    }
+
+    /**
+     * Past its own ink ([LeadIn.ownRuns]) a lead-in from the lower left still runs beside the stroke it [merged] into: the
+     * left part of each run (row, first x, last x) half again as wide as one [strokePx] stroke, until they are one stroke.
+     */
+    fun leadInFork(merged: List<IntArray>, strokePx: Int): List<IntArray> =
+        merged.takeWhile { (_, x0, x1) -> (x1 - x0 + 1) * 2 > strokePx * 3 }.map { (y, x0, x1) -> intArrayOf(y, x0, x1 - strokePx) }
+
+    /**
+     * From [start], up the stroke of [points] one row at a time while ink lies within [halfWidth] of the middle of the
+     * row below, at most [maxRise]: the top of a stem, or about [start] where the stroke turns away sideways.
+     */
+    fun climb(points: List<Pair<Float, Float>>, start: Pair<Float, Float>, halfWidth: Float, maxRise: Float): Pair<Float, Float> {
+        var x = start.first
+        var y = start.second
+        while (start.second - y + 1f <= maxRise) {
+            val row = points.filter { (px, py) -> py in y - 1.5f..y - 0.5f && abs(px - x) <= halfWidth }
+            if (row.isEmpty()) break
+            x = row.map { it.first }.average().toFloat()
+            y -= 1f
+        }
+        return x to y
+    }
+
+    /** The first of [points] ahead of [origin] along [direction] within [halfWidth] of that line and [maxLength] of [origin]. */
+    fun firstAhead(
+        points: List<Pair<Float, Float>>, origin: Pair<Float, Float>, direction: Pair<Float, Float>, halfWidth: Float, maxLength: Float,
+    ): Pair<Float, Float>? = points.filter { (x, y) ->
+        val along = (x - origin.first) * direction.first + (y - origin.second) * direction.second
+        along > 0f && abs((y - origin.second) * direction.first - (x - origin.first) * direction.second) <= halfWidth &&
+            hypot(x - origin.first, y - origin.second) <= maxLength
+    }.minByOrNull { (x, y) -> (x - origin.first) * direction.first + (y - origin.second) * direction.second }
 
     private fun runs(alpha: IntArray, width: Int, y: Int): List<IntArray> = buildList {
         if (y !in 0 until alpha.size / width) return@buildList
@@ -406,4 +466,7 @@ internal object CursiveJoins {
      */
     fun joins(previous: Char, next: Char): Boolean =
         previous.isLetter() && next.isLowerCase() && previous.lowercaseChar() !in "bovw"
+
+    /** A small b, o, v or w, or an r without a tail from the baseline, joins from its flick at the x-height ([flickRuns]). */
+    fun topJoins(previous: Char, next: Char): Boolean = previous in "bovwr" && next.isLowerCase()
 }

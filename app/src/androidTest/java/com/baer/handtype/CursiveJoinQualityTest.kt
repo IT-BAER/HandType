@@ -32,8 +32,8 @@ class CursiveJoinQualityTest {
     private val out = InstrumentationRegistry.getInstrumentation().targetContext
         .getExternalFilesDir(null)!!.resolve("handtype_test/joins").apply { mkdirs() }
 
-    private fun glyphs(hand: String): Map<Char, List<Bitmap>> = assets.list("joins/$hand")!!.associate { name ->
-        name.substring(1, 5).toInt(16).toChar() to listOf(assets.open("joins/$hand/$name").use(BitmapFactory::decodeStream))
+    private fun glyphs(hand: String, set: String = "joins"): Map<Char, List<Bitmap>> = assets.list("$set/$hand")!!.associate { name ->
+        name.substring(1, 5).toInt(16).toChar() to listOf(assets.open("$set/$hand/$name").use(BitmapFactory::decodeStream))
     }
 
     private class Measure(val looseEnds: Int, val connected: Boolean, val turnDeg: Float, val tone: Float) {
@@ -97,6 +97,40 @@ class CursiveJoinQualityTest {
             }
         }
         assertTrue("no joins rendered", joinCount > 0)
+        assertTrue(failures.joinToString("\n"), failures.isEmpty())
+    }
+
+    @Test
+    fun lettersThatEndHighJoinAtTheTopWithoutAV() {
+        // Captured on the current canvas: b o v w (and the r of hw_07) end in a flick at the x-height.
+        val failures = mutableListOf<String>()
+        for (hand in listOf("bank_04", "hw_07")) {
+            val template = HandwritingTemplate(TemplateDescriptor("user_u1", "Test", "", "", premium = false), glyphs = glyphs(hand, "joins_top"))
+            var topJoinCount = 0
+            for (word in listOf("Brown", "Österreich", "above")) {
+                val config = HandwritingRenderConfig(maxWidthPx = 1400, targetLineHeightPx = 200, noteBackground = NoteBackgroundCatalog.transparentPreset)
+                val result = HandwritingBitmapRenderer.render(word, template, config, seed = 7)
+                val note = result.bitmap
+                val alpha = alphaOf(note)
+                val pen = CursiveJoins.penWidth(alpha, note.width)
+                save("${hand}_top_${word}_clean", onPaper(note))
+                val debug = onPaper(note)
+                result.joins.forEachIndexed { i, (from, to) ->
+                    if (!result.topJoins[i]) return@forEachIndexed
+                    topJoinCount++
+                    val m = measure(alpha, note.width, note.height, from, to, pen, debug)
+                    // The V: a bridge down from the flick towards the baseline.
+                    val dip = to.second - from.second
+                    Log.i(TAG, "$hand $word top join $i pen=${"%.1f".format(pen)} $m dip=${"%.1f".format(dip / pen)} pen")
+                    // Into the top of a stem the join turns down at a cusp, and thinning leaves a spur in its corner.
+                    val looseEnds = if (m.turnDeg >= CUSP_DEG) 0 else m.looseEnds
+                    if (looseEnds > 0 || !m.connected || m.tone > MAX_TONE || dip > pen * MAX_DIP_PENS) failures += "$hand $word top join $i: $m dip ${dip / pen} pen"
+                }
+                save("${hand}_top_$word", debug)
+            }
+            // Brown: o-w, w-n; above: b-o, o-v, v-e.
+            if (topJoinCount < 5) failures += "$hand: $topJoinCount top joins"
+        }
         assertTrue(failures.joinToString("\n"), failures.isEmpty())
     }
 
@@ -289,5 +323,8 @@ class CursiveJoinQualityTest {
         const val MAX_TONE = 1.3f
         // Measured: an erased s bowl 3.3 and 5.1 pen areas, cut tails and lead-ins at most 0.3.
         const val MAX_BODY_LOST_PEN_AREAS = 1.5f
+        // A top join ends at most 0.2 x-heights off the flick's line, about 3 pen widths.
+        const val MAX_DIP_PENS = 3f
+        const val CUSP_DEG = 90f
     }
 }

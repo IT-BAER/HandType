@@ -2,11 +2,13 @@ package com.baer.handtype.template
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
 import java.text.Normalizer
+import kotlin.math.PI
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /**
  * Builds accented letters a template has no glyph for (é ñ ç à ô ...) from the base letter's glyph
@@ -49,6 +51,7 @@ internal object AccentComposer {
         decomposition: Decomposition,
         unitPx: Float,
         ink: PunctuationSynthesizer.InkStyle,
+        marks: PunctuationSynthesizer.WriterMarks = PunctuationSynthesizer.WriterMarks.NONE,
     ): Composed {
         val w = base.width
         val h = base.height
@@ -81,31 +84,48 @@ internal object AccentComposer {
 
         val out = Bitmap.createBitmap(w + leftPad + rightPad, h + topPad + bottomPad, Bitmap.Config.ARGB_8888)
         out.setPixels(px, 0, w, leftPad, topPad, w, h)
-        val canvas = Canvas(out)
-        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = ink.argb
-            style = Paint.Style.FILL
-        }
-        val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = ink.argb
-            style = Paint.Style.STROKE
-            strokeWidth = s
-            strokeCap = Paint.Cap.ROUND
-            strokeJoin = Paint.Join.ROUND
-        }
+        // Marks are pen strokes in the writer's cross-section, and dots the writer's own i dot, as punctuation is.
+        val pixels = IntArray(out.width * out.height).also { out.getPixels(it, 0, out.width, 0, 0, out.width, out.height) }
+        val section = marks.section ?: PunctuationSynthesizer.penSection(s, ink.argb ushr 24)
+        val dots = mutableListOf<Pair<Float, Float>>()
+        val pen = Pen { path, radius -> PunctuationSynthesizer.drawStroke(pixels, out.width, path, section, ink.argb and 0xFFFFFF, radius) }
 
         val cx = topCenter + leftPad
         var bottom = inkTop + topPad - gap
         for (mark in above) {
             val mh = markHeight(mark, u, s)
-            drawAbove(canvas, mark, cx, bottom, mh, u, s, fill, stroke)
+            drawAbove(pen, dots, mark, cx, bottom, mh, u, s)
             bottom -= mh + stackGap
         }
         if (Mark.CEDILLA in decomposition.marks) {
-            drawCedilla(canvas, bottomCenter + leftPad, (baselineRow + topPad).toFloat(), u, s, stroke)
+            drawCedilla(pen, bottomCenter + leftPad, (baselineRow + topPad).toFloat(), u, s)
+        }
+        val dot = marks.dot
+        // Without a writer's dot, a round pen dot of the umlaut's size.
+        if (dot == null) dots.forEach { (x, y) -> pen.stroke(listOf(x to y), max(s, u * 0.05f) - s / 2) }
+        out.setPixels(pixels, 0, out.width, 0, 0, out.width, out.height)
+        if (dot != null) {
+            val canvas = Canvas(out)
+            dots.forEach { (x, y) -> canvas.drawBitmap(dot, (x - dot.width / 2f).roundToInt().toFloat(), (y - dot.height / 2f).roundToInt().toFloat(), null) }
         }
         return Composed(out, topPad, leftPad)
     }
+
+    /** A pen stroke along a path of points, [radius] px thicker each side. */
+    private fun interface Pen {
+        fun stroke(path: List<Pair<Float, Float>>, radius: Float)
+    }
+
+    private fun Pen.stroke(path: List<Pair<Float, Float>>) = stroke(path, 0f)
+
+    /** [count] + 1 points along a cubic Bezier curve. */
+    private fun cubic(p0: Pair<Float, Float>, p1: Pair<Float, Float>, p2: Pair<Float, Float>, p3: Pair<Float, Float>, count: Int = 16) =
+        (0..count).map { k ->
+            val t = k.toFloat() / count
+            val v = 1 - t
+            (v * v * v * p0.first + 3 * v * v * t * p1.first + 3 * v * t * t * p2.first + t * t * t * p3.first) to
+                (v * v * v * p0.second + 3 * v * v * t * p1.second + 3 * v * t * t * p2.second + t * t * t * p3.second)
+        }
 
     private fun markHeight(mark: Mark, u: Float, s: Float): Float = when (mark) {
         Mark.ACUTE, Mark.GRAVE -> u * 0.28f
@@ -116,54 +136,42 @@ internal object AccentComposer {
         Mark.CEDILLA -> 0f
     }
 
-    private fun drawAbove(
-        canvas: Canvas,
-        mark: Mark,
-        cx: Float,
-        bottom: Float,
-        mh: Float,
-        u: Float,
-        s: Float,
-        fill: Paint,
-        stroke: Paint,
-    ) {
+    /** Strokes [mark] with [pen]; a diaeresis adds its two dot centres to [dots] instead. */
+    private fun drawAbove(pen: Pen, dots: MutableList<Pair<Float, Float>>, mark: Mark, cx: Float, bottom: Float, mh: Float, u: Float, s: Float) {
         val top = bottom - mh
         when (mark) {
-            Mark.ACUTE -> canvas.drawLine(cx - u * 0.08f, bottom, cx + u * 0.08f, top, stroke)
-            Mark.GRAVE -> canvas.drawLine(cx + u * 0.08f, bottom, cx - u * 0.08f, top, stroke)
-            Mark.CIRCUMFLEX -> canvas.drawPath(
-                Path().apply {
-                    moveTo(cx - u * 0.15f, bottom)
-                    lineTo(cx, top)
-                    lineTo(cx + u * 0.15f, bottom)
-                },
-                stroke,
-            )
-            Mark.TILDE -> canvas.drawPath(
-                Path().apply {
-                    moveTo(cx - u * 0.19f, bottom - mh * 0.2f)
-                    cubicTo(cx - u * 0.1f, top - mh * 0.6f, cx + u * 0.02f, bottom + mh * 0.6f, cx + u * 0.19f, top + mh * 0.2f)
-                },
-                stroke,
+            Mark.ACUTE -> pen.stroke(listOf(cx - u * 0.08f to bottom, cx + u * 0.08f to top))
+            Mark.GRAVE -> pen.stroke(listOf(cx + u * 0.08f to bottom, cx - u * 0.08f to top))
+            Mark.CIRCUMFLEX -> pen.stroke(listOf(cx - u * 0.15f to bottom, cx to top, cx + u * 0.15f to bottom))
+            Mark.TILDE -> pen.stroke(
+                cubic(cx - u * 0.19f to bottom - mh * 0.2f, cx - u * 0.1f to top - mh * 0.6f, cx + u * 0.02f to bottom + mh * 0.6f, cx + u * 0.19f to top + mh * 0.2f),
             )
             Mark.DIAERESIS -> {
                 val r = max(s, u * 0.05f)
-                canvas.drawCircle(cx - u * 0.13f, bottom - r, r, fill)
-                canvas.drawCircle(cx + u * 0.13f, bottom - r, r, fill)
+                dots += cx - u * 0.13f to bottom - r
+                dots += cx + u * 0.13f to bottom - r
             }
-            Mark.RING -> canvas.drawCircle(cx, bottom - mh / 2f, mh / 2f - s / 2f, stroke)
+            Mark.RING -> {
+                val r = mh / 2f - s / 2f
+                pen.stroke((0..24).map { k -> (cx + r * cos(2 * PI * k / 24).toFloat()) to (bottom - mh / 2f + r * sin(2 * PI * k / 24).toFloat()) })
+            }
             Mark.CEDILLA -> Unit
         }
     }
 
-    private fun drawCedilla(canvas: Canvas, cx: Float, baseline: Float, u: Float, s: Float, stroke: Paint) {
+    private fun drawCedilla(pen: Pen, cx: Float, baseline: Float, u: Float, s: Float) {
         // Hangs from the letter's foot: down, round to the right, and back left under the letter.
-        val path = Path().apply {
-            moveTo(cx, baseline - s / 2f)
-            cubicTo(cx, baseline + u * 0.12f, cx + u * 0.17f, baseline + u * 0.14f, cx + u * 0.07f, baseline + u * 0.27f)
-            quadTo(cx, baseline + u * 0.33f, cx - u * 0.1f, baseline + u * 0.3f)
-        }
-        canvas.drawPath(path, stroke)
+        val end = cx + u * 0.07f to baseline + u * 0.27f
+        val back = cx - u * 0.1f to baseline + u * 0.3f
+        val control = cx to baseline + u * 0.33f
+        pen.stroke(
+            cubic(cx to baseline - s / 2f, cx to baseline + u * 0.12f, cx + u * 0.17f to baseline + u * 0.14f, end) +
+                (1..8).map { k ->
+                    val t = k / 8f
+                    val v = 1 - t
+                    (v * v * end.first + 2 * v * t * control.first + t * t * back.first) to (v * v * end.second + 2 * v * t * control.second + t * t * back.second)
+                },
+        )
     }
 
     /** Clears the dot of an i or j: the ink above the first blank row under the topmost ink. */

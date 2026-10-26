@@ -9,6 +9,7 @@ import android.graphics.PathMeasure
 import android.graphics.RectF
 import android.graphics.Typeface
 import com.baer.handtype.ml.GlyphPostProcessor
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.cos
@@ -57,6 +58,8 @@ data class HandwritingRenderResult(
     internal val joins: List<Pair<Pair<Float, Float>, Pair<Float, Float>>> = emptyList(),
     /** Per join, px the joined letter and the rest of its line moved right so its lead-in meets the tail. */
     internal val joinShifts: List<Int> = emptyList(),
+    /** Per join, whether the previous letter left from its flick at the x-height ([CursiveJoins.flickRuns]). */
+    internal val topJoins: List<Boolean> = emptyList(),
     /** One band per line with ink, top to bottom; the bands tile the bitmap height. */
     val inkRows: List<InkRow> = emptyList(),
     /** The note's paper without ink, only when rendered with `keepPaper`. */
@@ -197,52 +200,125 @@ object HandwritingBitmapRenderer {
         isUserTemplate: Boolean,
         writerBaseline: Int,
         writerScale: Float,
+        descenderFactor: Float = 1f,
+        lean: Float = 0f,
     ): PreparedGlyph {
-        val bounds = measureInkBounds(bitmap)
         if (isUserTemplate && GlyphPostProcessor.isNormalizedCanvas(bitmap.height)) {
-            // Trim vertical canvas padding. Raw normalized canvas (220px) has lots of empty
-            // space above the cap-top and below the descender — when scaled to lineHeightPx
-            // the visible ink ends up only ~27% of line spacing. Crop to a tight ascender/
-            // descender window so ink fills the line height.
             val canvasH = bitmap.height
             val canvasBaseline = GlyphPostProcessor.canvasBaselineRow(canvasH)
             // The writer's baseline is a row of the reference canvas; a taller canvas holds more room above it.
             val canvasWriterBaseline = writerBaseline + canvasBaseline - GlyphPostProcessor.normalizedBaselineRow()
-            // Reserve space above baseline for tall ascenders/caps; below for descenders.
-            val referenceH = GlyphPostProcessor.normalizedCanvasSize()
-            val ascenderReserve = (referenceH * 0.56f).toInt()    // ~123px above baseline
-            val descenderReserve = (referenceH * 0.21f).toInt()   // ~46px below baseline
-            val rawTop = (canvasBaseline - ascenderReserve).coerceAtLeast(0)
-            val rawBot = (canvasBaseline + descenderReserve).coerceAtMost(canvasH - 1)
-            // Honor actual ink top in case capture left ink in the diacritic zone (e.g., dots
-            // on 'i', 'j'). Never crop below row 0 or above the ink.
-            val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
-            val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
-            val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
-            val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom, canvasWriterBaseline)
-            return PreparedGlyph(
-                bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
-                baselineRow = (baseline - cropTop).coerceIn(0, cropH - 1),
-                normalizedUserCanvas = true,
-                // The window, not the ink, sets the scale: one scale for the whole hand, so a
-                // capital that overflows the window keeps its size next to the small letters.
-                sizeHeight = ((rawBot - rawTop + 1) / writerScale).toInt(),
-                // Tall glyphs (T, F, 7, f, t) carry a bar or hook the next letter tucks under.
-                // x-height letters keep their full width: an r arm or o tail is the letter.
-                advanceWidth = if (bounds.height >= GlyphPostProcessor.normalizedGuideBandHeight() * 6 / 10) {
-                    (bounds.bodyRight - bounds.left + 1).coerceAtLeast(bounds.width * 6 / 10)
-                } else {
-                    bounds.width
-                },
-            )
+            val inkBottom = measureInkBounds(bitmap).bottom
+            val glyph = if (character.isLowerCase() && character in descenderChars && descenderFactor > 1f && inkBottom > canvasWriterBaseline) {
+                // As deep as fits on the canvas.
+                val factor = minOf(descenderFactor, (canvasH - 2f - canvasWriterBaseline) / (inkBottom - canvasWriterBaseline))
+                val pixels = IntArray(bitmap.width * canvasH).also { bitmap.getPixels(it, 0, bitmap.width, 0, 0, bitmap.width, canvasH) }
+                Bitmap.createBitmap(
+                    lengthenDescender(pixels, bitmap.width, canvasWriterBaseline, inkBottom, factor, lean), bitmap.width, canvasH, Bitmap.Config.ARGB_8888,
+                )
+            } else {
+                bitmap
+            }
+            return prepareUserGlyph(glyph, character, canvasBaseline, canvasWriterBaseline, writerScale)
         }
-
+        val bounds = measureInkBounds(bitmap)
         val cropped = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width, bounds.height)
         return PreparedGlyph(
             bitmap = cropped,
             baselineRow = bundledBaselineRow(character, bounds.top, bounds.bottom, templateBaselineRow, isUserTemplate),
             normalizedUserCanvas = false,
         )
+    }
+
+    private fun prepareUserGlyph(bitmap: Bitmap, character: Char, canvasBaseline: Int, canvasWriterBaseline: Int, writerScale: Float): PreparedGlyph {
+        // Trim vertical canvas padding. Raw normalized canvas (220px) has lots of empty
+        // space above the cap-top and below the descender — when scaled to lineHeightPx
+        // the visible ink ends up only ~27% of line spacing. Crop to a tight ascender/
+        // descender window so ink fills the line height.
+        val bounds = measureInkBounds(bitmap)
+        val canvasH = bitmap.height
+        // Reserve space above baseline for tall ascenders/caps; below for descenders.
+        val referenceH = GlyphPostProcessor.normalizedCanvasSize()
+        val ascenderReserve = (referenceH * 0.56f).toInt()    // ~123px above baseline
+        val descenderReserve = (referenceH * 0.21f).toInt()   // ~46px below baseline
+        val rawTop = (canvasBaseline - ascenderReserve).coerceAtLeast(0)
+        val rawBot = (canvasBaseline + descenderReserve).coerceAtMost(canvasH - 1)
+        // Honor actual ink top in case capture left ink in the diacritic zone (e.g., dots
+        // on 'i', 'j'). Never crop below row 0 or above the ink.
+        val cropTop = minOf(rawTop, bounds.top).coerceAtLeast(0)
+        val cropBot = maxOf(rawBot, bounds.bottom).coerceAtMost(canvasH - 1)
+        val cropH = (cropBot - cropTop + 1).coerceAtLeast(1)
+        val baseline = userCanvasBaselineRow(character, canvasBaseline, bounds.bottom, canvasWriterBaseline)
+        return PreparedGlyph(
+            bitmap = Bitmap.createBitmap(bitmap, bounds.left, cropTop, bounds.width, cropH),
+            baselineRow = (baseline - cropTop).coerceIn(0, cropH - 1),
+            normalizedUserCanvas = true,
+            // The window, not the ink, sets the scale: one scale for the whole hand, so a
+            // capital that overflows the window keeps its size next to the small letters.
+            sizeHeight = ((rawBot - rawTop + 1) / writerScale).toInt(),
+            // Tall glyphs (T, F, 7, f, t) carry a bar or hook the next letter tucks under.
+            // x-height letters keep their full width: an r arm or o tail is the letter.
+            advanceWidth = if (bounds.height >= GlyphPostProcessor.normalizedGuideBandHeight() * 6 / 10) {
+                (bounds.bodyRight - bounds.left + 1).coerceAtLeast(bounds.width * 6 / 10)
+            } else {
+                bounds.width
+            },
+        )
+    }
+
+    /**
+     * How much deeper a hand's descenders render: to 0.6 of [xHeightPx] from the median of their [depths] below the
+     * baseline, at most 1.8 times. The sheet's dotted descender line sits a third of the x-height down, where
+     * written descenders reach 0.6 to 1.1.
+     */
+    internal fun descenderFactor(depths: List<Int>, xHeightPx: Int?): Float {
+        val median = depths.sorted().getOrNull(depths.size / 2)?.takeIf { it > 0 } ?: return 1f
+        return ((xHeightPx ?: return 1f) * 0.6f / median).coerceIn(1f, 1.8f)
+    }
+
+    /**
+     * [pixels] (ARGB, [width] wide) with the descender below [baselineRow] down to [inkBottom] [factor] times as deep. Only
+     * its middle (a quarter to 0.6 of its depth) stretches, so a loop's or hook's turn keeps its shape; what lies below
+     * moves down and, by [lean] (x px per row going up), left along the hand's slant. Rows pushed past the bottom are lost.
+     */
+    internal fun lengthenDescender(pixels: IntArray, width: Int, baselineRow: Int, inkBottom: Int, factor: Float, lean: Float): IntArray {
+        val height = pixels.size / width
+        val depth = inkBottom - baselineRow
+        if (depth <= 0 || factor <= 1f) return pixels.copyOf()
+        val extra = depth * (factor - 1f)
+        val bandTop = baselineRow + depth * 0.25f
+        val band = depth * 0.35f
+        val stretch = (band + extra) / band
+        fun source(y: Int): Float = when {
+            y <= bandTop -> y.toFloat()
+            y <= bandTop + band * stretch -> bandTop + (y - bandTop) / stretch
+            else -> y - extra
+        }
+        return IntArray(pixels.size) { i ->
+            val x = i % width
+            val y = i / width
+            val sy = source(y)
+            val sx = x + lean * (y - sy)
+            val x0 = floor(sx).toInt()
+            val y0 = floor(sy).toInt()
+            val fx = sx - x0
+            val fy = sy - y0
+            // Premultiplied, so a clear neighbour adds no colour.
+            var a = 0f
+            var r = 0f
+            var g = 0f
+            var b = 0f
+            for ((px, py, weight) in listOf(Triple(x0, y0, (1 - fx) * (1 - fy)), Triple(x0 + 1, y0, fx * (1 - fy)), Triple(x0, y0 + 1, (1 - fx) * fy), Triple(x0 + 1, y0 + 1, fx * fy))) {
+                if (weight == 0f || px !in 0 until width || py !in 0 until height) continue
+                val c = pixels[py * width + px]
+                val ca = (c ushr 24) * weight
+                a += ca
+                r += (c shr 16 and 0xFF) * ca
+                g += (c shr 8 and 0xFF) * ca
+                b += (c and 0xFF) * ca
+            }
+            if (a < 0.5f) 0 else (a.roundToInt().coerceAtMost(255) shl 24) or ((r / a).roundToInt() shl 16) or ((g / a).roundToInt() shl 8) or (b / a).roundToInt()
+        }
     }
 
     /** Baseline row inside the ink-cropped glyph. */
@@ -834,9 +910,20 @@ object HandwritingBitmapRenderer {
         }
         val writerScale = writerSizeScale(xHeightInkHeights)
         val xHeightPx = xHeightInkHeights.sorted().getOrNull(xHeightInkHeights.size / 2)
+        val descenderFactor = if (!isUserTemplate) 1f else descenderFactor(
+            "gjpqy".mapNotNull { c ->
+                template.glyphs[c]?.firstOrNull()
+                    ?.takeIf { GlyphPostProcessor.isNormalizedCanvas(it.height) }
+                    ?.let { g -> rawBounds[g]?.bottom?.let { referenceRow(g, it) - writerBaseline } }
+            },
+            xHeightPx,
+        )
         fun preparedGlyph(character: Char, bitmap: Bitmap): PreparedGlyph {
             return preparedGlyphs.getOrPut(bitmap) {
-                prepareGlyph(bitmap, character, templateBaselineRow, isUserTemplate, writerBaseline, writerScale)
+                prepareGlyph(
+                    bitmap, character, templateBaselineRow, isUserTemplate, writerBaseline, writerScale,
+                    descenderFactor, if (descenderFactor > 1f) writerMarks.lean else 0f,
+                )
             }
         }
         fun variantsFor(character: Char): List<Bitmap>? =
@@ -851,7 +938,7 @@ object HandwritingBitmapRenderer {
         fun composedGlyph(character: Char, decomposition: AccentComposer.Decomposition, baseBitmap: Bitmap): PreparedGlyph {
             return composedGlyphs.getOrPut(character to baseBitmap) {
                 val base = preparedGlyph(decomposition.base, baseBitmap)
-                val composed = AccentComposer.compose(base.bitmap, base.baselineRow, decomposition, markUnitPx, markInkStyle)
+                val composed = AccentComposer.compose(base.bitmap, base.baselineRow, decomposition, markUnitPx, markInkStyle, writerMarks)
                 base.copy(
                     bitmap = composed.bitmap,
                     baselineRow = base.baselineRow + composed.topPad,
@@ -986,9 +1073,31 @@ object HandwritingBitmapRenderer {
                 settleRows = ceil(joinPenPx).toInt(),
             )
         }
+        val flicks = HashMap<Bitmap, List<IntArray>>()
+        fun flickOf(glyph: PreparedGlyph): List<IntArray> = flicks.getOrPut(glyph.bitmap) {
+            CursiveJoins.flickRuns(
+                alphaOf(glyph.bitmap), glyph.bitmap.width, glyph.baselineRow - xHeightPx!!, glyph.baselineRow, joinPenPx * 5f, joinPenPx,
+            )
+        }
+        // The cross-section of a stroke a bridge joins, over the pen width it keeps past its cut, as drawn: in output px,
+        // with the glyph's alpha; and whether it was a single stroke there. [runs] are (row, first x, last x) around the cut.
+        fun drawnSection(
+            glyph: Bitmap, runs: List<IntArray>, outDirection: Pair<Float, Float>, scaleX: Float, scaleY: Float, glyphAlpha: Float,
+        ): Pair<FloatArray, Boolean> {
+            val inGlyph = CursiveJoins.direction(0f to 0f, outDirection.first / scaleX to outDirection.second / scaleY)!!
+            // Up to 2 px of soft edge past the pen: farther ink beside the cut is another stroke.
+            val section = CursiveJoins.crossSection(
+                alphaOf(glyph), glyph.width, runs.map { (y, x0, x1) -> (x0 + x1) / 2f to y.toFloat() }, inGlyph,
+                maxDistance = joinPenPx / 2 + 2f,
+            )
+            val scale = hypot(inGlyph.second * scaleX, inGlyph.first * scaleY)
+            return FloatArray(CursiveJoins.SECTION_SIZE) { k -> CursiveJoins.sectionAt(section, k * CursiveJoins.SECTION_STEP / scale) * glyphAlpha } to
+                CursiveJoins.isSingleStroke(section, joinPenPx)
+        }
         val connectors = mutableListOf<Connector>()
         val joins = mutableListOf<Pair<Pair<Float, Float>, Pair<Float, Float>>>()
         val joinShifts = mutableListOf<Int>()
+        val topJoins = mutableListOf<Boolean>()
 
         // Letters that do not join keep this much air; at half of it lead-ins hug the letter before them.
         val kernGapPx = max(2, (lineHeightPx * 0.03f).toInt())
@@ -1195,8 +1304,10 @@ object HandwritingBitmapRenderer {
                         )
                         val tips = if (cursiveHand) tipsOf(prepared) else null
                         var drawnBitmap = prepared.bitmap
+                        val baselineJoin = previousPlaced?.first?.let { CursiveJoins.joins(it, character) } == true
+                        val topJoin = previousPlaced?.first?.let { CursiveJoins.topJoins(it, character) } == true
                         val previous = previousPlaced
-                            ?.takeIf { (c, p) -> p.line == laidOutLines.lastIndex && CursiveJoins.joins(c, character) && p === placements.lastOrNull() }
+                            ?.takeIf { (_, p) -> p.line == laidOutLines.lastIndex && (baselineJoin || topJoin) && p === placements.lastOrNull() }
                             ?.second
                         val tailSource = previousJoin
                         if (tips != null && tips.hasLeadIn && !tips.inkAboveLeft && previous != null && tailSource != null) {
@@ -1224,7 +1335,7 @@ object HandwritingBitmapRenderer {
                                 distancePx = drawLeft - previous.left, gapPx = kernGapPx, maxPx = maxShift,
                             )
                             // Only the lead-in's own ink: past its merge the run centres are those of the letter's stem.
-                            val cut = if (tail.isEmpty() || firstLeadIn < 0) null else CursiveJoins.joinCuts(
+                            val cut = if (!baselineJoin || tail.isEmpty() || firstLeadIn < 0) null else CursiveJoins.joinCuts(
                                 tailCenters, placedLeadCenters.take(traced.ownRuns), firstLeadIn, reach,
                                 maxLength = xHeightPx!! * glyphScaleY * 0.5f, shifts = -leftRoom..maxShift, penPx = joinPenPx * glyphScaleY,
                             )
@@ -1240,6 +1351,7 @@ object HandwritingBitmapRenderer {
                                 val (i, j) = cuts
                                 joins += from to to
                                 joinShifts += shift
+                                topJoins += false
                                 val tailDirection = CursiveJoins.strokeDirection(tailCenters.subList(i, minOf(i + reach, tail.lastIndex) + 1).reversed())!!
                                 val leadDirection = CursiveJoins.strokeDirection(leadCenters.subList(j, minOf(j + reach, leadIn.lastIndex) + 1))!!
                                 // The tail now ends and the lead-in now starts at the cuts: the stroke beyond a cut goes,
@@ -1263,21 +1375,6 @@ object HandwritingBitmapRenderer {
                                     near = leadIn.subList(maxOf(firstLeadIn, leadCut - reach), minOf(j + reach + 1, traced.ownRuns)),
                                     toOutput = ::toOutput,
                                 ) { (x, y) -> (x - to.first) * leadDirection.first + (y - to.second) * leadDirection.second < 0f }
-                                // The cross-section of each stroke the bridge joins, over the pen width it keeps past its cut,
-                                // as drawn: in output px, with the glyph's alpha; and whether it was a single stroke there.
-                                fun drawnSection(
-                                    glyph: Bitmap, runs: List<IntArray>, outDirection: Pair<Float, Float>, scaleX: Float, scaleY: Float, glyphAlpha: Float,
-                                ): Pair<FloatArray, Boolean> {
-                                    val inGlyph = CursiveJoins.direction(0f to 0f, outDirection.first / scaleX to outDirection.second / scaleY)!!
-                                    // Up to 2 px of soft edge past the pen: farther ink beside the cut is another stroke.
-                                    val section = CursiveJoins.crossSection(
-                                        alphaOf(glyph), glyph.width, runs.map { (y, x0, x1) -> (x0 + x1) / 2f to y.toFloat() }, inGlyph,
-                                        maxDistance = joinPenPx / 2 + 2f,
-                                    )
-                                    val scale = hypot(inGlyph.second * scaleX, inGlyph.first * scaleY)
-                                    return FloatArray(CursiveJoins.SECTION_SIZE) { k -> CursiveJoins.sectionAt(section, k * CursiveJoins.SECTION_STEP / scale) * glyphAlpha } to
-                                        CursiveJoins.isSingleStroke(section, joinPenPx)
-                                }
                                 val (tailSection, tailSingle) = drawnSection(
                                     tailGlyph.bitmap, tail.subList(i, minOf(i + reach + 1, tail.size)), tailDirection,
                                     previous.drawScaleX, previous.drawScaleY, previous.alpha,
@@ -1292,6 +1389,72 @@ object HandwritingBitmapRenderer {
                                     if (leadSingle || !tailSingle) leadSection else tailSection,
                                     laidOutLines.lastIndex,
                                 )
+                            } else if (topJoin && traced.ownRuns > reach) {
+                                // A letter that ends high leaves along its flick at the x-height: the next letter's lead-in from
+                                // the baseline goes whole, and a bridge runs on from a pen width behind the flick's tip into its body.
+                                val flick = flickOf(tailGlyph)
+                                val flickCenters = flick.map { (x, y0, y1) -> previousOutput(x, (y0 + y1) / 2) }
+                                val ownLeadIn = leadIn.take(traced.ownRuns)
+                                val flickDirection = if (flick.size > 2 * reach) CursiveJoins.strokeDirection(flickCenters.subList(reach, 2 * reach + 1).reversed()) else null
+                                if (flickDirection != null) {
+                                    val start = flickCenters[reach]
+                                    val w = prepared.bitmap.width
+                                    val glyphAlpha = alphaOf(prepared.bitmap)
+                                    val leadRows = ownLeadIn.groupBy { it[0] }
+                                    val body = glyphAlpha.indices
+                                        .filter { i -> glyphAlpha[i] > 40 && leadRows[i / w].orEmpty().none { (_, x0, x1) -> i % w in x0 - 2..x1 + 2 } }
+                                        .map { i -> toOutput(i % w, i / w) }
+                                    val xHeightOut = xHeightPx!! * glyphScaleY
+                                    // The bridge runs on level with the flick, or rising a little, into the first ink of the body.
+                                    val penOut = joinPenPx * glyphScaleY
+                                    // ... and on up that stroke to its top, so no stub of it stands above the bridge.
+                                    val hit = CursiveJoins.firstAhead(
+                                        body, start.first to start.second - xHeightOut * 0.05f, 1f to 0f, halfWidth = xHeightOut * 0.1f, maxLength = xHeightOut * 0.7f,
+                                    )?.let { CursiveJoins.climb(body, it, halfWidth = penOut, maxRise = xHeightOut * 0.2f) }
+                                    // Kerned for its lead-in, the body may sit under the flick: it moves right until the bridge is a
+                                    // third of the x-height long, so it turns over about five pen widths, at most 60 degrees.
+                                    val shift = hit?.let { ceil(xHeightOut / 3 - (it.first - start.first)).toInt().coerceAtLeast(0) } ?: 0
+                                    val target = hit?.let { it.first + shift to it.second }
+                                    val chord = target?.let { CursiveJoins.direction(start, it) }
+                                    if (target != null && chord != null && chord.first * flickDirection.first + chord.second * flickDirection.second >= cos(PI / 180 * 60).toFloat()) {
+                                        drawLeft += shift
+                                        cursorX += shift
+                                        previousLeft = drawLeft
+                                        // The climb ends in the middle of the stroke's top: deeper, the bridge's end would stand out past it.
+                                        val end = target
+                                        joins += start to end
+                                        joinShifts += shift
+                                        topJoins += true
+                                        val (tipX, tipY0, tipY1) = flick.first()
+                                        placements[placements.lastIndex] = previous.copy(
+                                            bitmap = eraseBeyondCut(
+                                                previous.bitmap,
+                                                gone = (tipY0..tipY1).map { intArrayOf(it, tipX + 1, tipX + 2) },
+                                                near = flick.take(2 * reach + 1).flatMap { (x, y0, y1) -> (y0..y1).map { intArrayOf(it, x, x) } },
+                                                toOutput = ::previousOutput,
+                                            ) { (x, y) -> (x - start.first) * flickDirection.first + (y - start.second) * flickDirection.second > 0f },
+                                        )
+                                        // Past its own ink the lead-in runs on beside the letter's stroke, left of it, up to where they are
+                                        // one stroke; above the bridge's end that is the letter's own cusp or arch. The erase takes 2 px beside
+                                        // each run, so the fork's runs stop 2 px short.
+                                        val arrivalRow = ((hit.second - placementTop) / glyphScaleY).toInt()
+                                        val fork = CursiveJoins.leadInFork(
+                                            leadIn.drop(traced.ownRuns).filter { it[0] > arrivalRow + reach }, ownLeadIn.map { it[2] - it[1] + 1 }.sorted()[ownLeadIn.size / 2],
+                                        ).filter { it[2] - 2 >= it[1] }.map { (y, x0, x1) -> intArrayOf(y, x0, x1 - 2) }
+                                        val (penDownY, penDownX0, penDownX1) = leadIn.first()
+                                        drawnBitmap = eraseBeyondCut(
+                                            prepared.bitmap,
+                                            gone = ownLeadIn + fork + listOf(1, 2).map { intArrayOf(penDownY + it, penDownX0, penDownX1) },
+                                            near = emptyList(),
+                                            toOutput = ::toOutput,
+                                        ) { false }
+                                        val (section, _) = drawnSection(
+                                            tailGlyph.bitmap, flick.subList(reach, 2 * reach + 1).map { (x, y0, y1) -> intArrayOf((y0 + y1) / 2, x, x) },
+                                            flickDirection, previous.drawScaleX, previous.drawScaleY, previous.alpha,
+                                        )
+                                        connectors += Connector(start, end, flickDirection, chord, section, section, laidOutLines.lastIndex)
+                                    }
+                                }
                             }
                         }
                         placements += GlyphPlacement(
@@ -1491,6 +1654,7 @@ object HandwritingBitmapRenderer {
             lines = laidOutLines.map(StringBuilder::toString).filter(String::isNotEmpty),
             joins = joins,
             joinShifts = joinShifts,
+            topJoins = topJoins,
             inkRows = clampedBands(inkRows, bitmapWidth, bitmapHeight),
             paper = paper,
         )

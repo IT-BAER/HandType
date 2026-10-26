@@ -6,6 +6,43 @@ import org.junit.Test
 
 class HandwritingBitmapRendererTest {
 
+    // A descender on a 20 x 60 glyph, baseline row 30: a stem (columns 8..9) from row 10 down to row 40 and a
+    // foot (rows 39..40, columns 4..9) turning left, 10 rows deep.
+    private val ink = 0xFF202020.toInt()
+    private val descender = IntArray(20 * 60) { i ->
+        val x = i % 20
+        val y = i / 20
+        if ((x in 8..9 && y in 10..40) || (x in 4..9 && y in 39..40)) ink else 0
+    }
+
+    private fun inkRows(pixels: IntArray) = (0 until 60).filter { y -> (0 until 20).any { x -> (pixels[y * 20 + x] ushr 24) > 128 } }
+
+    @Test
+    fun aDescenderLengthensInItsMiddleKeepingItsFootAndEverythingAboveIt() {
+        val longer = HandwritingBitmapRenderer.lengthenDescender(descender, 20, baselineRow = 30, inkBottom = 40, factor = 1.6f, lean = 0f)
+        assertEquals("16 rows deep", 46, inkRows(longer).max())
+        assertEquals("above the stretch", (0 until 20 * 33).map { descender[it] }, (0 until 20 * 33).map { longer[it] })
+        val foot = (0 until 60).filter { y -> (4..6).any { x -> (longer[y * 20 + x] ushr 24) > 128 } }
+        assertEquals("the foot keeps its two rows", listOf(45, 46), foot)
+    }
+
+    @Test
+    fun aLengthenedDescenderKeepsTheHandsSlant() {
+        // The hand leans 0.5 px right per row going up: moved 6 rows down, the foot moves 3 px left.
+        val longer = HandwritingBitmapRenderer.lengthenDescender(descender, 20, baselineRow = 30, inkBottom = 40, factor = 1.6f, lean = 0.5f)
+        val footColumns = (0 until 20).filter { x -> (longer[46 * 20 + x] ushr 24) > 128 }
+        assertEquals((1..6).toList(), footColumns)
+    }
+
+    @Test
+    fun aHandsDescendersLengthenToSixTenthsOfItsXHeight() {
+        // Written to the sheet's dotted line, a third of the x-height deep.
+        assertEquals(1.8f, HandwritingBitmapRenderer.descenderFactor(listOf(33, 35, 30), xHeightPx = 100), 0.001f)
+        assertEquals(1.2f, HandwritingBitmapRenderer.descenderFactor(listOf(50, 52, 48), xHeightPx = 100), 0.001f)
+        assertEquals("deep enough", 1f, HandwritingBitmapRenderer.descenderFactor(listOf(70, 90), xHeightPx = 100), 0.001f)
+        assertEquals("unknown", 1f, HandwritingBitmapRenderer.descenderFactor(emptyList(), xHeightPx = 100), 0.001f)
+    }
+
     @Test
     fun inkRowBandsTileTheNoteHeightAndSplitBetweenLines() {
         val bands = HandwritingBitmapRenderer.inkRowBands(
