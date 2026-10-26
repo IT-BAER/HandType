@@ -122,11 +122,19 @@ def compose_sheet(glyphs) -> Image.Image:
         glyph, baseline = glyphs[char]
         base_y = cy0 + (cy1 - cy0) * sheet.GUIDE_BASELINE_RATIO
         # A writer keeps the letter on the line: a wide one is written narrower at the same height, a descender
-        # runs on into the box below (the scan follows it there). A tall letter stays clear of the top border,
-        # which the scan drops.
+        # shorter so it ends on the dotted line (the cell edge on the old two-line sheet). A tall letter stays
+        # clear of the top border, which the scan drops.
         scale = min(scale, (base_y - cy0 - (cy1 - cy0) * 0.06) / max(1, baseline))
-        width = min(glyph.width * scale, (cx1 - cx0) * 0.9)
-        g = glyph.resize((max(1, int(width)), max(1, int(glyph.height * scale))), Image.LANCZOS)
+        width = max(1, int(min(glyph.width * scale, (cx1 - cx0) * 0.9)))
+        above = max(1, int(round(baseline * scale)))
+        below = int(glyph.height * scale) - above
+        room = int(cy0 + (cy1 - cy0) * getattr(sheet, "GUIDE_DESCENDER_RATIO", 0.97) - base_y)
+        if below <= room:
+            g = glyph.resize((width, max(1, int(glyph.height * scale))), Image.LANCZOS)
+        else:
+            g = Image.new("RGBA", (width, above + room))
+            g.paste(glyph.crop((0, 0, glyph.width, baseline)).resize((width, above), Image.LANCZOS), (0, 0))
+            g.paste(glyph.crop((0, baseline, glyph.width, glyph.height)).resize((width, room), Image.LANCZOS), (0, above))
         x = int((cx0 + cx1 - g.width) / 2)
         y = int(round(base_y - baseline * scale))
         img.alpha_composite(g, (x, min(y, img.height - g.height)))
