@@ -9,7 +9,14 @@ class BundledGlyphTextNormalizerTest {
     fun normalizesSmartPunctuationToBundledAsciiGlyphs() {
         val input = "Hello\u2014world\u2026 \u2018yes\u2019 \u201Cno\u201D"
 
-        assertEquals("Hello-world... 'yes' ''no''", BundledGlyphTextNormalizer.normalize(input))
+        assertEquals("Hello-world... 'yes' \"no\"", BundledGlyphTextNormalizer.normalize(input))
+    }
+
+    @Test
+    fun doubleQuotesOfEveryStyleBecomeTheStraightDoubleQuote() {
+        val input = "„a“ ‟b” c″ ‶d"
+
+        assertEquals("\"a\" \"b\" c\" \"d", BundledGlyphTextNormalizer.normalize(input))
     }
 
     @Test

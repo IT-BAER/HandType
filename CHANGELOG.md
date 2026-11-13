@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - French spacing: a line no longer ends on an opening « or starts with a closing », !, ?, : or ; that stands apart from its word.
+- Typographic double quotes (“ ” „) are written as one double quote instead of two single quotes.
 
 ## [1.2.0] - 2026-10-26
 
