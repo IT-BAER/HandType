@@ -1,6 +1,7 @@
 package com.baer.handtype.template
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -306,6 +307,22 @@ class LeadingPullTest {
         val low = IntArray(10) { if (it > 6) 0 else -1 }
         assertEquals(0, kern(high, low, distancePx = 12, gapPx = 1, maxKernPx = 20))
     }
+
+    @Test
+    fun kerningRoomGoesNegativeOnOverlapAndIsUnknownWithoutSharedRows() {
+        val stem = IntArray(10) { 4 }
+        val bowl = IntArray(10) { if (it > 4) 0 else -1 }
+        // The bowl at col 0 needs 5 px from the stem's left edge, plus a 1 px gap: at 3 px it is 3 px too close.
+        assertEquals(-3, room(stem, bowl, distancePx = 3, gapPx = 1))
+        assertNull(room(IntArray(10) { if (it < 3) 4 else -1 }, bowl, distancePx = 12, gapPx = 1))
+    }
+
+    private fun room(prevRight: IntArray, nextLeft: IntArray, distancePx: Int, gapPx: Int) =
+        HandwritingBitmapRenderer.kerningRoomPx(
+            prevRight, prevBaselineRow = 9, prevScaleX = 1f, prevScaleY = 1f,
+            nextLeft, nextBaselineRow = 9, nextScaleX = 1f, nextScaleY = 1f,
+            distancePx = distancePx, gapPx = gapPx,
+        )
 
     private fun kern(prevRight: IntArray, nextLeft: IntArray, distancePx: Int, gapPx: Int, maxKernPx: Int) =
         HandwritingBitmapRenderer.kerningPx(

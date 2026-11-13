@@ -131,6 +131,9 @@ object HandwritingBitmapRenderer {
         val leftOverhang: Int = 0,
     )
 
+    /** A glyph already on the line as kerning sees it: unrotated, at its draw scale, [left] in output px. */
+    private class KernInk(val glyph: PreparedGlyph, val scaleX: Float, val scaleY: Float, var left: Int)
+
     private fun drawBackground(
         canvas: Canvas,
         width: Int,
@@ -432,7 +435,22 @@ object HandwritingBitmapRenderer {
         distancePx: Int,
         gapPx: Int,
         maxKernPx: Int,
-    ): Int {
+    ): Int = kerningRoomPx(prevRight, prevBaselineRow, prevScaleX, prevScaleY, nextLeft, nextBaselineRow, nextScaleX, nextScaleY, distancePx, gapPx)
+        ?.coerceIn(0, maxKernPx.coerceAtLeast(0)) ?: 0
+
+    /** [kerningPx] before its bounds: negative when the ink already sits closer than [gapPx], null when no row is shared. */
+    internal fun kerningRoomPx(
+        prevRight: IntArray,
+        prevBaselineRow: Int,
+        prevScaleX: Float,
+        prevScaleY: Float,
+        nextLeft: IntArray,
+        nextBaselineRow: Int,
+        nextScaleX: Float,
+        nextScaleY: Float,
+        distancePx: Int,
+        gapPx: Int,
+    ): Int? {
         // Rows in px from the baseline, so glyphs of different crops line up.
         val prevEdge = HashMap<Int, Float>()
         prevRight.forEachIndexed { row, col ->
@@ -446,8 +464,8 @@ object HandwritingBitmapRenderer {
             val edge = prevEdge[((row - nextBaselineRow) * nextScaleY).roundToInt()] ?: return@forEachIndexed
             required = max(required, edge - col * nextScaleX)
         }
-        if (required == Float.NEGATIVE_INFINITY) return 0
-        return (distancePx - ceil(required).toInt() - gapPx).coerceIn(0, maxKernPx.coerceAtLeast(0))
+        if (required == Float.NEGATIVE_INFINITY) return null
+        return distancePx - ceil(required).toInt() - gapPx
     }
 
     /** Where the writer's x-height letters stand: the median of their ink bottoms. */
@@ -1135,23 +1153,33 @@ object HandwritingBitmapRenderer {
 
         // Letters that do not join keep this much air; at half of it lead-ins hug the letter before them.
         val kernGapPx = max(2, (lineHeightPx * 0.03f).toInt())
-        fun kern(prev: PreparedGlyph, prevScaleX: Float, prevScaleY: Float, next: PreparedGlyph, nextScaleX: Float, nextScaleY: Float, distancePx: Int): Int =
-            if (!prev.normalizedUserCanvas || !next.normalizedUserCanvas) 0 else kerningPx(
-                inkProfile(prev.bitmap).second, prev.baselineRow, prevScaleX, prevScaleY,
+        // [placed] is the ink on the line, nearest last. A narrow mark such as an apostrophe shares few rows
+        // with the next letter, so the letters before it within reach keep their gap too.
+        fun kern(placed: List<KernInk>, next: PreparedGlyph, nextScaleX: Float, nextScaleY: Float, nextLeft: Int): Int {
+            val previous = placed.lastOrNull()?.takeIf { it.glyph.normalizedUserCanvas && next.normalizedUserCanvas } ?: return 0
+            val maxKernPx = (next.bitmap.width * nextScaleX * 0.5f).toInt()
+            fun room(ink: KernInk): Int? = kerningRoomPx(
+                inkProfile(ink.glyph.bitmap).second, ink.glyph.baselineRow, ink.scaleX, ink.scaleY,
                 inkProfile(next.bitmap).first, next.baselineRow, nextScaleX, nextScaleY,
-                distancePx, kernGapPx, (next.bitmap.width * nextScaleX * 0.5f).toInt(),
+                nextLeft - ink.left, kernGapPx,
             )
+            val nearest = room(previous) ?: return 0
+            return placed.dropLast(1)
+                .filter { it.glyph.normalizedUserCanvas && it.left + it.glyph.bitmap.width * it.scaleX + kernGapPx > nextLeft - maxKernPx }
+                .mapNotNull(::room)
+                .fold(nearest) { k, r -> min(k, r) }
+                .coerceIn(0, maxKernPx.coerceAtLeast(0))
+        }
 
         fun wordWidth(word: String): Int {
             var w = 0
-            var previous: Triple<PreparedGlyph, Float, Float>? = null
-            var previousLeft = 0
+            val placed = mutableListOf<KernInk>()
             word.forEachIndexed { i, original ->
                 val accent = accentFor(original)
                 val ch = accent?.base ?: original
                 val glyph = variantsFor(ch)?.firstOrNull()
                 if (glyph == null) {
-                    previous = null
+                    placed.clear()
                     w += when {
                         ch in setOf('.', '!', '?') -> (lineHeightPx * 0.14f).toInt().coerceAtLeast(6)
                         ch in punctuationChars -> (lineHeightPx * 0.08f).toInt().coerceAtLeast(4)
@@ -1172,9 +1200,8 @@ object HandwritingBitmapRenderer {
                         glyphHeightPx = prepared.sizeHeight,
                         targetInkHeightPx = targetInkHeight,
                     )
-                    previous?.let { (p, sx, sy) -> w -= kern(p, sx, sy, prepared, glyphScaleX, glyphScaleY, w - previousLeft) }
-                    previous = Triple(prepared, glyphScaleX, glyphScaleY)
-                    previousLeft = w
+                    w -= kern(placed, prepared, glyphScaleX, glyphScaleY, w)
+                    placed += KernInk(prepared, glyphScaleX, glyphScaleY, w)
                     w += glyphAdvancePx(
                         glyph = prepared,
                         character = ch,
@@ -1228,8 +1255,7 @@ object HandwritingBitmapRenderer {
                 for ((pieceIndex, piece) in hyphenatedPieces(word).withIndex()) {
                     if (pieceIndex > 0) moveToNextLine()
                     var previousTucked = false
-                    var previousGlyph: Triple<PreparedGlyph, Float, Float>? = null
-                    var previousLeft = 0
+                    val placedInk = mutableListOf<KernInk>()
                     var previousLine = -1
                     var previousPlaced: Pair<Char, GlyphPlacement>? = null
                     var previousJoin: Pair<PreparedGlyph, CursiveJoins.Tips>? = null
@@ -1261,7 +1287,7 @@ object HandwritingBitmapRenderer {
                             cursorX += missingAdvance
                             maxUsedX = max(maxUsedX, cursorX)
                             charIndexInLine++
-                            previousGlyph = null
+                            placedInk.clear()
                             previousPlaced = null
                             previousJoin = null
                             continue
@@ -1324,12 +1350,11 @@ object HandwritingBitmapRenderer {
                             normalizedUserCanvas = prepared.normalizedUserCanvas,
                             previousTucked = previousTucked,
                         )
-                        val kernPx = previousGlyph?.takeIf { previousLine == laidOutLines.lastIndex }
-                            ?.let { (p, sx, sy) -> kern(p, sx, sy, prepared, glyphScaleX, glyphScaleY, unkernedLeft - previousLeft) } ?: 0
+                        if (previousLine != laidOutLines.lastIndex) placedInk.clear()
+                        val kernPx = kern(placedInk, prepared, glyphScaleX, glyphScaleY, unkernedLeft)
                         var drawLeft = unkernedLeft - kernPx
                         cursorX -= kernPx
-                        previousGlyph = Triple(prepared, glyphScaleX, glyphScaleY)
-                        previousLeft = drawLeft
+                        placedInk += KernInk(prepared, glyphScaleX, glyphScaleY, drawLeft)
                         previousLine = laidOutLines.lastIndex
                         previousTucked = prepared.advanceWidth < prepared.sizeWidth
 
@@ -1384,7 +1409,7 @@ object HandwritingBitmapRenderer {
                             if (cuts != null && from != null && to != null) {
                                 drawLeft += shift
                                 cursorX += shift
-                                previousLeft = drawLeft
+                                placedInk.last().left = drawLeft
                                 val (i, j) = cuts
                                 joins += from to to
                                 joinShifts += shift
@@ -1456,7 +1481,7 @@ object HandwritingBitmapRenderer {
                                     if (target != null && chord != null && chord.first * flickDirection.first + chord.second * flickDirection.second >= cos(PI / 180 * 60).toFloat()) {
                                         drawLeft += shift
                                         cursorX += shift
-                                        previousLeft = drawLeft
+                                        placedInk.last().left = drawLeft
                                         // The climb ends in the middle of the stroke's top: deeper, the bridge's end would stand out past it.
                                         val end = target
                                         joins += start to end

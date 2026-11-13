@@ -15,6 +15,7 @@ import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
 import com.baer.handtype.template.HandwritingTemplate
 import com.baer.handtype.template.LigatureComposer
+import com.baer.handtype.template.NoteBackgroundCatalog
 import com.baer.handtype.template.PunctuationSynthesizer
 import com.baer.handtype.template.TemplateDescriptor
 import java.util.Locale
@@ -173,6 +174,28 @@ class LocaleCharactersTest {
         }
     }
 
+    @Test
+    fun aLetterAfterAnApostropheKeepsClearOfTheLetterBeforeIt() {
+        val cells = PracticeSheetGenerator.cellCharacters(german)
+        val glyphs = SheetSampleProcessor.process(writtenSheet(cells), skipPageDetection = true, localeCharacters = german).glyphs
+        val template = HandwritingTemplate(
+            descriptor = TemplateDescriptor("user_u1", "Test", "", "", premium = false),
+            glyphs = glyphs.mapValues { listOf(it.value) },
+        )
+        val config = HandwritingRenderConfig(maxWidthPx = 900, noteBackground = NoteBackgroundCatalog.transparentPreset)
+        fun span(text: String, seed: Long): Int = inkColumns(HandwritingBitmapRenderer.render(text, template, config, seed).bitmap)
+            .let { it.max() - it.min() + 1 }
+
+        // The mark only adds room: the letter after it stands no farther left than without it.
+        val failures = mutableListOf<String>()
+        for (pair in listOf("ld", "Id")) for (seed in 1L..5L) {
+            val apart = span(pair, seed)
+            val marked = span("${pair[0]}'${pair[1]}", seed)
+            if (marked < apart - SPAN_TOLERANCE_PX) failures += "${pair[0]}'${pair[1]} seed $seed: $marked px, ${pair} $apart px"
+        }
+        assertTrue("letter slides over the one before the apostrophe: $failures", failures.isEmpty())
+    }
+
     private fun inkColumns(bitmap: Bitmap): List<Int> =
         (0 until bitmap.width).filter { x -> (0 until bitmap.height).any { y -> bitmap.getPixel(x, y) ushr 24 >= ALPHA_MIN } }
 
@@ -294,6 +317,8 @@ class LocaleCharactersTest {
 
     private companion object {
         const val ALPHA_MIN = 40
+        /** Size and rotation jitter of the last letter, which draws other random numbers after the mark. */
+        const val SPAN_TOLERANCE_PX = 3
         const val ACCENTED = "Café, señor, garçon, à bientôt.\nAção, ÉTÉ, naïve, Ångström, aquí"
         const val PLAIN = "Cafe, senor, garcon, a bientot.\nAcao, ETE, naive, Angstrom, aqui"
         const val MARKS = "¿¡«»œæŒÆ\":;"
