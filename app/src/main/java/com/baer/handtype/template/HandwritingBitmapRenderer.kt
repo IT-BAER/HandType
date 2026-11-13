@@ -948,11 +948,20 @@ object HandwritingBitmapRenderer {
                 )
             }
         }
+        // A hand without œ æ Œ Æ writes its two letters touching, half a pen width into each other.
+        val ligatures = HashMap<Char, List<Bitmap>?>()
+        fun ligature(character: Char): List<Bitmap>? = ligatures.getOrPut(character) {
+            val (a, b) = LigatureComposer.parts(character)?.takeIf { isUserTemplate } ?: return@getOrPut null
+            val first = template.glyphs[a]?.firstOrNull() ?: return@getOrPut null
+            val second = template.glyphs[b]?.firstOrNull()?.takeIf { it.height == first.height } ?: return@getOrPut null
+            listOf(LigatureComposer.join(first, second, (synthesizedInkStyle.strokeWidthPx / 2).roundToInt()))
+        }
         // The other case stands in only when it maps back: İ is no capital i and ı no small I.
         fun variantsFor(character: Char): List<Bitmap>? =
             template.glyphs[character]
                 ?: character.lowercaseChar().takeIf { it.uppercaseChar() == character }?.let { template.glyphs[it] }
                 ?: character.uppercaseChar().takeIf { it.lowercaseChar() == character }?.let { template.glyphs[it] }
+                ?: ligature(character)
         // Template x-height in glyph pixels sizes the accent marks.
         val markUnitPx by lazy {
             val heights = "acemnorsuvwxz".mapNotNull { c -> template.glyphs[c]?.firstOrNull()?.let { rawBounds[it]?.height } }

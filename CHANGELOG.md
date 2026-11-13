@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Indonesian (Bahasa Indonesia) as an app language, in the in-app language picker and in the Android 13+ per-app language settings.
 - Ink Script writes ¿ ¡ « » œ æ Œ Æ and the straight double quote, colon and semicolon in its own pen, so Spanish and French notes have no gaps.
 - Turkish (Türkçe) as an app language. Ink Script and your own handwriting write ğ Ğ ş Ş ç Ç ö Ö ü Ü ı İ: ğ gets a breve, İ keeps its dot and ı loses it.
+- Premium: your own handwriting writes ¿ ¡ « » œ æ Œ Æ. ¿ and ¡ are your own ? and ! turned over, « » are drawn in your pen, and œ æ Œ Æ are your own two letters set close enough to touch.
 
 ### Fixed
 - French spacing: a line no longer ends on an opening « or starts with a closing », !, ?, : or ; that stands apart from its word.

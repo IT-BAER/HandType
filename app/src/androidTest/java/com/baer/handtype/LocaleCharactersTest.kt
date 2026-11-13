@@ -14,6 +14,7 @@ import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.template.HandwritingBitmapRenderer
 import com.baer.handtype.template.HandwritingRenderConfig
 import com.baer.handtype.template.HandwritingTemplate
+import com.baer.handtype.template.LigatureComposer
 import com.baer.handtype.template.PunctuationSynthesizer
 import com.baer.handtype.template.TemplateDescriptor
 import java.util.Locale
@@ -149,13 +150,31 @@ class LocaleCharactersTest {
             glyphs = glyphs.mapValues { listOf(it.value) },
         )
 
-        for (note in listOf(ACCENTED, TURKISH)) {
+        for (note in listOf(ACCENTED, TURKISH, MARKS_NOTE)) {
             val result = HandwritingBitmapRenderer.render(note, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42)
             if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf(note[0] to result.bitmap))
 
             assertEquals(note, emptySet<Char>(), result.missingCharacters)
         }
     }
+
+    @Test
+    fun aLigatureIsTheWritersTwoLettersTouching() {
+        val cells = PracticeSheetGenerator.cellCharacters(german)
+        val glyphs = SheetSampleProcessor.process(writtenSheet(cells), skipPageDetection = true, localeCharacters = german).glyphs
+
+        for ((ligature, first, second) in listOf(Triple('œ', 'o', 'e'), Triple('Æ', 'A', 'E'))) {
+            val joined = LigatureComposer.join(glyphs.getValue(first), glyphs.getValue(second), overlapPx = 1)
+            val columns = inkColumns(joined)
+            assertEquals("$ligature has no gap between its letters", columns.max() - columns.min() + 1, columns.size)
+            val apart = inkColumns(glyphs.getValue(first)).size + inkColumns(glyphs.getValue(second)).size
+            assertTrue("$ligature letters touch: ${columns.size} columns, $apart apart", columns.size < apart)
+            assertEquals("$ligature keeps the canvas height", glyphs.getValue(first).height, joined.height)
+        }
+    }
+
+    private fun inkColumns(bitmap: Bitmap): List<Int> =
+        (0 until bitmap.width).filter { x -> (0 until bitmap.height).any { y -> bitmap.getPixel(x, y) ushr 24 >= ALPHA_MIN } }
 
     @Test
     fun marksSitAboveTheBodyAndTheCedillaBelowTheBaseline() {

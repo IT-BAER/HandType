@@ -173,6 +173,40 @@ class WriterPunctuationTest {
         assertTrue("quote ink width $inkWidth", inkWidth <= 13)
     }
 
+    @Test
+    fun invertedMarksAreTheWritersMarksTurnedOverHangingFromTheXHeight() {
+        // x-height letters 50 rows tall, tall letters 100.
+        val hand = PunctuationSynthesizer.InkStyle.DEFAULT.copy(xHeightTop = baseline - 50, ascenderTop = baseline - 100)
+        val marks = PunctuationSynthesizer.WriterMarks.from(glyphs)
+        for ((inverted, upright) in listOf('¡' to '!', '¿' to '?')) {
+            val mark = PunctuationSynthesizer.synthesize(inverted, hand, marks)!!
+            val up = PunctuationSynthesizer.synthesize(upright, hand, marks)!!
+            assertEquals("$inverted has the ink of $upright", inkMass(up).toDouble(), inkMass(mark).toDouble(), inkMass(up) * 0.01)
+            assertEquals("$inverted starts on the x-height line", baseline - 50, highestInkRow(mark))
+            assertTrue("$inverted hangs below the baseline", lowestInkRow(mark) > baseline + 20)
+            assertEquals("$inverted keeps the canvas", up.height, mark.height)
+        }
+    }
+
+    @Test
+    fun guillemetsAreTwoChevronsInTheXHeightBandPointingTheirWay() {
+        val hand = PunctuationSynthesizer.InkStyle.DEFAULT.copy(xHeightTop = baseline - 50, ascenderTop = baseline - 100)
+        for (c in "«»") {
+            val mark = PunctuationSynthesizer.synthesize(c, hand)!!
+            val px = pixels(mark)
+            val rows = (0 until mark.height).filter { y -> (0 until mark.width).any { (px[y * mark.width + it] ushr 24) > 40 } }
+            assertTrue("$c inside the x-height band: ${rows.first()}..${rows.last()}", rows.first() > baseline - 50 && rows.last() < baseline)
+            val columns = (0 until mark.width).filter { x -> rows.any { y -> (px[y * mark.width + x] ushr 24) > 40 } }
+            assertEquals("$c is two chevrons", 2, 1 + columns.zipWithNext().count { (a, b) -> b - a > 1 })
+            fun inkColumns(y: Int) = (0 until mark.width).filter { (px[y * mark.width + it] ushr 24) > 40 }
+            val middle = inkColumns((rows.first() + rows.last()) / 2)
+            val top = inkColumns(rows.first())
+            if (c == '«') assertTrue("« points left", middle.min() < top.min()) else assertTrue("» points right", middle.max() > top.max())
+        }
+    }
+
+    private fun highestInkRow(b: Bitmap): Int = pixels(b).let { px -> px.indices.filter { (px[it] ushr 24) > 40 }.minOf { it / b.width } }
+
     private fun glyph(width: Int, draw: (Canvas, Paint) -> Unit): Bitmap =
         Bitmap.createBitmap(width, 250, Bitmap.Config.ARGB_8888).also {
             draw(Canvas(it), Paint().apply { color = 0xFF1A1410.toInt() })

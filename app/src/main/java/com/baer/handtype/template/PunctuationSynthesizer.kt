@@ -265,13 +265,14 @@ internal object PunctuationSynthesizer {
     }
 
     private val SUPPORTED: Set<Char> = setOf(
-        '.', ',', '!', '?', ':', ';', '\'', '"', '-',
+        '.', ',', '!', '?', ':', ';', '\'', '"', '-', '¡', '¿', '«', '»',
     )
 
     fun supports(c: Char): Boolean = c in SUPPORTED
 
     fun synthesize(c: Char, ink: InkStyle = InkStyle.DEFAULT, marks: WriterMarks = WriterMarks.NONE): Bitmap? {
         if (c !in SUPPORTED) return null
+        if (c == '¡' || c == '¿') return turned(synthesize(if (c == '¡') '!' else '?', ink, marks)!!, ink.xHeightTop)
         val inkStyle = ink
         val strokePx = inkStyle.strokeWidthPx
         val dotR = strokePx * 1.0f
@@ -302,6 +303,7 @@ internal object PunctuationSynthesizer {
             '.', ',', '\'', ':', ';', '!' -> 40
             '"' -> 64
             '-' -> 90
+            '«', '»' -> (guillemetWidth(inkStyle) * 2.3f + 3 * strokePx).roundToInt() + 16
             '?' -> 96
             else -> 60
         }.coerceAtLeast((marks.dot?.width ?: 0) + 16).coerceAtLeast((inkRight - inkLeft).roundToInt() + 16)
@@ -394,8 +396,43 @@ internal object PunctuationSynthesizer {
                     canvas.restore()
                 }
             }
+            '«', '»' -> {
+                // Two chevrons around the middle of the x-height band, pointing the way the quote opens.
+                val w = guillemetWidth(inkStyle)
+                val half = w * 1.1f
+                val yc = (xTop + BASELINE) / 2f
+                // A clear gap of 0.3 chevron widths between the two pen strokes.
+                val step = w * 1.3f + strokePx
+                for (k in 0..1) {
+                    val x = cx - (w + step) / 2f + k * step
+                    val (tip, ends) = if (c == '«') x to x + w else x + w to x
+                    pen(listOf(ends to yc - half, tip to yc, ends to yc + half))
+                }
+            }
         }
         return bmp
+    }
+
+    /** Chevron width of « and »: a fifth of the writer's x-height. */
+    private fun guillemetWidth(ink: InkStyle): Float = (BASELINE - ink.xHeightTop) * 0.2f
+
+    /**
+     * [upright] turned half a circle with its dot on the x-height line [xTop], so ¡ and ¿ hang below the baseline,
+     * lifted only where the canvas would cut them off.
+     */
+    private fun turned(upright: Bitmap, xTop: Int): Bitmap {
+        val a = alpha(upright)
+        val inkRows = (0 until upright.height).filter { y -> (0 until upright.width).any { x -> a[y * upright.width + x] > INK_ALPHA } }
+        val top = inkRows.firstOrNull() ?: return upright
+        val bottom = inkRows.last()
+        val newTop = xTop - maxOf(0, xTop + bottom - top - (upright.height - 2))
+        val out = Bitmap.createBitmap(upright.width, upright.height, Bitmap.Config.ARGB_8888)
+        // A half turn about (w / 2, p) maps row y to 2p - 1 - y: the bottom ink row lands on newTop.
+        Canvas(out).apply {
+            rotate(180f, upright.width / 2f, (newTop + bottom + 1) / 2f)
+            drawBitmap(upright, 0f, 0f, null)
+        }
+        return out
     }
 
     /**

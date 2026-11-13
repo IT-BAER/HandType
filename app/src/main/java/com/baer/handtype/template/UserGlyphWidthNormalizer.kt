@@ -20,6 +20,8 @@ internal object UserGlyphWidthNormalizer {
 
         val maxAspect = when (character.lowercaseChar()) {
             'm', 'w' -> 1.02f
+            // Two round letters side by side.
+            'œ', 'æ' -> 1.56f
             'n', 'u', 'h' -> 0.88f
             'a', 'c', 'e', 'o', 's', 'v', 'x', 'z' -> 0.78f
             else -> 0.84f
