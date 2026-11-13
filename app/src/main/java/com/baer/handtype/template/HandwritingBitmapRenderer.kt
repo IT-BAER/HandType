@@ -498,6 +498,17 @@ object HandwritingBitmapRenderer {
             0
         }
 
+    /**
+     * Per word of a line split at spaces: whether it stays on the line of the word before it. A word of only
+     * opening marks (French « ) keeps the next word with it, and one of only closing marks (» ! ? : ;) its word.
+     */
+    internal fun gluedToPrevious(words: List<String>): List<Boolean> = words.indices.map { i ->
+        i > 0 && (
+            (words[i].isNotEmpty() && words[i].all { it in "»›!?:;.," }) ||
+                (words[i - 1].isNotEmpty() && words[i - 1].all { it in "«‹¿¡" })
+            )
+    }
+
     private fun glyphAdvancePx(
         glyph: PreparedGlyph,
         character: Char,
@@ -751,7 +762,13 @@ object HandwritingBitmapRenderer {
             }
             // Split oversized words before allocating their bitmaps, allowing for glyph jitter.
             val wordLimit = (safeWidth - config.marginPx * 2 - 24).coerceAtLeast(1).toFloat()
-            val words = line.split(' ').flatMap { word ->
+            val glued = gluedToPrevious(line.split(' '))
+            // Glued words are drawn as one word, so the font's own space keeps them on one line.
+            val runs = line.split(' ').foldIndexed(mutableListOf<String>()) { i, acc, word ->
+                if (glued[i]) acc[acc.lastIndex] += " $word" else acc += word
+                acc
+            }
+            val words = runs.flatMap { word ->
                 val segments = mutableListOf<Pair<String, Boolean>>()
                 val chunk = StringBuilder()
                 var width = 0f
@@ -1178,12 +1195,15 @@ object HandwritingBitmapRenderer {
                 continue
             }
             val words = line.split(' ')
+            val glued = gluedToPrevious(words)
             val totalCharsInLine = line.length.coerceAtLeast(1)
 
             for ((wordIndex, word) in words.withIndex()) {
                 if (wordIndex > 0) {
-                    val neededWidth = spaceWidth + maxWordWidth(word)
-                    if (cursorX + neededWidth > safeWidth - config.marginPx && cursorX > config.marginPx) {
+                    // A glued word never wraps; the first word of a glued run wraps for the whole run.
+                    val runEnd = (wordIndex + 1 until words.size).firstOrNull { !glued[it] } ?: words.size
+                    val neededWidth = (wordIndex until runEnd).sumOf { spaceWidth + maxWordWidth(words[it]) }
+                    if (!glued[wordIndex] && cursorX + neededWidth > safeWidth - config.marginPx && cursorX > config.marginPx) {
                         moveToNextLine()
                     } else {
                         cursorX += spaceWidth + if (effectiveSpacingJitterPx > 0) {

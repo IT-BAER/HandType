@@ -81,6 +81,28 @@ class LocaleCharactersTest {
     }
 
     @Test
+    fun spacedFrenchMarksNeverStartOrEndALine() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+
+        val runs = listOf("« Bœuf »", "« Œuvre » :", "bonjour !", "va ?", "Oui ;", "« merci ».")
+        var checked = 0
+        for (width in 300..900 step 20) {
+            // A run wider than the line has to break somewhere; drawn variants run up to ~15 % wider than the estimate.
+            val slack = HandwritingRenderConfig(maxWidthPx = (width * 0.85f).toInt())
+            if (runs.any { HandwritingBitmapRenderer.render(it, template, slack, seed = 42).lines.size > 1 }) continue
+            checked++
+            val lines = HandwritingBitmapRenderer.render(FRENCH_SPACED, template, HandwritingRenderConfig(maxWidthPx = width), seed = 42).lines
+            for (line in lines) {
+                val opensAtEnd = line.trimEnd().endsWith("«")
+                val closesAtStart = line.trimStart().firstOrNull()?.let { it in "»!?:;" } == true
+                assertTrue("$width px: \"$line\"", !opensAtEnd && !closesAtStart)
+            }
+        }
+        assertTrue("$checked widths where every run fits", checked >= 10)
+    }
+
+    @Test
     fun accentedLettersComposeFromTheirBaseGlyph() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
@@ -257,6 +279,7 @@ class LocaleCharactersTest {
         const val PLAIN = "Cafe, senor, garcon, a bientot.\nAcao, ETE, naive, Angstrom, aqui"
         const val MARKS = "¿¡«»œæŒÆ\":;"
         const val MARKS_NOTE = "¿Qué tal? ¡Hola! «Œuvre», cœur;\nÆsop: \"ex æquo\" « Bœuf »"
-        const val TURKISH = "Şükrü, İstanbul'da ılık bir öğle güneşi.\nÇiçekçi Ömer, Ürgüp'teki DAĞ evinde."
+        const val FRENCH_SPACED = "Il a dit « Bœuf » et « Œuvre » : bonjour ! Ça va ? Oui ; « merci »."
+        const val TURKISH ="Şükrü, İstanbul'da ılık bir öğle güneşi.\nÇiçekçi Ömer, Ürgüp'teki DAĞ evinde."
     }
 }

@@ -339,3 +339,20 @@ class LeadingPullTest {
         assertEquals(163, HandwritingBitmapRenderer.userCanvasBaselineRow(',', canvasBaseline = 163, inkBottom = 177))
     }
 }
+
+class LineBreakTest {
+    @Test
+    fun spacedFrenchMarksStayOnTheLineOfTheirWord() {
+        val words = "Il dit « Bœuf », puis ! Ça va ?".split(' ')
+        assertEquals(
+            listOf(false, false, false, true, true, false, true, false, false, true),
+            HandwritingBitmapRenderer.gluedToPrevious(words),
+        )
+    }
+
+    @Test
+    fun wordsWithMarksAttachedAndEmptyWordsBreakAsBefore() {
+        assertEquals(listOf(false, false, false), HandwritingBitmapRenderer.gluedToPrevious("«Œuvre», cœur!".split(' ') + ""))
+        assertEquals(listOf(false, false, true), HandwritingBitmapRenderer.gluedToPrevious("mot  »".split(' ')))
+    }
+}

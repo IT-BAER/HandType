@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ink Script writes ¿ ¡ « » œ æ Œ Æ and the straight double quote, colon and semicolon in its own pen, so Spanish and French notes have no gaps.
 - Turkish (Türkçe) as an app language. Ink Script and your own handwriting write ğ Ğ ş Ş ç Ç ö Ö ü Ü ı İ: ğ gets a breve, İ keeps its dot and ı loses it.
 
+### Fixed
+- French spacing: a line no longer ends on an opening « or starts with a closing », !, ?, : or ; that stands apart from its word.
+
 ## [1.2.0] - 2026-10-26
 
 ### Added
