@@ -931,8 +931,11 @@ object HandwritingBitmapRenderer {
                 )
             }
         }
+        // The other case stands in only when it maps back: İ is no capital i and ı no small I.
         fun variantsFor(character: Char): List<Bitmap>? =
-            template.glyphs[character] ?: template.glyphs[character.lowercaseChar()] ?: template.glyphs[character.uppercaseChar()]
+            template.glyphs[character]
+                ?: character.lowercaseChar().takeIf { it.uppercaseChar() == character }?.let { template.glyphs[it] }
+                ?: character.uppercaseChar().takeIf { it.lowercaseChar() == character }?.let { template.glyphs[it] }
         // Template x-height in glyph pixels sizes the accent marks.
         val markUnitPx by lazy {
             val heights = "acemnorsuvwxz".mapNotNull { c -> template.glyphs[c]?.firstOrNull()?.let { rawBounds[it]?.height } }

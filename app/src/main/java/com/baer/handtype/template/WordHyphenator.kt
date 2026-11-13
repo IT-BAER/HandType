@@ -23,7 +23,7 @@ internal object WordHyphenator {
         return pieces + rest
     }
 
-    private const val VOWELS = "aeiouyäöüàáâãåæèéêëìíîïòóôõøœùúûýаеёиоуыэюя"
+    private const val VOWELS = "aeiouyäöüàáâãåæèéêëìíîïòóôõøœùúûýıаеёиоуыэюя"
     private val consonantUnits = listOf("sch", "ch", "ck", "ph", "th")
 
     private fun isVowel(c: Char) = c.lowercaseChar() in VOWELS

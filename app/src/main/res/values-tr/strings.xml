@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <!-- Template chooser screen -->
+    <string name="template_chooser_title">El yazısı stilini seçin</string>
+    <string name="template_chooser_subtitle">Yerleşik şablonlar varsayılan yoldur. Kendi el yazınızı da aktarabilirsiniz.</string>
+    <string name="template_chooser_use_template">Şablonu kullan</string>
+    <string name="template_chooser_new_badge">Yeni</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">El yazısı aktar</string>
+    <string name="template_card_captured_count">Aktarıldı: %1$s · %2$d karakter</string>
+    <string name="template_card_captured">Aktarıldı: %1$s</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">HandType\'a hoş geldiniz</string>
+    <string name="onboarding_body">İstediğinizi yazın, HandType onu gerçekten elle yazılmış gibi görünen bir el yazısına dönüştürsün. Yerleşik stiller çevrimdışı çalışır. Premium ile bir el yazısı sayfasının fotoğrafından kendi el yazınızı aktarabilirsiniz.</string>
+    <string name="onboarding_cta">Başla</string>
+
+    <!-- Render screen: compose phase -->
+    <string name="render_instruction">Mesajınızı aşağıya yazın, ardından benzersiz bir el yazısı not oluşturmak için Oluştur\'a dokunun.</string>
+    <string name="render_text_label">Mesajınız</string>
+    <string name="render_text_placeholder">Merhaba dünya!</string>
+    <string name="render_background_title">Kâğıt</string>
+    <string name="render_background_subtitle">Bu not için bir arka plan seçin.</string>
+    <string name="render_background_set_default">Varsayılan yap</string>
+    <string name="render_background_current_default">Varsayılan kaydedildi</string>
+    <string name="render_background_default_badge">Varsayılan</string>
+    <string name="render_generate_button">Oluştur</string>
+    <string name="render_premium_button">El yazımı kullan</string>
+    <string name="render_templates_button">Şablonlar</string>
+    <string name="render_back_button">Geri</string>
+
+    <!-- Note backgrounds -->
+    <string name="note_background_plain_white">Düz Beyaz</string>
+    <string name="note_background_warm_cream">Sıcak Krem</string>
+    <string name="note_background_soft_butter">Tereyağı Sarısı</string>
+    <string name="note_background_rose_blush">Gül Pembesi</string>
+    <string name="note_background_cool_mist">Serin Sis</string>
+    <string name="note_background_soft_sage">Adaçayı Yeşili</string>
+    <string name="note_background_parchment_sheet">Parşömen Kâğıdı</string>
+    <string name="note_background_recycled_sheet">Geri Dönüştürülmüş Kâğıt</string>
+    <string name="note_background_kraft_sheet">Kraft Kâğıdı</string>
+    <string name="note_background_ruled_sheet">Çizgili Kâğıt</string>
+    <string name="note_background_graph_sheet">Kareli Kâğıt</string>
+
+    <!-- Render screen: generating phase -->
+    <string name="render_generating_title">Notunuz oluşturuluyor…</string>
+    <string name="render_generating_subtitle">Her oluşturma benzersizdir</string>
+
+    <!-- Render screen: result phase -->
+    <string name="render_result_title">Notunuz</string>
+    <string name="render_result_image_desc">Oluşturulan el yazısı</string>
+    <string name="render_missing_glyphs">Eksik karakterler: %1$s</string>
+    <string name="result_save_button">Kaydet</string>
+    <string name="result_share_button">Paylaş</string>
+    <string name="result_export_pdf_button">PDF olarak dışa aktar</string>
+    <string name="result_regenerate_button">Yeniden oluştur</string>
+    <string name="result_text_size_label">Yazı boyutu</string>
+    <string name="result_new_note_button">Yeni not</string>
+    <string name="result_saved">Pictures/HandType klasörüne kaydedildi</string>
+    <string name="result_saved_transparent">Şeffaf PNG, Pictures/HandType klasörüne kaydedildi</string>
+    <string name="result_save_failed">Kaydetme başarısız: %1$s</string>
+    <string name="result_share_failed">Paylaşma başarısız: %1$s</string>
+    <string name="result_pdf_saved">PDF, Download/HandType klasörüne kaydedildi</string>
+    <string name="result_pdf_failed">PDF başarısız: %1$s</string>
+
+    <!-- Camera capture screen -->
+    <string name="camera_section_title">El yazısı sayfanızı aktarın</string>
+    <string name="camera_pre_scan_title">Taramadan önce</string>
+    <string name="camera_pre_scan_step_1">El yazısı sayfasını yazdırın.</string>
+    <string name="camera_pre_scan_step_2">Her kutuya ilgili karakteri yazın. Alttaki kesikli çizginin üzerine oturtun: küçük harfler üstteki kesikli çizgiye, büyük harfler ve uzun harfler en üstteki noktalı çizgiye ulaşır; g, j, p, q, y ise en alttaki noktalı çizgiye kadar iner.</string>
+    <string name="camera_pre_scan_step_3">Sayfanın tamamını çekin ve dört siyah karenin hepsini tamamen görünür tutun.</string>
+    <string name="camera_pre_scan_step_4">Eşit ışık kullanın; bulanıklık, parlama ve sert gölgelerden kaçının.</string>
+    <string name="camera_sheet_button">El yazısı sayfasını paylaş</string>
+    <string name="camera_print_button">El yazısı sayfasını yazdır</string>
+    <string name="camera_print_unavailable">Yazdırma kullanılamıyor. Bunun yerine sayfayı paylaşın.</string>
+    <string name="camera_scan_button">El yazısı sayfasını tara veya içe aktar</string>
+    <string name="camera_gallery_button">Galeriden fotoğraf seç</string>
+    <string name="camera_opening_scanner">Tarayıcı açılıyor...</string>
+    <string name="camera_processing_button">İşleniyor...</string>
+    <string name="camera_preparing_image">Görüntü hazırlanıyor...</string>
+    <string name="camera_adjust_title">Çıkarmadan önce görüntüyü ayarlayın</string>
+    <string name="camera_adjust_body">ML Kit sayfayı okumadan önce kontrastı veya parlaklığı artırın.</string>
+    <string name="camera_brightness_label">Parlaklık</string>
+    <string name="camera_contrast_label">Kontrast</string>
+    <string name="camera_use_image_button">Bu görüntüyü kullan</string>
+    <string name="camera_discard_image_button">Görüntüyü at</string>
+    <string name="camera_open_image_failed">Bu görüntü açılamadı. Başka bir dosya deneyin.</string>
+    <string name="camera_guide_label">Sayfa kenarlarını kılavuzla hizalayın</string>
+    <string name="camera_capture_button">Örnek çek</string>
+    <string name="camera_capturing_button">Çekiliyor…</string>
+    <string name="camera_default_instruction">Boş bir kâğıda A-Z, a-z ve 0-9 yazın, ardından sayfanın tamamını çerçevenin ortasına alın.</string>
+    <string name="camera_permission_title">Kamera izni gerekli</string>
+    <string name="camera_permission_rationale">HandType\'ın el yazısı kalibrasyon sayfanızı fotoğraflamak için kamera erişimine ihtiyacı var.</string>
+    <string name="camera_permission_blocked">Kamera erişimi hâlâ engelli. Android izin penceresini artık göstermiyorsa izni sistem ayarlarından verebilirsiniz.</string>
+    <string name="camera_permission_default">El yazısı çıkarmada kullanılan alfabe sayfasını çekmek için kamera erişimine izin verin.</string>
+    <string name="camera_grant_button">Kamera erişimi ver</string>
+    <string name="camera_open_settings_button">Uygulama ayarlarını aç</string>
+
+    <!-- Loading screen -->
+    <string name="loading_template_title">Şablon yükleniyor</string>
+    <string name="loading_template_body">Varsayılan el yazısı akışı için yerleşik bitmap glifleri hazırlanıyor.</string>
+
+    <!-- Premium capture flow -->
+    <string name="premium_instruction">El yazısı sayfasına A-Z, a-z ve 0-9 yazın, ardından kişisel şablonunuzu oluşturmak için dört siyah kare görünür hâldeyken sayfanın tamamını tarayın.</string>
+    <string name="premium_processing">El yazısı örneği ML Kit ile işleniyor…</string>
+    <string name="premium_no_glyphs">Hiç harf veya rakam algılanmadı. Daha parlak ışık ya da daha koyu bir kalem deneyin ve tekrar tarayın. Şablonlara dönmek için sistemin geri hareketini kullanın.</string>
+    <string name="premium_capture_complete">El yazısı aktarımı tamamlandı. %2$d farklı karakterden %1$d glif kesiti çıkarıldı. Şablonlara dönmek için geri gidin.</string>
+    <string name="premium_marker_detection_failed">Bu tarama HandType el yazısı sayfasına benzemiyor. Basılı sayfanın taramanın büyük kısmını kapladığından ve dört siyah karenin de göründüğünden emin olun.</string>
+    <string name="premium_save_failed">El yazısı şablonu kaydedilemedi. Tekrar deneyin.</string>
+    <string name="premium_process_failed">Sayfa işlenemedi. Dört köşe işaretinin de göründüğü şekilde yeniden tarayın.</string>
+    <string name="premium_capture_failed_focus">Metin tanıma başarısız oldu. Daha net bir odakla tekrar deneyin.</string>
+    <string name="premium_camera_failed">Kamera çekimi başarısız oldu. Tekrar deneyin.</string>
+    <string name="premium_default_template_name">El Yazım</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+
+    <!-- Template names and descriptions -->
+    <string name="template_ink_script_name">Mürekkep Yazısı</string>
+    <string name="template_ink_script_description">Doğal değişkenliği ve elle çizilmiş karakteriyle mürekkep tarzı bir el yazısı.</string>
+    <string name="template_flowing_cursive_name">Akıcı Bitişik Yazı</string>
+    <string name="template_flowing_cursive_description">Bitişik harfleri ve doğal ritmiyle akıcı bir bitişik yazı stili.</string>
+    <string name="template_premium_sample">Kendi stilinizi aktarın</string>
+    <string name="template_premium_description">Fotoğrafı çekilmiş bir el yazısı sayfasından kişisel el yazınızı çıkarın.</string>
+
+    <!-- Template delete dialog -->
+    <string name="template_delete_title">Şablon silinsin mi?</string>
+    <string name="template_delete_body">“%1$s” cihazınızdan kalıcı olarak kaldırılacak.</string>
+
+    <string name="rename_handwriting_title">El yazınıza bir ad verin</string>
+    <string name="rename_handwriting_body">Kaydedilen bu el yazısının şablon listenizde nasıl görüneceğini seçin.</string>
+    <string name="rename_handwriting_label">El yazısı adı</string>
+    <string name="rename_handwriting_confirm">Adı kaydet</string>
+    <string name="rename_handwriting_cancel">Mevcut adı koru</string>
+    <string name="rename_handwriting_error_blank">Bir ad girin.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Şablonlar</string>
+    <string name="drawer_nav_history">Geçmiş</string>
+    <string name="drawer_nav_help">Yardım</string>
+    <string name="drawer_nav_faq">SSS</string>
+    <string name="drawer_nav_about">Hakkında</string>
+    <string name="drawer_nav_privacy">Gizlilik</string>
+    <string name="drawer_nav_settings">Ayarlar</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_appearance_title">Görünüm</string>
+    <string name="settings_appearance_body">HandType\'ın cihazınızı mı izleyeceğini yoksa sabit bir temada mı kalacağını seçin.</string>
+    <string name="settings_theme_system">Sistem varsayılanı</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_language_title">Dil</string>
+    <string name="settings_language_body">Uygulama dilini seçin. Sistem varsayılanı cihazınızın dilini izler.</string>
+    <string name="settings_language_system">Sistem varsayılanı</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">Premium\'un kilidini aç</string>
+    <string name="premium_paywall_benefit_capture">Basılı bir el yazısı sayfasından kendi el yazınızı aktarın</string>
+    <string name="premium_paywall_benefit_papers">Beş ek kâğıt stili: parşömen, geri dönüştürülmüş, kraft, çizgili ve kareli</string>
+    <string name="premium_paywall_buy">%1$s karşılığında kilidi aç</string>
+    <string name="premium_paywall_restore">Satın alımı geri yükle</string>
+    <string name="premium_paywall_pending">Satın alımınız hâlâ işleniyor. Bu biraz sürebilir.</string>
+    <string name="premium_paywall_unavailable">Google Play Faturalandırma şu anda kullanılamıyor. Daha sonra tekrar deneyin.</string>
+    <string name="premium_paywall_error">Bir sorun oluştu. Lütfen tekrar deneyin.</string>
+    <string name="premium_restore_success">Premium\'un kilidi açıldı.</string>
+    <string name="premium_restore_none">Önceki bir satın alım bulunamadı.</string>
+    <string name="settings_premium_title">Premium</string>
+    <string name="settings_premium_unlocked">Premium\'un kilidi açık</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Kaydet</string>
+    <string name="action_share">Paylaş</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_close">Kapat</string>
+
+    <!-- History screen -->
+    <string name="history_title">Geçmiş</string>
+    <string name="history_empty">Bir not oluşturun, burada görünecek.</string>
+    <string name="history_delete_title">Bu not silinsin mi?</string>
+    <string name="history_delete_body">Bu, kaydedilen kopyayı cihazınızdan kaldırır. Pictures veya Downloads klasörüne zaten dışa aktardığınız dosyalar yerinde kalır.</string>
+    <string name="history_deleted_toast">Silindi</string>
+    <string name="history_delete_selected_title">%1$d not silinsin mi?</string>
+    <string name="history_delete_selected_body">Bu, kaydedilen %1$d kopyayı cihazınızdan kaldırır. Pictures veya Downloads klasörüne zaten dışa aktardığınız dosyalar yerinde kalır.</string>
+    <string name="history_deleted_selected_toast">%1$d not silindi</string>
+    <string name="history_note_desc">Kaydedilen not</string>
+    <string name="history_preview_desc">Not önizlemesi</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Yardım</string>
+    <string name="help_s1_title">1. Bir şablon seçin</string>
+    <string name="help_s1_body">Yan menüden Şablonlar\'ı açın ve stiller arasında kaydırın. Yazmaya başlamak için beğendiğiniz karttaki \'Şablonu kullan\' düğmesine dokunun.</string>
+    <string name="help_s2_title">2. Metninizi yazın</string>
+    <string name="help_s2_body">Alana istediğiniz metni yazın veya yapıştırın. Satır sonları ve noktalama işaretleri yazdığınız gibi korunur.</string>
+    <string name="help_s3_title">3. Oluşturun</string>
+    <string name="help_s3_body">Oluştur\'a dokunun. HandType metninizdeki glifleri tek tek yerleştirir ve her not doğal olarak elle yazılmış görünsün diye aralığı, eğimi ve baskıyı değiştirir.</string>
+    <string name="help_s4_title">4. Kaydedin, paylaşın veya dışa aktarın</string>
+    <string name="help_s4_body">Sonuç ekranında notu galerinize PNG olarak kaydedebilir, kâğıt arka planı olmadan şeffaf PNG olarak kaydedebilir, herhangi bir uygulamayla paylaşabilir veya çok sayfalı PDF olarak dışa aktarabilirsiniz.</string>
+    <string name="help_s5_title">5. Geçmiş</string>
+    <string name="help_s5_body">Oluşturulan her not otomatik olarak arşivlenir. Eski notları yeniden görmek, tekrar dışa aktarmak, paylaşmak veya silmek için yan menüden Geçmiş\'i açın.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">SSS</string>
+    <string name="faq_q1">Kaydedilen dosyalar nerede saklanır?</string>
+    <string name="faq_a1">PNG dosyaları Pictures/HandType klasörüne, PDF dosyaları Download/HandType klasörüne kaydedilir.</string>
+    <string name="faq_q2">Şeffaf PNG ne işe yarar?</string>
+    <string name="faq_a2">Aynı el yazısıdır ama kâğıt arka planı yoktur. Notu başka bir görüntüye, belgeye veya slayta yerleştirmek istediğinizde işe yarar.</string>
+    <string name="faq_q3">Uzun bir not birden fazla PDF sayfasına yayılabilir mi?</string>
+    <string name="faq_a3">Evet. PDF dışa aktarımı sayfaları otomatik böler ve sayfa sonlarını satırlar arasındaki boşluklara denk getirir, böylece hiçbir karakter kesilmez.</string>
+    <string name="faq_q4">Bir glif neden biraz farklı görünüyor?</string>
+    <string name="faq_a4">Her karakter kayıtlı birkaç varyanttan biriyle oluşturulur. Ardından gerçek el yazısındaki değişkenliği taklit etmek için döndürülür, hafifçe kaydırılır ve kalınlığı yeniden ayarlanır.</string>
+    <string name="faq_q5">Geçmiş ekranı tam olarak neyi saklar?</string>
+    <string name="faq_a5">Oluşturulan her notun özel bir kopyasını ve kaynak metnini. Hiçbir şey yüklenmez; bir kaydı silmek yalnızca cihazdaki kopyayı kaldırır.</string>
+    <string name="faq_q6">Kişisel el yazısı aktarımı nasıl çalışır?</string>
+    <string name="faq_a6">El yazısı sayfasını doldurup tararsınız, HandType da el yazınızdan kişisel bir şablon oluşturur. Aktarım cihazda ML Kit ile çalışır; hiçbir şey telefondan çıkmaz.</string>
+
+    <!-- About screen -->
+    <string name="about_title">Hakkında</string>
+    <string name="about_version">Sürüm %1$s</string>
+    <string name="about_description">Yazılan metni gerçekten elle yazılmış hissi veren bir el yazısına dönüştürün. Yerleşik şablonlar tamamen çevrimdışı çalışır; metninizle ilgili hiçbir şey cihazınızdan çıkmaz. Apache License 2.0 kapsamında açık kaynaklıdır.</string>
+    <string name="about_github_button">Kaynak kodunu GitHub\'da görüntüle</string>
+    <string name="about_copyright">© 2026 IT-BAER. Özenle yapıldı.</string>
+    <string name="result_tip_share">💡 İpucu: notu yakınlaştırmak için iki parmakla sıkıştırın, sıfırlamak için iki kez dokunun.</string>
+
+    <!-- UX overhaul: content descriptions and shared actions -->
+    <string name="cd_menu">Menüyü aç</string>
+    <string name="cd_back">Geri</string>
+    <string name="cd_opens_external">Harici olarak açılır</string>
+    <string name="action_export">Dışa aktar</string>
+    <string name="action_rename">Yeniden adlandır</string>
+    <string name="action_retry">Tekrar tara</string>
+    <string name="action_open">Aç</string>
+    <string name="action_create_note">Not oluştur</string>
+
+    <!-- UX overhaul: home -->
+    <string name="template_chooser_tagline">Metni yazın, inandırıcı bir el yazısı alın.</string>
+
+    <!-- UX overhaul: editor -->
+    <string name="render_text_supporting">Satır sonları ve noktalama işaretleri korunur.</string>
+
+    <!-- UX overhaul: result export sheet -->
+    <string name="result_export_sheet_title">Dışa aktar</string>
+    <string name="result_export_png">Görüntü olarak kaydet</string>
+    <string name="result_export_png_desc">Galerinize PNG</string>
+    <string name="result_export_pdf_desc">İndirilenler klasörüne çok sayfalı PDF</string>
+    <string name="result_export_transparent">Şeffaf PNG</string>
+    <string name="result_export_transparent_desc">Kâğıt arka planı olmadan el yazısı</string>
+
+    <!-- UX overhaul: capture -->
+    <string name="camera_title">El yazısı aktar</string>
+    <string name="camera_share_sheet_title">El yazısı sayfasını paylaş</string>
+    <string name="camera_share_sheet_subject">HandType el yazısı sayfası</string>
+    <string name="camera_priming">Bu, belge tarayıcısını açar. Fotoğrafınız cihazınızda işlenir ve cihazdan hiç çıkmaz.</string>
+
+    <!-- UX overhaul: history -->
+    <string name="history_empty_title">Henüz not yok</string>
+    <string name="history_rename_title">Notu yeniden adlandır</string>
+    <string name="history_rename_label">Not adı</string>
+    <string name="history_saved_toast">Pictures/HandType klasörüne kaydedildi</string>
+
+    <!-- UX overhaul: privacy (in-app) -->
+    <string name="privacy_title">Gizlilik</string>
+    <string name="privacy_load_error">Gizlilik politikası yüklenemedi. Bunun yerine GitHub\'da görüntüleyin.</string>
+    <string name="privacy_view_on_github">GitHub\'da görüntüle</string>
+
+    <!-- UX overhaul: drawer sections -->
+    <string name="drawer_section_create">Oluştur</string>
+    <string name="drawer_section_info">Bilgi</string>
+    <string name="settings_support_title">HandType\'ı destekleyin</string>
+    <string name="settings_support_body">Uygulamayı beğendiniz mi? Bir arkadaşınıza anlatın veya Google Play\'de puan verin.</string>
+    <string name="settings_share_app">HandType\'ı paylaş</string>
+    <string name="settings_rate_app">HandType\'ı puanla</string>
+    <string name="share_app_message">HandType ile yazdığım metni gerçek gibi görünen el yazısına dönüştürüyorum. Sen de dene:</string>
+    <string name="onboarding_p2_title">Bir stil ve bir kâğıt seçin</string>
+    <string name="onboarding_p2_body">Bir el yazısı stili seçin, ardından kâğıt ön ayarlarından birini seçin. Gerçek bir kalemde olduğu gibi her oluşturma biraz farklıdır.</string>
+    <string name="onboarding_p3_title">Kaydedin, paylaşın veya dışa aktarın</string>
+    <string name="onboarding_p3_body">Notu galerinize kaydedin, herhangi bir uygulamayla paylaşın ya da şeffaf PNG veya A4 PDF olarak dışa aktarın. Notlarınız telefonunuzda kalır.</string>
+    <string name="onboarding_next">İleri</string>
+    <string name="onboarding_skip">Atla</string>
+    <string name="help_show_intro">Tanıtımı tekrar göster</string>
+
+    <!-- Write the handwriting sheet on screen -->
+    <string name="camera_write_button">Bunun yerine ekrana yaz</string>
+    <string name="stylus_title">Ekrana yaz</string>
+    <string name="stylus_instruction">Soluk karakteri kutuya yazın. Alttaki kesikli çizginin üzerine oturtun; küçük harfler üstteki kesikli çizgiye, büyük harfler en üstteki noktalı çizgiye ulaşır.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Geri al</string>
+    <string name="stylus_clear">Temizle</string>
+    <string name="stylus_previous">Geri</string>
+    <string name="stylus_next">İleri</string>
+    <string name="stylus_finish">Bitir</string>
+    <string name="stylus_saving">El yazınız kaydediliyor…</string>
+    <string name="stylus_hint_empty">Önce karakteri yazın.</string>
+    <string name="stylus_hint_outside">Her çizgiyi kutunun içinde tutun.</string>
+    <string name="stylus_hint_too_small">Çok küçük - kılavuz çizgilerini kullanın.</string>
+    <string name="stylus_hint_too_large">Çok büyük - kılavuz çizgilerine daha yakın kalın.</string>
+    <string name="stylus_hint_reach_up">Çok kısa - bu karakter üstteki kesikli çizginin üzerine çıkar.</string>
+    <string name="stylus_hint_cell">“%1$s”: %2$s</string>
+    <string name="stylus_hint_wrong">“%1$s” gibi görünüyor, beklenen “%2$s”. Korumak için tekrar İleri\'ye dokunun.</string>
+    <string name="stylus_hint_unrecognized">Bu henüz “%1$s” gibi görünmüyor. Korumak için tekrar İleri\'ye dokunun.</string>
+    <string name="stylus_note_shape_only">Harf tanıma henüz hazır değil (bir kez indirilir), bu yüzden yalnızca boyut ve konum kontrol ediliyor.</string>
+    <string name="cd_stylus_canvas">%1$s için yazma kutusu</string>
+</resources>

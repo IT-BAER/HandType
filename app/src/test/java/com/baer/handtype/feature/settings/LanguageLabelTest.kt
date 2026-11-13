@@ -10,6 +10,7 @@ class LanguageLabelTest {
         assertEquals("Русский", nativeLanguageName("ru"))
         assertEquals("Português (Brasil)", nativeLanguageName("pt-BR"))
         assertEquals("Indonesia", nativeLanguageName(LanguagePreference.Indonesian.languageTag!!))
+        assertEquals("Türkçe", nativeLanguageName(LanguagePreference.Turkish.languageTag!!))
     }
 
     @Test fun scriptsWithoutCaseStayUnchanged() {

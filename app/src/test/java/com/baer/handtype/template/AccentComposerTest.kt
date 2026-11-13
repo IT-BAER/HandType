@@ -27,6 +27,22 @@ class AccentComposerTest {
     }
 
     @Test
+    fun turkishLettersSplitIntoBaseLetterAndMarks() {
+        val expected = mapOf(
+            'ğ' to AccentComposer.Decomposition('g', listOf(Mark.BREVE)),
+            'Ğ' to AccentComposer.Decomposition('G', listOf(Mark.BREVE)),
+            'ş' to AccentComposer.Decomposition('s', listOf(Mark.CEDILLA)),
+            'Ş' to AccentComposer.Decomposition('S', listOf(Mark.CEDILLA)),
+            'İ' to AccentComposer.Decomposition('I', listOf(Mark.DOT_ABOVE)),
+            // The dotless ı is an i that loses its dot and gains no mark.
+            'ı' to AccentComposer.Decomposition('i', emptyList()),
+        )
+        for ((character, decomposition) in expected) {
+            assertEquals("$character", decomposition, AccentComposer.decompose(character))
+        }
+    }
+
+    @Test
     fun charactersWithoutSupportedMarksDoNotDecompose() {
         // ß and œ have no NFD split, ǒ carries a caron, and plain letters have no mark at all.
         for (character in listOf('ß', 'œ', 'ǒ', 'a', 'Z', '1', '?', ' ')) {

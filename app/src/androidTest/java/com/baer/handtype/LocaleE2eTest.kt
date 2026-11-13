@@ -123,8 +123,9 @@ class LocaleE2eTest {
         // The counter shows finished cells; the German row adds ÄÖÜäöüß to the 62 alphanumerics.
         composeRule.onNodeWithText(context.getString(R.string.stylus_progress, 0, cells)).assertIsDisplayed()
         if (composeRule.activity.resources.configuration.locales[0].language == "de") assertEquals(69, cells)
-        // Indonesian needs no letters beyond the 62.
-        if (AppSettingsStore(baseContext).read().languagePreference == LanguagePreference.Indonesian) assertEquals(62, cells)
+        // Indonesian needs no letters beyond the 62, and Turkish composes its own from them.
+        val language = AppSettingsStore(baseContext).read().languagePreference
+        if (language == LanguagePreference.Indonesian || language == LanguagePreference.Turkish) assertEquals(62, cells)
     }
 
     @Test
@@ -319,7 +320,7 @@ class LocaleE2eTest {
 
     companion object {
         private const val TIMEOUT_MS = 25_000L
-        private const val NOTE = "Grüße aus Österreich! Café, señor, garçon, à bientôt.\nAção, naïve, Ångström, aquí.\nAgar sehat, minum air hangat!"
+        private const val NOTE = "Grüße aus Österreich! Café, señor, garçon, à bientôt.\nAção, naïve, Ångström, aquí.\nAgar sehat, minum air hangat!\nŞükrü, İstanbul'da ılık bir öğle. DAĞ, Çiçek"
         private val TEMPLATE_NAME = "E2E Akzente ${System.currentTimeMillis()}"
         private val STYLUS_TEMPLATE_NAME = "E2E Stift ${System.currentTimeMillis()}"
         private var frame = 0

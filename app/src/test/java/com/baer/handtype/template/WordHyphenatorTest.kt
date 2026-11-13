@@ -48,4 +48,9 @@ class WordHyphenatorTest {
         // Too short to split at all.
         assertEquals(listOf("Hand"), WordHyphenator.pieces("Hand", maxChars(2)))
     }
+
+    @Test
+    fun turkishDotlessIIsAVowel() {
+        assertEquals(listOf("Kır-", "mızı"), WordHyphenator.pieces("Kırmızı", maxChars(5)))
+    }
 }

@@ -96,6 +96,29 @@ class LocaleCharactersTest {
     }
 
     @Test
+    fun bundledScriptWritesTurkishLetters() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+
+        val result = HandwritingBitmapRenderer.render(TURKISH, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42)
+        if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf('ğ' to result.bitmap))
+
+        assertEquals(emptySet<Char>(), result.missingCharacters)
+        assertEquals(TURKISH.split(' ', '\n').joinToString(""), result.lines.joinToString("").replace(" ", ""))
+    }
+
+    @Test
+    fun dottedCapitalAndDotlessSmallIKeepTheirCase() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+        // The same seed picks the same variant of the base letter, so only the dot differs.
+        fun ink(text: String) = darkPixels(HandwritingBitmapRenderer.render(text, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42).bitmap)
+
+        assertTrue("İ is an I with a dot", ink("İ") > ink("I"))
+        assertTrue("ı is an i without its dot", ink("ı") < ink("i"))
+    }
+
+    @Test
     fun userTemplateComposesAccentsInItsPen() {
         val cells = PracticeSheetGenerator.cellCharacters(german)
         val glyphs = SheetSampleProcessor.process(writtenSheet(cells), skipPageDetection = true, localeCharacters = german).glyphs
@@ -104,10 +127,12 @@ class LocaleCharactersTest {
             glyphs = glyphs.mapValues { listOf(it.value) },
         )
 
-        val result = HandwritingBitmapRenderer.render(ACCENTED, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42)
-        if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf('ç' to result.bitmap))
+        for (note in listOf(ACCENTED, TURKISH)) {
+            val result = HandwritingBitmapRenderer.render(note, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42)
+            if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf(note[0] to result.bitmap))
 
-        assertEquals(emptySet<Char>(), result.missingCharacters)
+            assertEquals(note, emptySet<Char>(), result.missingCharacters)
+        }
     }
 
     @Test
@@ -134,6 +159,19 @@ class LocaleCharactersTest {
             (dotLeft until dotLeft + 5).count { x -> iAcute.bitmap.getPixel(x, y) ushr 24 >= ALPHA_MIN }
         }
         assertEquals("i dot removed under the accent", 0, dotInk)
+
+        val breve = AccentComposer.compose(body, 59, AccentComposer.decompose('ğ')!!, 40f, ink)
+        assertTrue("breve above the body", inkRows(breve.bitmap).any { it < 20 + breve.topPad })
+
+        val dotAbove = AccentComposer.compose(body, 59, AccentComposer.decompose('İ')!!, 40f, ink)
+        assertTrue("dot above the body", inkRows(dotAbove.bitmap).any { it < 20 + dotAbove.topPad })
+
+        val dotless = AccentComposer.compose(dotted, 59, AccentComposer.decompose('ı')!!, 40f, ink)
+        val dotlessInk = (2 + dotless.topPad until 8 + dotless.topPad).sumOf { y ->
+            (dotless.leftPad until dotless.leftPad + 5).count { x -> dotless.bitmap.getPixel(x, y) ushr 24 >= ALPHA_MIN }
+        }
+        assertEquals("ı loses the i dot", 0, dotlessInk)
+        assertTrue("ı keeps its body", inkRows(dotless.bitmap).contains(59 + dotless.topPad))
     }
 
     private fun inkRows(bitmap: Bitmap): List<Int> =
@@ -219,5 +257,6 @@ class LocaleCharactersTest {
         const val PLAIN = "Cafe, senor, garcon, a bientot.\nAcao, ETE, naive, Angstrom, aqui"
         const val MARKS = "¿¡«»œæŒÆ\":;"
         const val MARKS_NOTE = "¿Qué tal? ¡Hola! «Œuvre», cœur;\nÆsop: \"ex æquo\" « Bœuf »"
+        const val TURKISH = "Şükrü, İstanbul'da ılık bir öğle güneşi.\nÇiçekçi Ömer, Ürgüp'teki DAĞ evinde."
     }
 }

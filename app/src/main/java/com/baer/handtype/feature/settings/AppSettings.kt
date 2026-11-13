@@ -35,6 +35,7 @@ enum class LanguagePreference(val languageTag: String?) {
     ChineseSimplified("zh-CN"),
     // Resources live in values-in: Android still matches Indonesian by its legacy code.
     Indonesian("id"),
+    Turkish("tr"),
 }
 
 class AppSettingsStore(context: Context) {

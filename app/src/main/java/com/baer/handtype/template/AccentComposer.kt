@@ -16,7 +16,7 @@ import kotlin.math.sin
  */
 internal object AccentComposer {
 
-    enum class Mark { GRAVE, ACUTE, CIRCUMFLEX, TILDE, DIAERESIS, RING, CEDILLA }
+    enum class Mark { GRAVE, ACUTE, CIRCUMFLEX, TILDE, DIAERESIS, RING, CEDILLA, BREVE, DOT_ABOVE }
 
     data class Decomposition(val base: Char, val marks: List<Mark>)
 
@@ -30,10 +30,16 @@ internal object AccentComposer {
         '̈' to Mark.DIAERESIS,
         '̊' to Mark.RING,
         '̧' to Mark.CEDILLA,
+        '̆' to Mark.BREVE,
+        '̇' to Mark.DOT_ABOVE,
     )
 
-    /** Base letter plus marks in NFD order, or null when [c] is not a letter with only supported marks. */
+    /**
+     * Base letter plus marks in NFD order, or null when [c] is not a letter with only supported marks.
+     * The dotless ı has no NFD split; it is an i without marks, which [compose] draws without its dot.
+     */
     fun decompose(c: Char): Decomposition? {
+        if (c == 'ı') return Decomposition('i', emptyList())
         val nfd = Normalizer.normalize(c.toString(), Normalizer.Form.NFD)
         if (nfd.length < 2 || !nfd[0].isLetter()) return null
         val marks = nfd.drop(1).map { COMBINING[it] ?: return null }
@@ -60,7 +66,8 @@ internal object AccentComposer {
         val u = unitPx
         val s = ink.strokeWidthPx
         val above = decomposition.marks.filter { it != Mark.CEDILLA }
-        if (above.isNotEmpty() && decomposition.base in setOf('i', 'j')) removeTittle(px, w, h, baselineRow)
+        val dotless = above.isNotEmpty() || decomposition.marks.isEmpty()
+        if (dotless && decomposition.base in setOf('i', 'j')) removeTittle(px, w, h, baselineRow)
 
         val inkTop = (0 until h).firstOrNull { y -> (0 until w).any { x -> px[y * w + x] ushr 24 > 20 } } ?: 0
         val band = (u * 0.25f).toInt().coerceAtLeast(1)
@@ -134,9 +141,11 @@ internal object AccentComposer {
         Mark.DIAERESIS -> 2f * max(s, u * 0.05f)
         Mark.RING -> u * 0.24f
         Mark.CEDILLA -> 0f
+        Mark.BREVE -> u * 0.16f
+        Mark.DOT_ABOVE -> 2f * max(s, u * 0.05f)
     }
 
-    /** Strokes [mark] with [pen]; a diaeresis adds its two dot centres to [dots] instead. */
+    /** Strokes [mark] with [pen]; a diaeresis or dot above adds its dot centres to [dots] instead. */
     private fun drawAbove(pen: Pen, dots: MutableList<Pair<Float, Float>>, mark: Mark, cx: Float, bottom: Float, mh: Float, u: Float, s: Float) {
         val top = bottom - mh
         when (mark) {
@@ -155,6 +164,11 @@ internal object AccentComposer {
                 val r = mh / 2f - s / 2f
                 pen.stroke((0..24).map { k -> (cx + r * cos(2 * PI * k / 24).toFloat()) to (bottom - mh / 2f + r * sin(2 * PI * k / 24).toFloat()) })
             }
+            // A cup: the controls sit under the mark, so the curve's lowest point rests on [bottom].
+            Mark.BREVE -> pen.stroke(
+                cubic(cx - u * 0.15f to top, cx - u * 0.12f to bottom + mh * 0.3f, cx + u * 0.12f to bottom + mh * 0.3f, cx + u * 0.15f to top),
+            )
+            Mark.DOT_ABOVE -> dots += cx to bottom - max(s, u * 0.05f)
             Mark.CEDILLA -> Unit
         }
     }
