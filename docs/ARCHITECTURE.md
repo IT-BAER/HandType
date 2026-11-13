@@ -35,6 +35,8 @@ com.baer.handtype
 │  ├─ NoteBackgrounds.kt             paper background catalog + prefs
 │  ├─ OutputExporter.kt              PNG / transparent PNG / PDF / share / history archive
 │  ├─ PunctuationSynthesizer.kt      synth punctuation for user templates lacking glyphs
+│  ├─ AccentComposer.kt              accented letters from the base glyph plus pen marks
+│  ├─ LigatureComposer.kt            œ æ Œ Æ for user templates from the writer's two letters
 │  ├─ BundledGlyphTextNormalizer.kt  input text normalization
 │  └─ UserGlyphWidthNormalizer.kt    per-glyph X/Y scale clamping
 ├─ ml/                        on-device extraction (no Compose, no UI)
@@ -43,7 +45,7 @@ com.baer.handtype
 └─ testing/                  HandTypeTestTags + HandTypeDebugHooks (test/debug instrumentation)
 ```
 
-Resources of note: `app/src/main/res/xml/locale_config.xml` (11 locales), `app/src/main/res/xml/file_paths.xml` (FileProvider config), `app/src/main/res/values*/strings.xml` (11 locale files, 244 strings each). The only committed runtime asset directory is `app/src/main/assets/templates/classic_script/glyphs/` (688 PNGs = 86 codepoints x 8 variants, including Ä Ö Ü ä ö ü ß and ¿ ¡ « » œ æ Œ Æ " : ;).
+Resources of note: `app/src/main/res/xml/locale_config.xml` (12 locales), `app/src/main/res/xml/file_paths.xml` (FileProvider config), `app/src/main/res/values*/strings.xml` (12 locale files, 244 strings each). The only committed runtime asset directory is `app/src/main/assets/templates/classic_script/glyphs/` (688 PNGs = 86 codepoints x 8 variants, including Ä Ö Ü ä ö ü ß and ¿ ¡ « » œ æ Œ Æ " : ;).
 
 ## Layered structure
 
@@ -154,7 +156,7 @@ The premium feature (capture your own handwriting from a photographed practice s
 
 ### Internationalization
 
-`android:localeConfig="@xml/locale_config"` advertises 11 locales: `en`, `es`, `pt-BR`, `ru`, `ja`, `hi`, `de`, `fr`, `ko`, `zh-Hans`, `in`. Resource dirs use the older qualifiers `values-pt-rBR`, `values-zh-rCN` and `values-in` (Indonesian: Android still matches the legacy code `in` and ignores `values-id`), so a qualifier dir name does not always equal its BCP-47 tag. Every locale file has full string parity (244 entries). Some toasts and the loading screen text are hardcoded English literals, not string resources.
+`android:localeConfig="@xml/locale_config"` advertises 12 locales: `en`, `es`, `pt-BR`, `ru`, `ja`, `hi`, `de`, `fr`, `ko`, `zh-Hans`, `in`, `tr`. Resource dirs use the older qualifiers `values-pt-rBR`, `values-zh-rCN` and `values-in` (Indonesian: Android still matches the legacy code `in` and ignores `values-id`), so a qualifier dir name does not always equal its BCP-47 tag. Every locale file has full string parity (244 entries). Some toasts and the loading screen text are hardcoded English literals, not string resources.
 
 ## Cross-references
 

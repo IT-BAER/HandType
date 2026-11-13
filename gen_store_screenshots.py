@@ -55,7 +55,7 @@ CAPTIONS = {
         "export": ("Save, share", "or print", "PNG, transparent PNG and A4 PDF"),
         "history": ("Every note", "kept for you", "A private history on your phone"),
         "dark": ("Looks good", "day and night", "Light and dark theme"),
-        "private": ("Private", "by design", "Works offline  \u00b7  No account  \u00b7  No ads  \u00b7  10 languages"),
+        "private": ("Private", "by design", "Works offline  \u00b7  No account  \u00b7  No ads  \u00b7  12 languages"),
     },
     "de-DE": {
         "hero": ("Tippen. Und schon", "handgeschrieben", "Realistische Handschrift aus jedem Text"),
@@ -65,7 +65,7 @@ CAPTIONS = {
         "export": ("Speichern, teilen", "oder drucken", "PNG, transparentes PNG und A4-PDF"),
         "history": ("Jede Notiz", "gut aufgehoben", "Privater Verlauf auf deinem Handy"),
         "dark": ("Sieht gut aus", "Tag und Nacht", "Helles und dunkles Design"),
-        "private": ("Privat", "von Grund auf", "Offline  \u00b7  Kein Konto  \u00b7  Keine Werbung  \u00b7  10 Sprachen"),
+        "private": ("Privat", "von Grund auf", "Offline  \u00b7  Kein Konto  \u00b7  Keine Werbung  \u00b7  12 Sprachen"),
     },
 }
 
