@@ -21,7 +21,7 @@ Turn typed text into believable handwriting on Android. Rendering, capture and e
 - Share via the system share sheet
 - History gallery: every generation is archived locally and can be revisited, re-shared, re-exported or deleted
 - Settings for theme (system, light, dark) and app language
-- 10 languages: English, German, Spanish, French, Hindi, Japanese, Korean, Portuguese (Brazil), Russian, Chinese (Simplified)
+- 11 languages: English, German, Spanish, French, Hindi, Indonesian, Japanese, Korean, Portuguese (Brazil), Russian, Chinese (Simplified)
 
 ## Premium
 

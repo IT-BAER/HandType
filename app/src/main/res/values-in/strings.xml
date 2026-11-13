@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HandType</string>
+
+    <!-- Template chooser screen -->
+    <string name="template_chooser_title">Pilih gaya tulisan tangan</string>
+    <string name="template_chooser_subtitle">Template bawaan adalah pilihan utama. Anda juga bisa mengambil tulisan tangan Anda sendiri.</string>
+    <string name="template_chooser_use_template">Gunakan template</string>
+    <string name="template_chooser_new_badge">Baru</string>
+    <string name="template_chooser_premium_badge">Premium</string>
+    <string name="template_chooser_premium_button">Ambil tulisan tangan</string>
+    <string name="template_card_captured_count">Diambil %1$s · %2$d karakter</string>
+    <string name="template_card_captured">Diambil %1$s</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Selamat datang di HandType</string>
+    <string name="onboarding_body">Ketik apa saja, lalu HandType mengubahnya menjadi tulisan yang tampak ditulis dengan tangan. Gaya bawaan berfungsi secara offline. Dengan Premium, Anda bisa mengambil tulisan tangan Anda sendiri dari foto lembar tulisan tangan.</string>
+    <string name="onboarding_cta">Mulai</string>
+
+    <!-- Render screen: compose phase -->
+    <string name="render_instruction">Ketik pesan Anda di bawah, lalu ketuk Buat untuk membuat catatan tulisan tangan yang unik.</string>
+    <string name="render_text_label">Pesan Anda</string>
+    <string name="render_text_placeholder">Halo, dunia!</string>
+    <string name="render_background_title">Kertas</string>
+    <string name="render_background_subtitle">Pilih latar untuk catatan ini.</string>
+    <string name="render_background_set_default">Jadikan default</string>
+    <string name="render_background_current_default">Default tersimpan</string>
+    <string name="render_background_default_badge">Default</string>
+    <string name="render_generate_button">Buat</string>
+    <string name="render_premium_button">Gunakan Tulisan Tangan Saya</string>
+    <string name="render_templates_button">Template</string>
+    <string name="render_back_button">Kembali</string>
+
+    <!-- Note backgrounds -->
+    <string name="note_background_plain_white">Putih Polos</string>
+    <string name="note_background_warm_cream">Krem Hangat</string>
+    <string name="note_background_soft_butter">Mentega Lembut</string>
+    <string name="note_background_rose_blush">Rona Mawar</string>
+    <string name="note_background_cool_mist">Kabut Sejuk</string>
+    <string name="note_background_soft_sage">Hijau Sage</string>
+    <string name="note_background_parchment_sheet">Kertas Perkamen</string>
+    <string name="note_background_recycled_sheet">Kertas Daur Ulang</string>
+    <string name="note_background_kraft_sheet">Kertas Kraft</string>
+    <string name="note_background_ruled_sheet">Kertas Bergaris</string>
+    <string name="note_background_graph_sheet">Kertas Berpetak</string>
+
+    <!-- Render screen: generating phase -->
+    <string name="render_generating_title">Membuat catatan Anda…</string>
+    <string name="render_generating_subtitle">Setiap hasil selalu unik</string>
+
+    <!-- Render screen: result phase -->
+    <string name="render_result_title">Catatan Anda</string>
+    <string name="render_result_image_desc">Tulisan tangan yang dibuat</string>
+    <string name="render_missing_glyphs">Glif tidak tersedia: %1$s</string>
+    <string name="result_save_button">Simpan</string>
+    <string name="result_share_button">Bagikan</string>
+    <string name="result_export_pdf_button">Ekspor sebagai PDF</string>
+    <string name="result_regenerate_button">Buat ulang</string>
+    <string name="result_text_size_label">Ukuran teks</string>
+    <string name="result_new_note_button">Catatan Baru</string>
+    <string name="result_saved">Disimpan ke Pictures/HandType</string>
+    <string name="result_saved_transparent">PNG transparan disimpan ke Pictures/HandType</string>
+    <string name="result_save_failed">Gagal menyimpan: %1$s</string>
+    <string name="result_share_failed">Gagal membagikan: %1$s</string>
+    <string name="result_pdf_saved">PDF disimpan ke Download/HandType</string>
+    <string name="result_pdf_failed">PDF gagal: %1$s</string>
+
+    <!-- Camera capture screen -->
+    <string name="camera_section_title">Ambil lembar tulisan tangan Anda</string>
+    <string name="camera_pre_scan_title">Sebelum memindai</string>
+    <string name="camera_pre_scan_step_1">Cetak lembar tulisan tangan.</string>
+    <string name="camera_pre_scan_step_2">Tulis karakter yang sesuai di setiap kotak. Letakkan di atas garis putus-putus bawah: huruf kecil mencapai garis putus-putus atas, huruf kapital dan huruf tinggi mencapai garis titik-titik paling atas, dan g, j, p, q, y menggantung sampai garis titik-titik paling bawah.</string>
+    <string name="camera_pre_scan_step_3">Ambil seluruh halaman dan pastikan keempat kotak hitam terlihat penuh.</string>
+    <string name="camera_pre_scan_step_4">Gunakan cahaya yang merata dan hindari gambar buram, pantulan cahaya, serta bayangan tajam.</string>
+    <string name="camera_sheet_button">Bagikan lembar tulisan tangan</string>
+    <string name="camera_print_button">Cetak lembar tulisan tangan</string>
+    <string name="camera_print_unavailable">Pencetakan tidak tersedia. Bagikan lembarnya sebagai gantinya.</string>
+    <string name="camera_scan_button">Pindai atau impor lembar tulisan tangan</string>
+    <string name="camera_gallery_button">Pilih foto dari galeri</string>
+    <string name="camera_opening_scanner">Membuka pemindai...</string>
+    <string name="camera_processing_button">Memproses...</string>
+    <string name="camera_preparing_image">Menyiapkan gambar...</string>
+    <string name="camera_adjust_title">Sesuaikan gambar sebelum ekstraksi</string>
+    <string name="camera_adjust_body">Tingkatkan kontras atau kecerahan sebelum ML Kit membaca lembar.</string>
+    <string name="camera_brightness_label">Kecerahan</string>
+    <string name="camera_contrast_label">Kontras</string>
+    <string name="camera_use_image_button">Gunakan gambar ini</string>
+    <string name="camera_discard_image_button">Buang gambar</string>
+    <string name="camera_open_image_failed">Gambar itu tidak dapat dibuka. Coba file lain.</string>
+    <string name="camera_guide_label">Sejajarkan tepi halaman dengan panduan</string>
+    <string name="camera_capture_button">Ambil sampel</string>
+    <string name="camera_capturing_button">Mengambil…</string>
+    <string name="camera_default_instruction">Tulis A-Z, a-z, dan 0-9 di kertas kosong, lalu posisikan seluruh halaman di tengah bingkai.</string>
+    <string name="camera_permission_title">Izin kamera diperlukan</string>
+    <string name="camera_permission_rationale">HandType memerlukan akses kamera untuk memotret lembar kalibrasi tulisan tangan Anda.</string>
+    <string name="camera_permission_blocked">Akses kamera masih diblokir. Anda dapat memberikannya dari setelan sistem jika Android tidak lagi menampilkan dialog izin.</string>
+    <string name="camera_permission_default">Izinkan akses kamera untuk mengambil lembar alfabet yang digunakan untuk ekstraksi tulisan tangan.</string>
+    <string name="camera_grant_button">Berikan akses kamera</string>
+    <string name="camera_open_settings_button">Buka setelan aplikasi</string>
+
+    <!-- Loading screen -->
+    <string name="loading_template_title">Memuat template</string>
+    <string name="loading_template_body">Menyiapkan glif bitmap bawaan untuk alur tulisan tangan default.</string>
+
+    <!-- Premium capture flow -->
+    <string name="premium_instruction">Tulis A-Z, a-z, dan 0-9 di lembar tulisan tangan, lalu pindai seluruh halaman dengan keempat kotak hitam terlihat untuk membuat template pribadi Anda.</string>
+    <string name="premium_processing">Memproses sampel tulisan tangan dengan ML Kit…</string>
+    <string name="premium_no_glyphs">Tidak ada glif alfanumerik yang terdeteksi. Coba pencahayaan yang lebih terang atau pena yang lebih gelap, lalu pindai lagi. Gunakan tombol kembali sistem untuk kembali ke template.</string>
+    <string name="premium_capture_complete">Pengambilan tulisan tangan selesai. %1$d potongan glif diekstrak dari %2$d karakter unik. Gunakan tombol kembali untuk kembali ke template.</string>
+    <string name="premium_marker_detection_failed">Pindaian itu tidak terlihat seperti lembar tulisan tangan HandType. Pastikan lembar cetak memenuhi sebagian besar pindaian dan keempat kotak hitam terlihat.</string>
+    <string name="premium_save_failed">Template tulisan tangan tidak dapat disimpan. Coba lagi.</string>
+    <string name="premium_process_failed">Lembar tidak dapat diproses. Pindai ulang dengan keempat penanda sudut terlihat.</string>
+    <string name="premium_capture_failed_focus">Pengenalan teks gagal. Coba ambil lagi dengan fokus yang lebih tajam.</string>
+    <string name="premium_camera_failed">Pengambilan dengan kamera gagal. Coba lagi.</string>
+    <string name="premium_default_template_name">Tulisan Tangan Saya</string>
+    <string name="rename_handwriting_default_name">%1$s %2$s</string>
+
+    <!-- Template names and descriptions -->
+    <string name="template_ink_script_name">Tulisan Tinta</string>
+    <string name="template_ink_script_description">Tulisan tangan bergaya tinta yang alami, dengan variasi organik dan karakter goresan tangan.</string>
+    <string name="template_flowing_cursive_name">Sambung Mengalir</string>
+    <string name="template_flowing_cursive_description">Gaya tulisan sambung yang halus, dengan huruf yang tersambung dan ritme alami.</string>
+    <string name="template_premium_sample">Ambil gaya Anda sendiri</string>
+    <string name="template_premium_description">Ekstrak tulisan tangan pribadi Anda dari foto lembar tulisan tangan.</string>
+
+    <!-- Template delete dialog -->
+    <string name="template_delete_title">Hapus template?</string>
+    <string name="template_delete_body">“%1$s” akan dihapus permanen dari perangkat Anda.</string>
+
+    <string name="rename_handwriting_title">Beri nama tulisan tangan Anda</string>
+    <string name="rename_handwriting_body">Pilih nama yang ditampilkan untuk tulisan tangan tersimpan ini di daftar template Anda.</string>
+    <string name="rename_handwriting_label">Nama tulisan tangan</string>
+    <string name="rename_handwriting_confirm">Simpan nama</string>
+    <string name="rename_handwriting_cancel">Pertahankan nama saat ini</string>
+    <string name="rename_handwriting_error_blank">Masukkan nama.</string>
+
+    <!-- Drawer navigation -->
+    <string name="drawer_nav_templates">Template</string>
+    <string name="drawer_nav_history">Riwayat</string>
+    <string name="drawer_nav_help">Bantuan</string>
+    <string name="drawer_nav_faq">FAQ</string>
+    <string name="drawer_nav_about">Tentang</string>
+    <string name="drawer_nav_privacy">Privasi</string>
+    <string name="drawer_nav_settings">Setelan</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Setelan</string>
+    <string name="settings_appearance_title">Tampilan</string>
+    <string name="settings_appearance_body">Pilih apakah HandType mengikuti perangkat Anda atau selalu memakai satu tema.</string>
+    <string name="settings_theme_system">Default sistem</string>
+    <string name="settings_theme_light">Terang</string>
+    <string name="settings_theme_dark">Gelap</string>
+    <string name="settings_language_title">Bahasa</string>
+    <string name="settings_language_body">Pilih bahasa aplikasi. Default sistem mengikuti bahasa perangkat Anda.</string>
+    <string name="settings_language_system">Default sistem</string>
+    <!-- Premium -->
+    <string name="premium_paywall_title">Buka Premium</string>
+    <string name="premium_paywall_benefit_capture">Ambil tulisan tangan Anda sendiri dari lembar tulisan tangan yang dicetak</string>
+    <string name="premium_paywall_benefit_papers">Lima gaya kertas tambahan: perkamen, daur ulang, kraft, bergaris, dan berpetak</string>
+    <string name="premium_paywall_buy">Buka seharga %1$s</string>
+    <string name="premium_paywall_restore">Pulihkan pembelian</string>
+    <string name="premium_paywall_pending">Pembelian Anda masih diproses. Ini mungkin perlu waktu sebentar.</string>
+    <string name="premium_paywall_unavailable">Google Play Billing tidak tersedia saat ini. Coba lagi nanti.</string>
+    <string name="premium_paywall_error">Terjadi kesalahan. Silakan coba lagi.</string>
+    <string name="premium_restore_success">Premium telah dibuka.</string>
+    <string name="premium_restore_none">Tidak ditemukan pembelian sebelumnya.</string>
+    <string name="settings_premium_title">Premium</string>
+    <string name="settings_premium_unlocked">Premium telah dibuka</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Simpan</string>
+    <string name="action_share">Bagikan</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_close">Tutup</string>
+
+    <!-- History screen -->
+    <string name="history_title">Riwayat</string>
+    <string name="history_empty">Buat catatan, lalu catatan itu akan muncul di sini.</string>
+    <string name="history_delete_title">Hapus catatan ini?</string>
+    <string name="history_delete_body">Ini menghapus salinan tersimpan dari perangkat Anda. File yang sudah Anda ekspor ke Pictures atau Downloads tetap berada di tempatnya.</string>
+    <string name="history_deleted_toast">Dihapus</string>
+    <string name="history_delete_selected_title">Hapus %1$d catatan?</string>
+    <string name="history_delete_selected_body">Ini menghapus %1$d salinan tersimpan dari perangkat Anda. File yang sudah Anda ekspor ke Pictures atau Downloads tetap berada di tempatnya.</string>
+    <string name="history_deleted_selected_toast">%1$d catatan dihapus</string>
+    <string name="history_note_desc">Catatan tersimpan</string>
+    <string name="history_preview_desc">Pratinjau catatan</string>
+
+    <!-- Help screen -->
+    <string name="help_title">Bantuan</string>
+    <string name="help_s1_title">1. Pilih template</string>
+    <string name="help_s1_body">Buka Template dari menu samping dan geser untuk melihat gaya yang tersedia. Ketuk “Gunakan template” pada kartu yang Anda suka untuk mulai menulis.</string>
+    <string name="help_s2_title">2. Ketik teks Anda</string>
+    <string name="help_s2_body">Ketik atau tempel teks apa pun ke kolom. Baris baru dan tanda baca dipertahankan seperti yang Anda tulis.</string>
+    <string name="help_s3_title">3. Buat</string>
+    <string name="help_s3_body">Ketuk Buat. HandType menyusun teks Anda glif demi glif, dengan jarak, rotasi, dan tekanan yang bervariasi, sehingga setiap catatan tampak ditulis tangan secara alami.</string>
+    <string name="help_s4_title">4. Simpan, bagikan, atau ekspor</string>
+    <string name="help_s4_body">Dari layar hasil, Anda dapat menyimpan catatan sebagai PNG ke galeri, menyimpannya tanpa latar kertas sebagai PNG transparan, membagikannya ke aplikasi apa pun, atau mengekspornya sebagai PDF multi-halaman.</string>
+    <string name="help_s5_title">5. Riwayat</string>
+    <string name="help_s5_body">Setiap catatan yang dibuat diarsipkan secara otomatis. Buka Riwayat dari menu samping untuk melihat lagi, mengekspor ulang, membagikan, atau menghapus catatan lama.</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_q1">Di mana file yang disimpan berada?</string>
+    <string name="faq_a1">PNG disimpan di Pictures/HandType. PDF disimpan di Download/HandType.</string>
+    <string name="faq_q2">Untuk apa PNG transparan?</string>
+    <string name="faq_a2">Isinya tulisan tangan yang sama tanpa latar kertas. Ini berguna jika Anda ingin menempelkan catatan ke gambar, dokumen, atau slide lain.</string>
+    <string name="faq_q3">Bisakah catatan panjang menempati beberapa halaman PDF?</string>
+    <string name="faq_a3">Ya. Ekspor PDF membagi halaman secara otomatis dan menempatkan batas halaman di ruang kosong antarbaris teks, sehingga tidak ada karakter yang terpotong.</string>
+    <string name="faq_q4">Mengapa sebuah glif terlihat sedikit berbeda?</string>
+    <string name="faq_a4">Setiap karakter disusun dari salah satu dari beberapa varian tersimpan, lalu diputar, digeser sedikit, dan diberi ketebalan baru untuk meniru variasi tulisan tangan asli.</string>
+    <string name="faq_q5">Apa yang sebenarnya disimpan di layar Riwayat?</string>
+    <string name="faq_a5">Salinan pribadi setiap catatan yang dibuat beserta teks sumbernya. Tidak ada yang diunggah; menghapus entri hanya menghapus salinan di perangkat.</string>
+    <string name="faq_q6">Bagaimana cara kerja pengambilan tulisan tangan pribadi?</string>
+    <string name="faq_a6">Anda mengisi lembar tulisan tangan, memindainya, lalu HandType membuat template pribadi dari tulisan tangan Anda. Pengambilan berjalan di perangkat dengan ML Kit; tidak ada data yang keluar dari ponsel.</string>
+
+    <!-- About screen -->
+    <string name="about_title">Tentang</string>
+    <string name="about_version">Versi %1$s</string>
+    <string name="about_description">Ubah teks ketikan menjadi tulisan tangan yang benar-benar terasa ditulis. Template bawaan berfungsi sepenuhnya secara offline; teks Anda tidak pernah keluar dari perangkat. Sumber terbuka dengan Apache License 2.0.</string>
+    <string name="about_github_button">Lihat kode sumber di GitHub</string>
+    <string name="about_copyright">© 2026 IT-BAER. Dibuat dengan sepenuh hati.</string>
+    <string name="result_tip_share">💡 Tips: cubit untuk memperbesar catatan, ketuk dua kali untuk mengatur ulang.</string>
+
+    <!-- UX overhaul: content descriptions and shared actions -->
+    <string name="cd_menu">Buka menu</string>
+    <string name="cd_back">Kembali</string>
+    <string name="cd_opens_external">Terbuka di luar aplikasi</string>
+    <string name="action_export">Ekspor</string>
+    <string name="action_rename">Ganti nama</string>
+    <string name="action_retry">Pindai lagi</string>
+    <string name="action_open">Buka</string>
+    <string name="action_create_note">Buat catatan</string>
+
+    <!-- UX overhaul: home -->
+    <string name="template_chooser_tagline">Ketik teks, dapatkan tulisan tangan yang meyakinkan.</string>
+
+    <!-- UX overhaul: editor -->
+    <string name="render_text_supporting">Baris baru dan tanda baca dipertahankan.</string>
+
+    <!-- UX overhaul: result export sheet -->
+    <string name="result_export_sheet_title">Ekspor</string>
+    <string name="result_export_png">Simpan sebagai gambar</string>
+    <string name="result_export_png_desc">PNG ke galeri Anda</string>
+    <string name="result_export_pdf_desc">PDF multi-halaman ke Downloads</string>
+    <string name="result_export_transparent">PNG transparan</string>
+    <string name="result_export_transparent_desc">Tulisan tangan tanpa latar kertas</string>
+
+    <!-- UX overhaul: capture -->
+    <string name="camera_title">Ambil tulisan tangan</string>
+    <string name="camera_share_sheet_title">Bagikan lembar tulisan tangan</string>
+    <string name="camera_share_sheet_subject">Lembar tulisan tangan HandType</string>
+    <string name="camera_priming">Ini akan membuka pemindai dokumen. Foto Anda diproses di perangkat Anda dan tidak pernah keluar dari perangkat.</string>
+
+    <!-- UX overhaul: history -->
+    <string name="history_empty_title">Belum ada catatan</string>
+    <string name="history_rename_title">Ganti nama catatan</string>
+    <string name="history_rename_label">Nama catatan</string>
+    <string name="history_saved_toast">Disimpan ke Pictures/HandType</string>
+
+    <!-- UX overhaul: privacy (in-app) -->
+    <string name="privacy_title">Privasi</string>
+    <string name="privacy_load_error">Kebijakan privasi tidak dapat dimuat. Lihat di GitHub sebagai gantinya.</string>
+    <string name="privacy_view_on_github">Lihat di GitHub</string>
+
+    <!-- UX overhaul: drawer sections -->
+    <string name="drawer_section_create">Buat</string>
+    <string name="drawer_section_info">Info</string>
+    <string name="settings_support_title">Dukung HandType</string>
+    <string name="settings_support_body">Suka aplikasinya? Beri tahu teman atau beri rating di Google Play.</string>
+    <string name="settings_share_app">Bagikan HandType</string>
+    <string name="settings_rate_app">Beri rating HandType</string>
+    <string name="share_app_message">Saya mengubah teks ketikan menjadi tulisan tangan yang tampak asli dengan HandType. Coba juga:</string>
+    <string name="onboarding_p2_title">Pilih gaya dan kertas</string>
+    <string name="onboarding_p2_body">Pilih gaya tulisan tangan, lalu pilih salah satu preset kertas. Setiap hasil sedikit berbeda, seperti pena sungguhan.</string>
+    <string name="onboarding_p3_title">Simpan, bagikan, atau ekspor</string>
+    <string name="onboarding_p3_body">Simpan catatan ke galeri, bagikan ke aplikasi apa pun, atau ekspor sebagai PNG transparan atau PDF A4. Catatan Anda tetap ada di ponsel Anda.</string>
+    <string name="onboarding_next">Berikutnya</string>
+    <string name="onboarding_skip">Lewati</string>
+    <string name="help_show_intro">Tampilkan pengantar lagi</string>
+
+    <!-- Write the handwriting sheet on screen -->
+    <string name="camera_write_button">Tulis di layar saja</string>
+    <string name="stylus_title">Tulis di layar</string>
+    <string name="stylus_instruction">Tulis karakter samar di dalam kotak. Letakkan di atas garis putus-putus bawah; huruf kecil mencapai garis putus-putus atas, huruf kapital mencapai garis titik-titik paling atas.</string>
+    <string name="stylus_progress">%1$d / %2$d</string>
+    <string name="stylus_undo">Urungkan</string>
+    <string name="stylus_clear">Bersihkan</string>
+    <string name="stylus_previous">Kembali</string>
+    <string name="stylus_next">Berikutnya</string>
+    <string name="stylus_finish">Selesai</string>
+    <string name="stylus_saving">Menyimpan tulisan tangan Anda…</string>
+    <string name="stylus_hint_empty">Tulis karakternya terlebih dahulu.</string>
+    <string name="stylus_hint_outside">Pastikan setiap goresan tetap di dalam kotak.</string>
+    <string name="stylus_hint_too_small">Terlalu kecil - gunakan garis panduan.</string>
+    <string name="stylus_hint_too_large">Terlalu besar - tetap dekat dengan garis panduan.</string>
+    <string name="stylus_hint_reach_up">Terlalu pendek - karakter ini melewati garis putus-putus atas.</string>
+    <string name="stylus_hint_cell">“%1$s”: %2$s</string>
+    <string name="stylus_hint_wrong">Terlihat seperti “%1$s”, seharusnya “%2$s”. Ketuk Berikutnya lagi untuk tetap menyimpannya.</string>
+    <string name="stylus_hint_unrecognized">Itu belum terlihat seperti “%1$s”. Ketuk Berikutnya lagi untuk tetap menyimpannya.</string>
+    <string name="stylus_note_shape_only">Pengenalan huruf belum siap (diunduh satu kali), jadi hanya ukuran dan posisi yang diperiksa.</string>
+    <string name="cd_stylus_canvas">Kotak tulis untuk %1$s</string>
+</resources>

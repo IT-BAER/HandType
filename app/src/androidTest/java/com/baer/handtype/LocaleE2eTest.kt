@@ -31,7 +31,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.baer.handtype.feature.capture.PracticeSheetGenerator
 import com.baer.handtype.feature.capture.SheetSampleProcessor
+import com.baer.handtype.feature.settings.AppSettings
 import com.baer.handtype.feature.settings.AppSettingsStore
+import com.baer.handtype.feature.settings.LanguagePreference
 import com.baer.handtype.feature.settings.localizedFor
 import com.baer.handtype.template.BundledTemplateRepository
 import com.baer.handtype.testing.HandTypeDebugHooks
@@ -50,6 +52,7 @@ import java.io.File
  * German and accented letters through the real app: editor, result, save, PDF export, history,
  * a captured handwriting template and the on-screen sheet written to the end. A screenshot of
  * every step lands in the app's external files dir under handtype_test/e2e for review.
+ * `-e language Indonesian` (a [LanguagePreference] name) runs it in that in-app language.
  */
 @RunWith(AndroidJUnit4::class)
 class LocaleE2eTest {
@@ -120,6 +123,8 @@ class LocaleE2eTest {
         // The counter shows finished cells; the German row adds ÄÖÜäöüß to the 62 alphanumerics.
         composeRule.onNodeWithText(context.getString(R.string.stylus_progress, 0, cells)).assertIsDisplayed()
         if (composeRule.activity.resources.configuration.locales[0].language == "de") assertEquals(69, cells)
+        // Indonesian needs no letters beyond the 62.
+        if (AppSettingsStore(baseContext).read().languagePreference == LanguagePreference.Indonesian) assertEquals(62, cells)
     }
 
     @Test
@@ -314,13 +319,14 @@ class LocaleE2eTest {
 
     companion object {
         private const val TIMEOUT_MS = 25_000L
-        private const val NOTE = "Grüße aus Österreich! Café, señor, garçon, à bientôt.\nAção, naïve, Ångström, aquí."
+        private const val NOTE = "Grüße aus Österreich! Café, señor, garçon, à bientôt.\nAção, naïve, Ångström, aquí.\nAgar sehat, minum air hangat!"
         private val TEMPLATE_NAME = "E2E Akzente ${System.currentTimeMillis()}"
         private val STYLUS_TEMPLATE_NAME = "E2E Stift ${System.currentTimeMillis()}"
         private var frame = 0
         private var startedAtSeconds = 0L
         private var existingTemplateIds = emptySet<String>()
         private var existingHistoryFiles = emptySet<String>()
+        private var settingsBefore: AppSettings? = null
 
         @JvmStatic
         @BeforeClass
@@ -331,6 +337,10 @@ class LocaleE2eTest {
             existingTemplateIds = BundledTemplateRepository(target).listUserTemplates().map { it.id }.toSet()
             existingHistoryFiles = File(target.filesDir, "history").list().orEmpty().toSet()
             HandTypeDebugHooks.premiumUnlocked = true
+            InstrumentationRegistry.getArguments().getString("language")?.let { language ->
+                val store = AppSettingsStore(target)
+                settingsBefore = store.read().also { store.write(it.copy(languagePreference = LanguagePreference.valueOf(language))) }
+            }
 
             val scan = InstrumentationRegistry.getInstrumentation().context.assets.open("last_camera_image.png")
                 .use(BitmapFactory::decodeStream)
@@ -345,6 +355,7 @@ class LocaleE2eTest {
         fun tearDownClass() {
             HandTypeDebugHooks.clear()
             val target = ApplicationProvider.getApplicationContext<Context>()
+            settingsBefore?.let { AppSettingsStore(target).write(it) }
             val repository = BundledTemplateRepository(target).userRepository()
             repository.listUserTemplates().map { it.id }.filterNot { it in existingTemplateIds }
                 .forEach { repository.deleteTemplate(it) }

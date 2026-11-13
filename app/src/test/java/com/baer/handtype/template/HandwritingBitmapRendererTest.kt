@@ -179,6 +179,26 @@ class BundledPunctuationTest {
     }
 
     @Test
+    fun spanishFrenchAndAsciiMarksKeepTheirAssetProportions() {
+        // Bundled ink heights against 'l' (100 px): ¡ 97, ¿ 90, « » 49, " 35, : 68, ; 82.
+        assertEquals(0.64f, bundledRatio('¡'), 0.0001f)
+        assertEquals(0.59f, bundledRatio('¿'), 0.0001f)
+        assertEquals(0.32f, bundledRatio('«'), 0.0001f)
+        assertEquals(0.32f, bundledRatio('»'), 0.0001f)
+        assertEquals(0.23f, bundledRatio('"'), 0.0001f)
+        assertEquals(0.45f, bundledRatio(':'), 0.0001f)
+        assertEquals(0.54f, bundledRatio(';'), 0.0001f)
+    }
+
+    @Test
+    fun ligaturesTakeTheSizeOfTheirLetterClass() {
+        assertEquals(bundledRatio('o'), bundledRatio('œ'), 0f)
+        assertEquals(bundledRatio('a'), bundledRatio('æ'), 0f)
+        assertEquals(bundledRatio('O'), bundledRatio('Œ'), 0f)
+        assertEquals(bundledRatio('A'), bundledRatio('Æ'), 0f)
+    }
+
+    @Test
     fun userTemplatePunctuationRatioIsUnchanged() {
         assertEquals(0.28f, HandwritingBitmapRenderer.targetInkHeightRatio('!', isUserTemplate = true), 0.0001f)
     }
@@ -202,6 +222,27 @@ class BundledPunctuationTest {
     @Test
     fun bundledCommaHangsBelowTheTemplateBaseline() {
         assertEquals(19, row(',', top = 119, bottom = 152))
+    }
+
+    @Test
+    fun bundledInvertedMarksAndSemicolonHangBelowTheTemplateBaseline() {
+        // Asset ink rows: ¿ 66-155, ¡ 66-162, ; 70-151.
+        assertEquals(72, row('¿', top = 66, bottom = 155))
+        assertEquals(72, row('¡', top = 66, bottom = 162))
+        assertEquals(68, row(';', top = 70, bottom = 151))
+    }
+
+    @Test
+    fun bundledGuillemetsFloatAboveTheTemplateBaseline() {
+        // Asset ink rows 76-124: the marks sit between the baseline and the x-height.
+        assertEquals(62, row('«', top = 76, bottom = 124))
+        assertEquals(62, row('»', top = 76, bottom = 124))
+    }
+
+    @Test
+    fun bundledColonAndLigaturesRestOnTheirInkBottom() {
+        assertEquals(67, row(':', top = 70, bottom = 137))
+        assertEquals(70, row('œ', top = 63, bottom = 133))
     }
 }
 

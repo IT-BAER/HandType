@@ -55,7 +55,7 @@ only patience could reveal."
 
 The substitution is silent (`text.ifBlank { ... }`), not localized, and produces a real, auto-archived result as if the user had typed it. On a German-locale device this renders an English note with no hint that it was filler. See Known UX gap E2.
 
-**Missing glyphs.** Characters with no glyph in the template are not blocked at input time. They are reported only after render: `RenderResult.missingCharacters` is surfaced on the Result phase as a notice. The renderer supports A-Z, a-z, 0-9 and `. , ! ? ' -`; everything else falls into the missing set.
+**Missing glyphs.** Characters with no glyph in the template are not blocked at input time. They are reported only after render: `RenderResult.missingCharacters` is surfaced on the Result phase as a notice. Ink Script supports A-Z, a-z, 0-9, `. , ! ? ' " : ; - ¿ ¡ « »`, `ÄÖÜäöüß` and `œæŒÆ`, plus accented letters composed from their base letter; everything else falls into the missing set.
 
 ## Paper options
 

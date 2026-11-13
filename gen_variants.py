@@ -16,9 +16,10 @@ SUPPORTED = (
     + [0x2E, 0x2C, 0x21, 0x3F, 0x27, 0x2D]  # . , ! ? ' -
     # Appended last so the seeded variants of the characters above stay unchanged.
     + [0xC4, 0xD6, 0xDC, 0xE4, 0xF6, 0xFC, 0xDF]  # Ä Ö Ü ä ö ü ß
+    + [0xBF, 0xA1, 0xAB, 0xBB, 0x153, 0xE6, 0x152, 0xC6, 0x22, 0x3A, 0x3B]  # ¿ ¡ « » œ æ Œ Æ " : ;
 )
 
-OUT_DIR = Path(r"D:\VSC\HandType\app\src\main\assets\templates\classic_script\glyphs")
+OUT_DIR = Path(__file__).resolve().parent / "app/src/main/assets/templates/classic_script/glyphs"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Remove old variant files

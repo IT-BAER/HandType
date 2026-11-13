@@ -43,7 +43,7 @@ com.baer.handtype
 └─ testing/                  HandTypeTestTags + HandTypeDebugHooks (test/debug instrumentation)
 ```
 
-Resources of note: `app/src/main/res/xml/locale_config.xml` (10 locales), `app/src/main/res/xml/file_paths.xml` (FileProvider config), `app/src/main/res/values*/strings.xml` (10 locale files, 156 strings each). The only committed runtime asset directory is `app/src/main/assets/templates/classic_script/glyphs/` (600 PNGs = 75 codepoints x 8 variants, including Ä Ö Ü ä ö ü ß).
+Resources of note: `app/src/main/res/xml/locale_config.xml` (11 locales), `app/src/main/res/xml/file_paths.xml` (FileProvider config), `app/src/main/res/values*/strings.xml` (11 locale files, 244 strings each). The only committed runtime asset directory is `app/src/main/assets/templates/classic_script/glyphs/` (688 PNGs = 86 codepoints x 8 variants, including Ä Ö Ü ä ö ü ß and ¿ ¡ « » œ æ Œ Æ " : ;).
 
 ## Layered structure
 
@@ -154,7 +154,7 @@ The premium feature (capture your own handwriting from a photographed practice s
 
 ### Internationalization
 
-`android:localeConfig="@xml/locale_config"` advertises 10 locales: `en`, `es`, `pt-BR`, `ru`, `ja`, `hi`, `de`, `fr`, `ko`, `zh-Hans`. Resource dirs use the older qualifiers `values-pt-rBR` and `values-zh-rCN`, so a qualifier dir name does not always equal its BCP-47 tag. Every locale file has full string parity (156 entries). Some toasts and the loading screen text are hardcoded English literals, not string resources.
+`android:localeConfig="@xml/locale_config"` advertises 11 locales: `en`, `es`, `pt-BR`, `ru`, `ja`, `hi`, `de`, `fr`, `ko`, `zh-Hans`, `in`. Resource dirs use the older qualifiers `values-pt-rBR`, `values-zh-rCN` and `values-in` (Indonesian: Android still matches the legacy code `in` and ignores `values-id`), so a qualifier dir name does not always equal its BCP-47 tag. Every locale file has full string parity (244 entries). Some toasts and the loading screen text are hardcoded English literals, not string resources.
 
 ## Cross-references
 

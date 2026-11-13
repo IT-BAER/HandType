@@ -68,6 +68,19 @@ class LocaleCharactersTest {
     }
 
     @Test
+    fun bundledScriptWritesSpanishFrenchAndAsciiMarks() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
+
+        MARKS.forEach { assertEquals("$it", 8, template.glyphs[it]?.size) }
+        val result = HandwritingBitmapRenderer.render(MARKS_NOTE, template, HandwritingRenderConfig(maxWidthPx = 900), seed = 42)
+        if (InstrumentationRegistry.getArguments().getString("dump") == "true") dump(mapOf('¿' to result.bitmap))
+
+        assertEquals(emptySet<Char>(), result.missingCharacters)
+        assertEquals(MARKS_NOTE.split(' ', '\n').joinToString(""), result.lines.joinToString("").replace(" ", ""))
+    }
+
+    @Test
     fun accentedLettersComposeFromTheirBaseGlyph() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val template = runBlocking { BundledTemplateRepository(context).loadTemplate("classic_script") }
@@ -204,5 +217,7 @@ class LocaleCharactersTest {
         const val ALPHA_MIN = 40
         const val ACCENTED = "Café, señor, garçon, à bientôt.\nAção, ÉTÉ, naïve, Ångström, aquí"
         const val PLAIN = "Cafe, senor, garcon, a bientot.\nAcao, ETE, naive, Angstrom, aqui"
+        const val MARKS = "¿¡«»œæŒÆ\":;"
+        const val MARKS_NOTE = "¿Qué tal? ¡Hola! «Œuvre», cœur;\nÆsop: \"ex æquo\" « Bœuf »"
     }
 }

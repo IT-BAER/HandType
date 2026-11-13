@@ -103,7 +103,9 @@ object HandwritingBitmapRenderer {
     private val dottedChars = setOf('i', 'j')
     private val punctuationChars = setOf('.', ',', ';', ':', '!', '?', '\'', '"', '`')
     /** Marks whose ink floats above the baseline. */
-    private val raisedMarks = setOf('\'', '"', '`', '-')
+    private val raisedMarks = setOf('\'', '"', '`', '-', '«', '»')
+    /** Bundled marks whose ink hangs below the baseline. */
+    private val hangingMarks = setOf(',', ';', '¡', '¿')
 
     private data class InkBounds(
         val left: Int,
@@ -343,7 +345,7 @@ object HandwritingBitmapRenderer {
             lower in descenderChars -> templateBaselineRow.coerceIn(inkTop, inkBottom)
             isUserTemplate -> inkBottom
             character in raisedMarks -> return (templateBaselineRow - inkTop).coerceAtLeast(inkBottom - inkTop)
-            character == ',' -> templateBaselineRow.coerceIn(inkTop, inkBottom)
+            character in hangingMarks -> templateBaselineRow.coerceIn(inkTop, inkBottom)
             else -> inkBottom
         }
         return (baselineInSource - inkTop).coerceIn(0, inkBottom - inkTop)
@@ -353,10 +355,13 @@ object HandwritingBitmapRenderer {
         val lower = character.lowercaseChar()
         val baseRatio = when {
             // Bundled marks keep their asset height relative to 'l' (0.66 for 100 px of ink).
-            character == '!' -> 0.64f
-            character == '?' -> 0.59f
+            character == '!' || character == '¡' -> 0.64f
+            character == '?' || character == '¿' -> 0.59f
+            character == ';' -> 0.54f
+            character == ':' -> 0.45f
+            character == '«' || character == '»' -> 0.32f
             character == ',' -> 0.22f
-            character == '\'' -> 0.23f
+            character == '\'' || character == '"' -> 0.23f
             character == '.' -> 0.13f
             character == '-' -> 0.08f
             character in punctuationChars -> 0.24f
