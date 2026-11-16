@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - French spacing: a line no longer ends on an opening « or starts with a closing », !, ?, : or ; that stands apart from its word.
 - Typographic double quotes (“ ” „) are written as one double quote instead of two single quotes.
 - Premium: in your own handwriting, a letter after an apostrophe no longer slides into the letter before it ("I'd", "İstanbul'da").
+- Ink Script no longer crashes, and your own handwriting loads again, on phones set to a language with its own digits (Arabic, Persian, Bengali, Marathi, Nepali, Burmese): glyph file names always use ASCII digits, and glyphs saved by earlier versions on such phones are still found.
 
 ## [1.2.0] - 2026-10-26
 

@@ -69,7 +69,7 @@ class UserTemplateRepository(private val context: Context) {
         val glyphDir = File(templateDir, GLYPHS_DIR).apply { mkdirs() }
 
         glyphMap.forEach { (character, bitmap) ->
-            val file = File(glyphDir, character.toVariantFileName(0))
+            val file = File(glyphDir, GlyphFileName.of(character, 0))
             FileOutputStream(file).use { out ->
                 if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
                     Log.w(TAG, "Failed to compress glyph for character '$character'")
@@ -131,7 +131,7 @@ class UserTemplateRepository(private val context: Context) {
 
         val glyphs = linkedMapOf<Char, List<Bitmap>>()
         glyphDir.listFiles()?.forEach { file ->
-            val character = file.name.charFromVariantFileName() ?: return@forEach
+            val character = GlyphFileName.charOf(file.name) ?: return@forEach
             val bitmap = file.inputStream().use(BitmapFactory::decodeStream) ?: return@forEach
             glyphs[character] = listOf(bitmap)
         }
@@ -281,14 +281,3 @@ private data class UserTemplateMeta(
         )
     }
 }
-
-private fun Char.toVariantFileName(variant: Int): String = "u%04X_v%d.png".format(code, variant)
-
-private fun String.charFromVariantFileName(): Char? {
-    // Expected format: u<HEX>_v<int>.png
-    val match = USER_VARIANT_REGEX.matchEntire(this) ?: return null
-    val codePoint = match.groupValues[1].toIntOrNull(16) ?: return null
-    return codePoint.toChar()
-}
-
-private val USER_VARIANT_REGEX = Regex("u([0-9A-Fa-f]+)_v\\d+\\.png")

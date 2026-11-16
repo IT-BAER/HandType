@@ -94,7 +94,7 @@ class BundledTemplateRepository(private val context: Context) {
         supportedCharacters.forEach { character ->
             val variants = mutableListOf<Bitmap>()
             for (variantIndex in 0 until MAX_VARIANTS) {
-                val assetPath = "templates/$templateId/glyphs/${character.toVariantFileName(variantIndex)}"
+                val assetPath = "templates/$templateId/glyphs/${GlyphFileName.of(character, variantIndex)}"
                 val bitmap = try {
                     context.assets.open(assetPath).use { BitmapFactory.decodeStream(it) }
                 } catch (_: IOException) {
@@ -132,5 +132,3 @@ class BundledTemplateRepository(private val context: Context) {
         }
     }
 }
-
-private fun Char.toVariantFileName(variant: Int): String = "u%04X_v%d.png".format(code, variant)
