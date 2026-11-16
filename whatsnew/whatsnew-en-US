@@ -4,3 +4,4 @@ HandType 1.3.0
 • Turkish letters such as ğ ş ı İ in every handwriting.
 • Your own handwriting writes ¿ ¡ « » œ æ in your own pen style (Premium).
 • French « » and a spaced ! or ? no longer stand alone at the start or end of a line.
+• Ink Script no longer crashes on phones set to a language with its own digits, such as Arabic or Persian.
